@@ -1,0 +1,109 @@
+import 'dart:developer' as developer;
+
+import 'package:core_contracts/core_contracts.dart';
+import 'package:core_di/core_di.dart';
+import 'package:core_events/core_events.dart';
+import 'package:core_storage/core_storage.dart';
+import 'package:core_ui/core_ui.dart';
+import 'package:core_utils/core_utils.dart';
+
+import 'app_module_registrar.dart';
+import 'i18n/strings.g.dart' as i18n;
+import 'plugins/plugin_controller.dart';
+
+/// Todo lo que la app necesita tras arrancar.
+class AppEnvironment {
+  AppEnvironment({
+    required this.locator,
+    required this.localization,
+    required this.registry,
+    required this.plugins,
+    this.isar,
+  });
+
+  final ServiceLocator locator;
+  final LocalizationCoordinator localization;
+  final PluginRegistry registry;
+  final PluginController plugins;
+
+  /// `null` en los widget tests, que usan repositorios en memoria.
+  final Isar? isar;
+
+  /// Libera los plugins, los servicios y la base de datos (tests y reinicios).
+  Future<void> dispose() async {
+    await plugins.disposePlugins();
+    plugins.dispose();
+    await locator.reset();
+    if (isar?.isOpen ?? false) {
+      await isar!.close();
+    }
+  }
+}
+
+/// Arranque de la app (§3.2, §10.2):
+/// 1. Idioma y servicios base en el scope raíz de `core_di`.
+/// 2. Registro de plugins en tiempo de compilación ([appPluginFactories]).
+/// 3. Base de datos con los esquemas de **todos** los plugins registrados,
+///    también los desactivados (sus datos deben seguir accesibles, AC-02).
+/// 4. Ciclo de vida: inicializa los plugins activos y disponibles.
+Future<AppEnvironment> bootstrapApp({
+  required String databaseDirectory,
+  required String languageCode,
+  ServiceLocator? locator,
+  LocalizationCoordinator? localization,
+  List<PluginFactory> pluginFactories = appPluginFactories,
+  String databaseName = Isar.defaultName,
+}) async {
+  final services = locator ?? ServiceLocator.instance;
+  final l10n = localization ?? LocalizationCoordinator.instance;
+  l10n
+    ..register(
+      'app',
+      (code) => i18n.LocaleSettings.setLocaleRawSync(code),
+      translate: (key) {
+        final value = i18n.appStrings[key];
+        return value is String ? value : null;
+      },
+    )
+    ..setLanguage(languageCode);
+
+  services
+    ..registerSingleton<EventBus>(EventBus(), dispose: (bus) => bus.dispose())
+    ..registerSingleton<IdGenerator>(const UuidV4Generator())
+    ..registerSingleton<Clock>(const SystemClock());
+
+  final registry = createPluginRegistry(
+    locator: services,
+    localization: l10n,
+    factories: pluginFactories,
+  );
+
+  final isar = await LocalDatabase.open(
+    directory: databaseDirectory,
+    name: databaseName,
+    contributors: registry.allPlugins.whereType<StorageSchemaContributor>(),
+  );
+  services.registerSingleton<Isar>(isar);
+
+  final plugins = PluginController(
+    PluginLifecycleManager(
+      registry: registry,
+      preferences: IsarPluginPreferenceRepository(isar),
+      onError: (pluginId, error, stackTrace) => developer.log(
+        'El plugin $pluginId falló',
+        name: 'home_utility_app',
+        error: error,
+        stackTrace: stackTrace,
+      ),
+    ),
+  );
+  await plugins.load();
+
+  return AppEnvironment(
+    locator: services,
+    localization: l10n,
+    registry: registry,
+    plugins: plugins,
+    isar: isar,
+  );
+}

@@ -5,6 +5,7 @@
 - **Análisis estático:** `melos run analyze`[cite: 1]
 - **Ejecutar pruebas:** `melos run test`[cite: 1]
 - **Generar código (Isar / Slang):** `melos run build:g`[cite: 1]
+- **Generar APK de release (apps/app):** `melos run build:apk` → `apps/app/build/app/outputs/flutter-apk/app-release.apk`
 
 ---
 
@@ -72,3 +73,26 @@
 - **`tester.pageBack()`:** busca el tooltip en inglés. Con la app en español, usar `tester.tap(find.byType(BackButton))`.
 - **`pumpAndSettle`:** nunca termina con indicadores de carga animados visibles. Usar `pump()`.
 - **`SnackBar`:** llamar a `hideCurrentSnackBar()` antes de `showSnackBar` para que no se queden en cola.
+
+## Fase 4 (apps/app)
+- **Estructura:**
+  - `lib/app_module_registrar.dart`: registro de plugins (`appPluginFactories`).
+  - `lib/bootstrap.dart`: arranque testeable (`bootstrapApp`).
+  - `lib/plugins/plugin_controller.dart`: estado de los plugins para inicio, catálogo y guard.
+  - `lib/navigation/`: router y `PluginRouteGuard`.
+  - `lib/home/` y `lib/catalog/`.
+- **Añadir un plugin:**
+  1. Añadir la dependencia en `apps/app/pubspec.yaml`.
+  2. Añadir una `PluginFactory` en `appPluginFactories`. La factoría debe registrar las traducciones del plugin (como `registerLocalization()` de item_tracker).
+  3. Sus rutas deben ser absolutas y compartir un primer segmento propio (el guard lo usa como prefijo).
+- **Idioma:**
+  - Envolver con `LanguageRebuilder` (`core_ui`) el contenido de las rutas. El router de la app ya lo hace con `withLanguageRebuild`.
+  - Sin eso, las páginas abiertas no cambian de idioma, porque los textos de slang son globales y GoRouter conserva su `Navigator` con una `GlobalKey`.
+  - Para traducir claves de otros paquetes: `LocalizationCoordinator.translate(key)`.
+- **Tests de la app:**
+  - `AppHarness` (`test/helpers/app_harness.dart`): plugin real con hardware falso, repositorios en memoria y `FakeHomePlugin` configurable.
+  - AC-02 con Isar real en `test/ac02_persistence_test.dart`.
+  - En dispositivo o simulador: `cd apps/app && flutter test integration_test -d <id>`.
+- **`HomeUtilityApp`:** crea su router con el primer `AppEnvironment`. Para simular un reinicio en un test, usar `key: ObjectKey(environment)`.
+- **CI:** `.github/workflows/ci.yml` ejecuta `melos run verify` en Ubuntu. Si se sube la versión de Flutter o Melos, actualizarla también ahí.
+- **Archivos del editor:** `.vscode/` no se versiona (es configuración personal). Para que la extensión Dart encuentre los proyectos Flutter anidados, cada desarrollador pone `"dart.projectSearchDepth": 6` en su configuración.

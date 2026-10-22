@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Análisis, arquitectura y tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+
+      - name: Instalar Melos
+        run: dart pub global activate melos 8.9.0
+
+      - name: Resolver el workspace
+        run: melos bootstrap
+
+      # analyze + verify:arch + test. Los tests de Isar descargan su librería
+      # nativa la primera vez; los integration_test de apps/app no se ejecutan
+      # aquí (necesitan dispositivo).
+      - name: Verificar
+        run: melos run verify

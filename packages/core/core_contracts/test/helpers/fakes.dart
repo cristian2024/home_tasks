@@ -1,8 +1,8 @@
-import 'dart:async';
-
 import 'package:core_contracts/core_contracts.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+
+export 'package:core_contracts/testing.dart';
 
 class FakePlugin implements HomePlugin {
   FakePlugin(
@@ -58,29 +58,4 @@ class FakePlugin implements HomePlugin {
       throw disposeError!;
     }
   }
-}
-
-class InMemoryPluginPreferenceRepository implements PluginPreferenceRepository {
-  final Map<String, UserPluginPreference> _store = {};
-  final StreamController<List<UserPluginPreference>> _changes =
-      StreamController.broadcast();
-
-  @override
-  Future<List<UserPluginPreference>> getAll() async => _store.values.toList();
-
-  @override
-  Future<void> save(UserPluginPreference preference) => saveAll([preference]);
-
-  @override
-  Future<void> saveAll(List<UserPluginPreference> preferences) async {
-    for (final preference in preferences) {
-      _store[preference.pluginId] = preference;
-    }
-    _changes.add(_store.values.toList());
-  }
-
-  @override
-  Stream<List<UserPluginPreference>> watch() => _changes.stream;
-
-  Future<void> close() => _changes.close();
 }

@@ -30,15 +30,29 @@ class _ItemTrackerExampleAppState extends State<ItemTrackerExampleApp> {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, _) => _HomePage(
-          plugin: widget.plugin,
-          localization: widget.localization,
-          demoData: DemoData(widget.locator.get<ItemTrackerDependencies>()),
-          isDark: _themeMode == ThemeMode.dark,
-          onDarkChanged: (dark) => setState(() => _themeMode = dark ? ThemeMode.dark : ThemeMode.light),
+        builder: (context, _) => LanguageRebuilder(
+          child: _HomePage(
+            plugin: widget.plugin,
+            localization: widget.localization,
+            demoData: DemoData(widget.locator.get<ItemTrackerDependencies>()),
+            isDark: _themeMode == ThemeMode.dark,
+            onDarkChanged: (dark) => setState(
+              () => _themeMode = dark ? ThemeMode.dark : ThemeMode.light,
+            ),
+          ),
         ),
       ),
-      ...widget.plugin.routes,
+      // Mismo envoltorio que `withLanguageRebuild` de apps/app.
+      for (final route in widget.plugin.routes)
+        if (route is GoRoute && route.builder != null)
+          GoRoute(
+            path: route.path,
+            redirect: route.redirect,
+            builder: (context, state) =>
+                LanguageRebuilder(child: route.builder!(context, state)),
+          )
+        else
+          route,
     ],
   );
   ThemeMode _themeMode = ThemeMode.light;
@@ -51,17 +65,21 @@ class _ItemTrackerExampleAppState extends State<ItemTrackerExampleApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: widget.localization.languageCode,
-      builder: (context, languageCode, _) => MaterialApp.router(
-        title: 'item_tracker',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: _themeMode,
-        locale: Locale(languageCode),
-        supportedLocales: LocalizationCoordinator.supportedLocales,
-        localizationsDelegates: LocalizationCoordinator.localizationsDelegates,
-        routerConfig: _router,
+    return LanguageScope(
+      languageCode: widget.localization.languageCode,
+      child: ValueListenableBuilder<String>(
+        valueListenable: widget.localization.languageCode,
+        builder: (context, languageCode, _) => MaterialApp.router(
+          title: 'item_tracker',
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: _themeMode,
+          locale: Locale(languageCode),
+          supportedLocales: LocalizationCoordinator.supportedLocales,
+          localizationsDelegates:
+              LocalizationCoordinator.localizationsDelegates,
+          routerConfig: _router,
+        ),
       ),
     );
   }
@@ -90,7 +108,9 @@ class _HomePage extends StatelessWidget {
         ..showSnackBar(
           SnackBar(
             content: Text(
-              created == 0 ? 'Los datos de ejemplo ya estaban cargados.' : 'Datos de ejemplo cargados: $created objetos.',
+              created == 0
+                  ? 'Los datos de ejemplo ya estaban cargados.'
+                  : 'Datos de ejemplo cargados: $created objetos.',
             ),
           ),
         );
@@ -117,7 +137,8 @@ class _HomePage extends StatelessWidget {
                   ButtonSegment(value: 'en', label: Text('EN')),
                 ],
                 selected: {languageCode},
-                onSelectionChanged: (selection) => localization.setLanguage(selection.single),
+                onSelectionChanged: (selection) =>
+                    localization.setLanguage(selection.single),
               ),
             ),
           ),

@@ -94,9 +94,23 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   @override
   Future<bool> isAvailable() async => true;
 
+  /// Registra el idioma y las traducciones del plugin. La app lo llama al
+  /// registrar el plugin, aunque esté desactivado, para que el catálogo pueda
+  /// mostrar su nombre ([nameKey]). Es idempotente.
+  void registerLocalization() {
+    _localization.register(
+      pluginId,
+      (code) => i18n.LocaleSettings.setLocaleRawSync(code),
+      translate: (key) {
+        final value = i18n.itemTrackerStrings[key];
+        return value is String ? value : null;
+      },
+    );
+  }
+
   @override
   Future<void> initialize() async {
-    _localization.register(pluginId, (code) => i18n.LocaleSettings.setLocaleRawSync(code));
+    registerLocalization();
     await _locator.pushScope(
       pluginId,
       init: (locator) {
