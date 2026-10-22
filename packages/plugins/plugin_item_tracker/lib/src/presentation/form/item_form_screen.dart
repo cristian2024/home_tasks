@@ -7,6 +7,7 @@ import '../../domain/errors/item_tracker_exception.dart';
 import '../../domain/item_validator.dart';
 import '../../i18n/strings.g.dart';
 import '../common/item_tracker_l10n.dart';
+import '../item_tracker_routes.dart';
 import 'item_form_cubit.dart';
 
 /// Crear o editar un objeto. Al guardar hace `pop` con el ID del objeto.
@@ -96,6 +97,18 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                       maxLength: ItemValidator.maxDescriptionLength,
                       errorText: fieldError(ValidationField.description),
                     ),
+                    if (cubit.itemId case final itemId?) ...[
+                      AppSectionHeader(
+                        t.identifiers,
+                        trailing: AppButton(
+                          label: t.addIdentifier,
+                          icon: Icons.add_link,
+                          variant: AppButtonVariant.text,
+                          onPressed: () => context.push<String>(ItemTrackerRoutes.addIdentifier(itemId)),
+                        ),
+                      ),
+                      Text(t.identifiersHelp, style: Theme.of(context).textTheme.bodySmall),
+                    ],
                     AppSectionHeader(
                       t.metadata,
                       trailing: AppIconButton(icon: Icons.add, tooltip: t.addField, onPressed: cubit.addEntry),

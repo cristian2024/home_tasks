@@ -76,7 +76,15 @@ class _DetailBody extends StatelessWidget {
               }),
             ),
         ],
-        AppSectionHeader(t.identifiers),
+        AppSectionHeader(
+          t.identifiers,
+          trailing: AppButton(
+            label: t.addIdentifier,
+            icon: Icons.add_link,
+            variant: AppButtonVariant.text,
+            onPressed: () => context.push<String>(ItemTrackerRoutes.addIdentifier(item.id)),
+          ),
+        ),
         if (state.identifiers.isEmpty)
           Text(t.noIdentifiers)
         else

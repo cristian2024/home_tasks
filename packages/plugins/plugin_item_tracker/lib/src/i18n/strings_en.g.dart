@@ -129,6 +129,11 @@ class _ItemTrackerTranslations$itemTracker$scan$en implements ItemTrackerTransla
 	@override String get cameraError => 'The camera could not be used. Type the code instead.';
 	@override String get readError => 'The identifier could not be read. Please try again.';
 	@override String get readCancelled => 'Reading cancelled.';
+	@override String get bindTitle => 'Add identifier';
+	@override String get binding => 'Linking the identifier…';
+	@override String get bindSubmit => 'Link';
+	@override String get bound => 'Identifier added.';
+	@override String bindRejectedOther({required Object name}) => 'This identifier is already linked to “${name}”.';
 }
 
 // Path: itemTracker.notFound
@@ -182,6 +187,7 @@ class _ItemTrackerTranslations$itemTracker$detail$en implements ItemTrackerTrans
 	);
 	@override String get yes => 'Yes';
 	@override String get no => 'No';
+	@override String get addIdentifier => 'Add identifier';
 }
 
 // Path: itemTracker.events
@@ -222,6 +228,9 @@ class _ItemTrackerTranslations$itemTracker$form$en implements ItemTrackerTransla
 	@override String get typeBoolean => 'Yes / No';
 	@override String initialIdentifier({required Object type, required Object value}) => 'The ${type} will be linked: ${value}';
 	@override String get save => 'Save';
+	@override String get identifiers => 'Identifiers';
+	@override String get identifiersHelp => 'They are linked right away, no need to save.';
+	@override String get addIdentifier => 'Add identifier';
 }
 
 // Path: itemTracker.associate
@@ -321,6 +330,11 @@ extension on ItemTrackerTranslationsEn {
 			'itemTracker.scan.cameraError' => 'The camera could not be used. Type the code instead.',
 			'itemTracker.scan.readError' => 'The identifier could not be read. Please try again.',
 			'itemTracker.scan.readCancelled' => 'Reading cancelled.',
+			'itemTracker.scan.bindTitle' => 'Add identifier',
+			'itemTracker.scan.binding' => 'Linking the identifier…',
+			'itemTracker.scan.bindSubmit' => 'Link',
+			'itemTracker.scan.bound' => 'Identifier added.',
+			'itemTracker.scan.bindRejectedOther' => ({required Object name}) => 'This identifier is already linked to “${name}”.',
 			'itemTracker.notFound.title' => 'Unregistered identifier',
 			'itemTracker.notFound.message' => ({required Object type}) => 'This ${type} is not linked to any item.',
 			'itemTracker.notFound.create' => 'Create new item',
@@ -343,6 +357,7 @@ extension on ItemTrackerTranslationsEn {
 			'itemTracker.detail.eventsCount' => ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n, zero: 'No events', one: '1 event recorded', other: '${n} events recorded', ), 
 			'itemTracker.detail.yes' => 'Yes',
 			'itemTracker.detail.no' => 'No',
+			'itemTracker.detail.addIdentifier' => 'Add identifier',
 			'itemTracker.events.created' => ({required Object name}) => 'Item created as “${name}”',
 			'itemTracker.events.updated' => ({required Object fields}) => 'Edited: ${fields}',
 			'itemTracker.events.identifierBound' => ({required Object type, required Object value}) => '${type} linked: ${value}',
@@ -365,6 +380,9 @@ extension on ItemTrackerTranslationsEn {
 			'itemTracker.form.typeBoolean' => 'Yes / No',
 			'itemTracker.form.initialIdentifier' => ({required Object type, required Object value}) => 'The ${type} will be linked: ${value}',
 			'itemTracker.form.save' => 'Save',
+			'itemTracker.form.identifiers' => 'Identifiers',
+			'itemTracker.form.identifiersHelp' => 'They are linked right away, no need to save.',
+			'itemTracker.form.addIdentifier' => 'Add identifier',
 			'itemTracker.associate.title' => 'Link to an item',
 			'itemTracker.associate.identifier' => ({required Object type, required Object value}) => '${type}: ${value}',
 			'itemTracker.associate.search' => 'Search item by name',

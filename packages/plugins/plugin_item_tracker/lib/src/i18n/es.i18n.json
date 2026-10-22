@@ -47,7 +47,12 @@
       "check_again": "Comprobar de nuevo",
       "camera_error": "No se pudo usar la cámara. Escribe el código a mano.",
       "read_error": "No se pudo leer el identificador. Inténtalo de nuevo.",
-      "read_cancelled": "Lectura cancelada."
+      "read_cancelled": "Lectura cancelada.",
+      "bind_title": "Añadir identificador",
+      "binding": "Asociando el identificador…",
+      "bind_submit": "Asociar",
+      "bound": "Identificador añadido.",
+      "bind_rejected_other": "Este identificador ya está asociado a «{name}»."
     },
     "not_found": {
       "title": "Identificador no registrado",
@@ -79,7 +84,8 @@
         "other": "{n} eventos registrados"
       },
       "yes": "Sí",
-      "no": "No"
+      "no": "No",
+      "add_identifier": "Añadir identificador"
     },
     "events": {
       "created": "Objeto creado como «{name}»",
@@ -105,7 +111,10 @@
       "type_number": "Número",
       "type_boolean": "Sí / No",
       "initial_identifier": "Se asociará el {type}: {value}",
-      "save": "Guardar"
+      "save": "Guardar",
+      "identifiers": "Identificadores",
+      "identifiers_help": "Se asocian al momento, sin necesidad de guardar.",
+      "add_identifier": "Añadir identificador"
     },
     "associate": {
       "title": "Asociar a un objeto",

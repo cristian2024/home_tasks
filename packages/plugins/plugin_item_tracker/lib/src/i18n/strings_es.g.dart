@@ -211,6 +211,21 @@ class ItemTrackerTranslations$itemTracker$scan$es {
 
 	/// es: 'Lectura cancelada.'
 	String get readCancelled => 'Lectura cancelada.';
+
+	/// es: 'Añadir identificador'
+	String get bindTitle => 'Añadir identificador';
+
+	/// es: 'Asociando el identificador…'
+	String get binding => 'Asociando el identificador…';
+
+	/// es: 'Asociar'
+	String get bindSubmit => 'Asociar';
+
+	/// es: 'Identificador añadido.'
+	String get bound => 'Identificador añadido.';
+
+	/// es: 'Este identificador ya está asociado a «{name}».'
+	String bindRejectedOther({required Object name}) => 'Este identificador ya está asociado a «${name}».';
 }
 
 // Path: itemTracker.notFound
@@ -308,6 +323,9 @@ class ItemTrackerTranslations$itemTracker$detail$es {
 
 	/// es: 'No'
 	String get no => 'No';
+
+	/// es: 'Añadir identificador'
+	String get addIdentifier => 'Añadir identificador';
 }
 
 // Path: itemTracker.events
@@ -392,6 +410,15 @@ class ItemTrackerTranslations$itemTracker$form$es {
 
 	/// es: 'Guardar'
 	String get save => 'Guardar';
+
+	/// es: 'Identificadores'
+	String get identifiers => 'Identificadores';
+
+	/// es: 'Se asocian al momento, sin necesidad de guardar.'
+	String get identifiersHelp => 'Se asocian al momento, sin necesidad de guardar.';
+
+	/// es: 'Añadir identificador'
+	String get addIdentifier => 'Añadir identificador';
 }
 
 // Path: itemTracker.associate
@@ -537,6 +564,11 @@ extension on ItemTrackerTranslations {
 			'itemTracker.scan.cameraError' => 'No se pudo usar la cámara. Escribe el código a mano.',
 			'itemTracker.scan.readError' => 'No se pudo leer el identificador. Inténtalo de nuevo.',
 			'itemTracker.scan.readCancelled' => 'Lectura cancelada.',
+			'itemTracker.scan.bindTitle' => 'Añadir identificador',
+			'itemTracker.scan.binding' => 'Asociando el identificador…',
+			'itemTracker.scan.bindSubmit' => 'Asociar',
+			'itemTracker.scan.bound' => 'Identificador añadido.',
+			'itemTracker.scan.bindRejectedOther' => ({required Object name}) => 'Este identificador ya está asociado a «${name}».',
 			'itemTracker.notFound.title' => 'Identificador no registrado',
 			'itemTracker.notFound.message' => ({required Object type}) => 'Este ${type} no está asociado a ningún objeto.',
 			'itemTracker.notFound.create' => 'Crear nuevo objeto',
@@ -559,6 +591,7 @@ extension on ItemTrackerTranslations {
 			'itemTracker.detail.eventsCount' => ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('es'))(n, zero: 'Sin eventos', one: '1 evento registrado', other: '${n} eventos registrados', ), 
 			'itemTracker.detail.yes' => 'Sí',
 			'itemTracker.detail.no' => 'No',
+			'itemTracker.detail.addIdentifier' => 'Añadir identificador',
 			'itemTracker.events.created' => ({required Object name}) => 'Objeto creado como «${name}»',
 			'itemTracker.events.updated' => ({required Object fields}) => 'Se editó: ${fields}',
 			'itemTracker.events.identifierBound' => ({required Object type, required Object value}) => '${type} asociado: ${value}',
@@ -581,6 +614,9 @@ extension on ItemTrackerTranslations {
 			'itemTracker.form.typeBoolean' => 'Sí / No',
 			'itemTracker.form.initialIdentifier' => ({required Object type, required Object value}) => 'Se asociará el ${type}: ${value}',
 			'itemTracker.form.save' => 'Guardar',
+			'itemTracker.form.identifiers' => 'Identificadores',
+			'itemTracker.form.identifiersHelp' => 'Se asocian al momento, sin necesidad de guardar.',
+			'itemTracker.form.addIdentifier' => 'Añadir identificador',
 			'itemTracker.associate.title' => 'Asociar a un objeto',
 			'itemTracker.associate.identifier' => ({required Object type, required Object value}) => '${type}: ${value}',
 			'itemTracker.associate.search' => 'Buscar objeto por nombre',

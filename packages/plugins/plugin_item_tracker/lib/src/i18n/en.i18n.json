@@ -47,7 +47,12 @@
       "check_again": "Check again",
       "camera_error": "The camera could not be used. Type the code instead.",
       "read_error": "The identifier could not be read. Please try again.",
-      "read_cancelled": "Reading cancelled."
+      "read_cancelled": "Reading cancelled.",
+      "bind_title": "Add identifier",
+      "binding": "Linking the identifier…",
+      "bind_submit": "Link",
+      "bound": "Identifier added.",
+      "bind_rejected_other": "This identifier is already linked to “{name}”."
     },
     "not_found": {
       "title": "Unregistered identifier",
@@ -79,7 +84,8 @@
         "other": "{n} events recorded"
       },
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "add_identifier": "Add identifier"
     },
     "events": {
       "created": "Item created as “{name}”",
@@ -105,7 +111,10 @@
       "type_number": "Number",
       "type_boolean": "Yes / No",
       "initial_identifier": "The {type} will be linked: {value}",
-      "save": "Save"
+      "save": "Save",
+      "identifiers": "Identifiers",
+      "identifiers_help": "They are linked right away, no need to save.",
+      "add_identifier": "Add identifier"
     },
     "associate": {
       "title": "Link to an item",

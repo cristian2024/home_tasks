@@ -18,8 +18,9 @@ class ScanScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = itemTrackerStrings.itemTracker.scan;
+    final binding = context.read<ScanBloc>().bindToItemId != null;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppBar(title: Text(binding ? t.bindTitle : t.title)),
       body: BlocConsumer<ScanBloc, ScanState>(
         listenWhen: (previous, current) =>
             previous.outcome != current.outcome || previous.notice != current.notice,
@@ -33,7 +34,7 @@ class ScanScreen extends StatelessWidget {
             ),
             if (state.lookingUp)
               Semantics(
-                label: t.lookingUp,
+                label: binding ? t.binding : t.lookingUp,
                 liveRegion: true,
                 child: const LinearProgressIndicator(),
               ),
@@ -55,17 +56,15 @@ class ScanScreen extends StatelessWidget {
     final notice = state.notice;
     if (notice != null) {
       final t = itemTrackerStrings.itemTracker.scan;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(switch (notice) {
-            ScanNotice.cameraError => t.cameraError,
-            ScanNotice.readError => t.readError,
-            ScanNotice.readCancelled => t.readCancelled,
-            ScanNotice.invalidValue => itemTrackerStrings.itemTracker.errors.identifierInvalid,
-            ScanNotice.unexpected => itemTrackerStrings.itemTracker.errors.unexpected,
-          }),
-        ),
-      );
+      final errors = itemTrackerStrings.itemTracker.errors;
+      _showMessage(context, switch (notice) {
+        ScanNotice.cameraError => t.cameraError,
+        ScanNotice.readError => t.readError,
+        ScanNotice.readCancelled => t.readCancelled,
+        ScanNotice.invalidValue => errors.identifierInvalid,
+        ScanNotice.itemNotFound => errors.itemNotFound,
+        ScanNotice.unexpected => errors.unexpected,
+      });
       bloc.add(const ScanNoticeShown());
     }
 
@@ -88,16 +87,39 @@ class ScanScreen extends StatelessWidget {
       return;
     }
     final identifier = (rawValue: outcome.rawValue, type: outcome.type);
-    final itemId = switch (outcome) {
-      ScanItemFound(:final itemId) => itemId,
-      // "No encontrado" devuelve el objeto creado o asociado, si lo hubo.
-      ScanItemNotFound() =>
-        await context.push<String>(ItemTrackerRoutes.withIdentifier(ItemTrackerRoutes.notFound, identifier)),
-    };
+    final String? itemId;
+    switch (outcome) {
+      case ScanItemFound():
+        itemId = outcome.itemId;
+      case ScanItemNotFound():
+        // "No encontrado" devuelve el objeto creado o asociado, si lo hubo.
+        itemId = await context.push<String>(ItemTrackerRoutes.withIdentifier(ItemTrackerRoutes.notFound, identifier));
+      case ScanIdentifierBound():
+        // Al cerrar la pantalla se cierra el bloc: no se le envía nada más.
+        _showMessage(context, itemTrackerStrings.itemTracker.scan.bound);
+        context.pop(outcome.itemId);
+        return;
+      case ScanBindRejected():
+        // Se sigue escaneando: no se abre el otro objeto para no dejar la
+        // cámara asociando lecturas por detrás.
+        _showMessage(
+          context,
+          outcome.sameItem
+              ? itemTrackerStrings.itemTracker.errors.alreadyBoundSame
+              : itemTrackerStrings.itemTracker.scan.bindRejectedOther(name: outcome.boundItemName),
+        );
+        itemId = null;
+    }
     if (itemId != null && context.mounted) {
       await context.push<void>(ItemTrackerRoutes.detail(itemId));
     }
     bloc.add(const ScanOutcomeHandled());
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -300,6 +322,7 @@ class _ManualViewState extends State<_ManualView> {
   Widget build(BuildContext context) {
     final t = itemTrackerStrings.itemTracker.scan;
     final lookingUp = context.select<ScanBloc, bool>((bloc) => bloc.state.lookingUp);
+    final binding = context.read<ScanBloc>().bindToItemId != null;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
@@ -327,8 +350,8 @@ class _ManualViewState extends State<_ManualView> {
           ),
           const SizedBox(height: AppSpacing.lg),
           AppButton(
-            label: t.manualSubmit,
-            icon: Icons.search,
+            label: binding ? t.bindSubmit : t.manualSubmit,
+            icon: binding ? Icons.link : Icons.search,
             isLoading: lookingUp,
             expand: true,
             onPressed: _submit,

@@ -245,5 +245,22 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
             child: const AddEventScreen(),
           ),
         ),
+        GoRoute(
+          path: ItemTrackerRoutes.addIdentifierPattern,
+          builder: (context, state) {
+            final deps = _dependencies;
+            return BlocProvider(
+              create: (_) => ScanBloc(
+                findItemByIdentifier: deps.findItemByIdentifier,
+                cameraScannerFactory: deps.cameraScannerFactory,
+                nfcScannerFactory: deps.nfcScannerFactory,
+                permissions: deps.permissions,
+                bindToItemId: state.pathParameters['id']!,
+                bindIdentifier: deps.bindIdentifier,
+              )..add(const ScanStarted()),
+              child: const ScanScreen(),
+            );
+          },
+        ),
       ];
 }
