@@ -19,11 +19,13 @@ class ArchitectureViolation {
 const _rule1 = 'Regla 1: un plugin no puede importar otro plugin';
 const _rule2 = 'Regla 2: Domain no puede importar Flutter ni persistencia';
 const _rule3 = 'Regla 3: design_system solo depende de Flutter y core_ui';
+const _rule4 = 'Regla 4: solo core_hardware importa SDKs nativos de hardware';
 
 final _directive = RegExp(r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''', multiLine: true);
 final _pubspecName = RegExp(r'^name:\s*(\S+)', multiLine: true);
 final _forbiddenInDomain = RegExp(r'^(package:(flutter|isar)\w*/|dart:ui$)');
 const _allowedInDesignSystem = {'flutter', 'core_ui'};
+final _nativeHardwarePackage = RegExp(r'^(mobile_scanner|nfc_manager\w*|permission_handler\w*)$');
 
 class _Package {
   final String name;
@@ -33,6 +35,7 @@ class _Package {
 
   bool get isPlugin => path.startsWith('packages/plugins/');
   bool get isDesignSystem => path == 'packages/design_system';
+  bool get isCoreHardware => path == 'packages/core/core_hardware';
 }
 
 /// Recorre `lib/` de cada paquete bajo `apps/` y `packages/` en [root] y
@@ -80,6 +83,11 @@ List<ArchitectureViolation> findViolations(Directory root) {
             importedPackage != package.name &&
             !_allowedInDesignSystem.contains(importedPackage)) {
           report(_rule3);
+        }
+        if (!package.isCoreHardware &&
+            importedPackage != null &&
+            _nativeHardwarePackage.hasMatch(importedPackage)) {
+          report(_rule4);
         }
       }
     }

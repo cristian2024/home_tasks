@@ -75,6 +75,22 @@ import "dart:ui";
     expect(rules(), ['Regla 3']);
   });
 
+  test('Regla 4: solo core_hardware importa SDKs nativos de hardware', () {
+    package('packages/core/core_hardware', 'core_hardware');
+    package('packages/plugins/plugin_a', 'plugin_a');
+    source('packages/core/core_hardware/lib/a.dart', '''
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
+''');
+    source('packages/plugins/plugin_a/lib/src/presentation/scan.dart', '''
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:permission_handler/permission_handler.dart';
+''');
+
+    expect(rules(), ['Regla 4', 'Regla 4', 'Regla 4']);
+  });
+
   test('ignora archivos fuera de lib/', () {
     package('packages/plugins/plugin_a', 'plugin_a');
     package('packages/plugins/plugin_b', 'plugin_b');
