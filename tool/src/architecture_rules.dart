@@ -50,9 +50,7 @@ List<ArchitectureViolation> findViolations(Directory root) {
     if (!lib.existsSync()) {
       continue;
     }
-    final files = lib
-        .listSync(recursive: true)
-        .whereType<File>()
+    final files = _listFiles(lib)
         .where((file) => file.path.endsWith('.dart'))
         .toList()
       ..sort((a, b) => a.path.compareTo(b.path));
@@ -102,10 +100,8 @@ List<_Package> _findPackages(Directory root) {
     if (!dir.existsSync()) {
       continue;
     }
-    for (final pubspec in dir.listSync(recursive: true).whereType<File>()) {
-      if (!pubspec.path.endsWith('/pubspec.yaml') ||
-          pubspec.path.contains('/.dart_tool/') ||
-          pubspec.path.contains('/build/')) {
+    for (final pubspec in _listFiles(dir)) {
+      if (!pubspec.path.endsWith('/pubspec.yaml')) {
         continue;
       }
       final name = _pubspecName.firstMatch(pubspec.readAsStringSync())?.group(1);
@@ -115,6 +111,22 @@ List<_Package> _findPackages(Directory root) {
     }
   }
   return packages;
+}
+
+/// Archivos bajo [dir] sin seguir enlaces simbólicos (Flutter enlaza el
+/// código de los plugins de terceros en `ios/.symlinks`) y sin entrar en
+/// directorios ocultos ni en `build/`.
+Iterable<File> _listFiles(Directory dir) sync* {
+  for (final entity in dir.listSync(followLinks: false)) {
+    final name = entity.uri.pathSegments.lastWhere((segment) => segment.isNotEmpty);
+    if (entity is Directory) {
+      if (!name.startsWith('.') && name != 'build') {
+        yield* _listFiles(entity);
+      }
+    } else if (entity is File) {
+      yield entity;
+    }
+  }
 }
 
 String _relative(Directory root, String path) {

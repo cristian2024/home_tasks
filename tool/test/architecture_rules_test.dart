@@ -91,6 +91,22 @@ import 'package:permission_handler/permission_handler.dart';
     expect(rules(), ['Regla 4', 'Regla 4', 'Regla 4']);
   });
 
+  test('ignora enlaces simbólicos, directorios ocultos y build/', () {
+    package('packages/core/core_hardware/example', 'example');
+    package('third_party/plugin', 'third_party');
+    source('third_party/plugin/lib/a.dart', "import 'package:nfc_manager/nfc_manager.dart';\n");
+    Link('${root.path}/packages/core/core_hardware/example/ios_symlink')
+        .createSync('${root.path}/third_party/plugin');
+    package('packages/core/core_hardware/example/ios/.symlinks/plugins/x', 'x');
+    source(
+      'packages/core/core_hardware/example/ios/.symlinks/plugins/x/lib/a.dart',
+      "import 'package:mobile_scanner/mobile_scanner.dart';\n",
+    );
+    source('packages/core/core_hardware/example/build/lib/a.dart', "import 'package:mobile_scanner/m.dart';\n");
+
+    expect(findViolations(root), isEmpty);
+  });
+
   test('ignora archivos fuera de lib/', () {
     package('packages/plugins/plugin_a', 'plugin_a');
     package('packages/plugins/plugin_b', 'plugin_b');
