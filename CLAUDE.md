@@ -56,3 +56,11 @@
 - **ID del plugin de objetos:** `item_tracker` (scope DI, preferencia y namespace i18n); su ruta base es `/item-tracker`.
 - **App de ejemplo de hardware:** `packages/core/core_hardware/example`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** crear un Podfile.
 - **Widget tests con streams:** después de emitir desde un fake, usar `await tester.pumpAndSettle()`. Con un solo `pump()` el evento llega después del frame.
+
+## Fase 3 (UI base y plugin item_tracker)
+- **i18n:** cada paquete tiene `slang.yaml` y `lib/src/i18n/{es,en}.i18n.json`. Se regenera con `dart run slang` en el paquete (no con build_runner). Con `lazy: false` y `enum_name`/`class_name`/`translate_var` propios del paquete. Registrar el paquete en `LocalizationCoordinator.instance` y usar `commonStrings.common.*` para textos comunes.
+- **UI:** usar los componentes de `design_system` (`AppButton`, `AppIconButton` con tooltip, `AppTextField`, `AppStatusView`…) en lugar de los widgets Material sueltos.
+- **Plugin item_tracker:** las reglas de negocio están en el §9.4 de la spec (validación, rechazo de identificadores ya asociados, eventos técnicos automáticos). Los errores de dominio son el `sealed` `ItemTrackerException`.
+- **Isar nativo:** una violación de índice único llega como `IsarError` con "Unique index violated", no como `IsarUniqueViolationError` (ese es solo para web).
+- **mocktail:** `captureAny` captura los argumentos con nombre en orden alfabético.
+- **Cobertura:** casos de uso y mappers deben quedar al 100 % (`flutter test --coverage`).

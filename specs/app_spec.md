@@ -511,15 +511,15 @@ abstract interface class HardwarePermissions {
 
 #### `HouseholdItem`
 ```dart
-class HouseholdItem {
-  final String id; // UUID v4
+class HouseholdItem extends Equatable {
+  final String id; // UUID v4, inmutable
   final String name;
   final String description;
-  final Map<String, dynamic> metadata;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final ItemMetadata metadata; // Value object validado (§9.4)
+  final DateTime createdAt; // UTC, inmutable
+  final DateTime updatedAt; // UTC
 
-  HouseholdItem({
+  const HouseholdItem({
     required this.id,
     required this.name,
     required this.description,
@@ -555,16 +555,22 @@ class PhysicalIdentifier {
 
 #### `ItemEvent`
 ```dart
-class ItemEvent {
+/// Técnicos (los genera el sistema): created, updated, identifierBound.
+/// Funcional (lo escribe el usuario): note.
+enum ItemEventKind { created, updated, identifierBound, note }
+
+class ItemEvent extends Equatable {
   final String id; // UUID v4
   final String itemId; // Foreign Key hacia HouseholdItem.id
-  final String title;
+  final ItemEventKind kind;
+  final String title;       // Ver §9.4: en los técnicos guarda datos, no texto traducido
   final String description;
   final DateTime timestamp; // Siempre UTC
 
-  ItemEvent({
+  const ItemEvent({
     required this.id,
     required this.itemId,
+    required this.kind,
     required this.title,
     required this.description,
     required this.timestamp,
@@ -586,12 +592,16 @@ class IsarHouseholdItem {
   @Index(unique: true, replace: true)
   late String id; // UUID v4
 
+  @Index(caseSensitive: false) // Búsqueda por nombre sin distinguir mayúsculas
   late String name;
+
   late String description;
-  late String metadataJson; // Serialización String de Map<String, dynamic>
-  
+  late String metadataJson; // Serialización JSON de ItemMetadata.values
+
   @Index()
   late DateTime createdAt;
+
+  @Index() // Listado ordenado por última modificación
   late DateTime updatedAt;
 }
 
@@ -602,8 +612,11 @@ class IsarPhysicalIdentifier {
   @Index(unique: true, replace: true)
   late String id;
 
+  // Un identificador físico solo puede estar ligado a 1 objeto. Sin `replace`:
+  // un duplicado hace fallar la transacción (en nativo, IsarError con el
+  // mensaje "Unique index violated"; en web, IsarUniqueViolationError).
   @Index(composite: [CompositeIndex('type')], unique: true)
-  late String rawValue; // Un identificador físico solo puede estar ligado a 1 objeto
+  late String rawValue;
 
   @Enumerated(EnumType.name)
   late IdentifierType type; // @Enumerated solo es válido sobre un enum
@@ -621,16 +634,20 @@ class IsarItemEvent {
   @Index(unique: true, replace: true)
   late String id;
 
-  @Index()
+  @Index(composite: [CompositeIndex('timestamp')]) // Historial por objeto, ordenado
   late String itemId;
+
+  @Enumerated(EnumType.name)
+  late ItemEventKind kind;
 
   late String title;
   late String description;
 
-  @Index()
   late DateTime timestamp;
 }
 ```
+
+Isar devuelve las fechas en hora local: `ItemDataMapper` las convierte a UTC al leer y al escribir.
 
 ### 9.3. Ejemplo JSON Representativo de Dominio
 
@@ -672,6 +689,33 @@ class IsarItemEvent {
   }
 }
 ```
+
+---
+
+### 9.4. Reglas de Negocio del Plugin
+
+**Validación** (`ItemValidator`, `ItemMetadata`; errores `ItemValidationException` con `field` y `reason`):
+
+| Campo | Regla |
+| :--- | :--- |
+| `name` | Obligatorio tras recortar espacios; máx. 120 caracteres. |
+| `description` | Opcional; máx. 2000 caracteres. |
+| `metadata` | Máx. 50 entradas. Claves `snake_case` (`^[a-z][a-z0-9_]*$`, máx. 64). Valores escalares JSON: `String` (máx. 500), `int`, `double` finito, `bool`. Sin `null`: para quitar un dato se elimina la clave. |
+| `rawValue` | 1..2048 caracteres, sin caracteres de control. No se recorta (los espacios pueden ser parte del código). |
+| Nota (`ItemEvent`) | Título obligatorio (máx. 120); descripción opcional (máx. 2000). |
+
+**Identificadores**: un identificador (`rawValue` + `type`) ya ligado a **cualquier** objeto se **rechaza** con `IdentifierAlreadyBoundException(boundItemId)`; nunca se mueve de un objeto a otro. El mismo valor con distinto tipo (p. ej. QR y código de barras) son identificadores distintos.
+
+**Eventos técnicos automáticos**: guardan datos, no texto traducido; la presentación compone el mensaje localizado.
+
+| `kind` | Cuándo | `title` | `description` |
+| :--- | :--- | :--- | :--- |
+| `created` | Al crear el objeto | Nombre inicial | vacío |
+| `updated` | Al editar, solo si algo cambió | vacío | Campos cambiados: `name,description,metadata` |
+| `identifierBound` | Al asociar un identificador (también al crear) | `IdentifierType.name` | `rawValue` |
+| `note` | El usuario añade una nota | Texto libre | Texto libre |
+
+**Casos de uso** (`lib/src/domain/use_cases`): `CreateItem` (publica `ItemCreatedCrossEvent`), `UpdateItem`, `BindIdentifier`, `AddItemEvent`, `FindItemByIdentifier`, `GetItem`, `WatchItem`, `WatchItems`, `SearchItems`, `WatchItemIdentifiers`, `WatchItemEvents`. Reciben `IdGenerator` y `Clock` de `core_utils` por inyección.
 
 ---
 
@@ -764,6 +808,8 @@ graph TD
     Detail --> AddEvent[/item-tracker/item/:id/event/add - AddEventScreen\]
 ```
 
+- **Entrada manual en `ScanScreen`**: un selector alterna entre **Escanear** y **Escribir código**. En modo escritura se oculta (y se libera) la cámara y se muestra un campo de texto con el selector de tipo (QR, código de barras, NFC); en modo escaneo se oculta el campo. Es la alternativa cuando se deniega la cámara o no hay NFC (§3.1, AC-06).
+
 ### 12.2. Manejo de Excepciones de Navegación
 - **Plugin Desactivado**: Si el usuario intenta navegar mediante Deep Link a una ruta de un plugin desactivado (`/item-tracker/...`), `GoRouter` intercepta la ruta en su `redirect` guard y la redirige a `/` mostrando un SnackBar informativo.
 
@@ -772,20 +818,28 @@ graph TD
 ## 13. Internacionalización (i18n)
 
 ### 13.1. Estrategia con `slang`
-- Cada paquete funcional gestiona su propio archivo de traducciones dentro de `lib/i18n/`.
+- Cada paquete gestiona sus traducciones en `lib/src/i18n/` (`es.i18n.json`, `en.i18n.json`) con un `slang.yaml` propio y las genera con la CLI (`dart run slang`), sin `build_runner`.
+- Configuración común de `slang.yaml`: `base_locale: es`, `key_case: camel`, `lazy: false` (la carga diferida solo aporta en web e impide cambiar de idioma de forma síncrona) y un `enum_name`/`class_name`/`translate_var` propios por paquete para evitar colisiones.
 - Idioma predeterminado: **Español (`es`)**. Idioma secundario: **Inglés (`en`)**.
+- **Coordinación**: `LocalizationCoordinator` (`core_ui`) mantiene el mismo idioma en todos los paquetes. Cada paquete se registra con `register(packageName, applier)` y la app solo llama a `setLanguage(code)`. También expone `supportedLocales` y `localizationsDelegates` (Material/Cupertino/Widgets de `flutter_localizations`) para `MaterialApp`.
+- Textos comunes (`Cancelar`, `Guardar`, `Reintentar`…): `commonStrings.common.*` de `core_ui`.
 
-#### Estructura de Archivo `strings.i18n.json` (`plugin_item_tracker`)
+#### Estructura de Archivo `es.i18n.json` (`plugin_item_tracker`)
 ```json
 {
   "item_tracker": {
     "title": "Seguimiento de Objetos",
     "scan_prompt": "Apunta al código QR/Barras o acerca el Tag NFC",
     "item_not_found": "Identificador no registrado",
-    "events_count": "{count, plural, =0{Sin eventos} =1{1 evento registrado} other{# eventos registrados}}"
+    "events_count(plural)": {
+      "zero": "Sin eventos",
+      "one": "1 evento registrado",
+      "other": "{n} eventos registrados"
+    }
   }
 }
 ```
+Slang no usa la sintaxis ICU (`{count, plural, ...}`): los plurales se declaran con el modificador `(plural)` y el parámetro `n`.
 
 - **Prevención de Colisiones**: Todas las claves dentro de un plugin **DEBEN** estar encerradas bajo un espacio de nombres correspondiente al ID del plugin (ej. `item_tracker`).
 
@@ -802,7 +856,7 @@ graph TD
 
 ## 15. Sistema de Diseño y Temas
 
-### 15.1. Design Tokens (`packages/design_system/lib/tokens`)
+### 15.1. Design Tokens (`packages/design_system/lib/src/tokens`)
 
 ```dart
 import 'package:flutter/material.dart';
@@ -815,7 +869,7 @@ abstract class AppColors {
   static const Color backgroundDark = Color(0xFF121212);
   static const Color surfaceLight = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF1E1E1E);
-  static const Color error = Color(0xD32F2F);
+  static const Color error = Color(0xFFD32F2F); // Corregido: faltaba el canal alfa
 }
 
 abstract class AppSpacing {
@@ -831,7 +885,28 @@ abstract class AppRadii {
   static const double medium = 12.0;
   static const double large = 16.0;
 }
+
+abstract final class AppSizes {
+  static const double minTouchTarget = 48.0; // §14.2
+}
 ```
+
+### 15.2. Temas y Componentes
+- `AppTheme.light` / `AppTheme.dark`: Material 3 a partir de los tokens, con `materialTapTargetSize: padded` y tamaño mínimo de 48 dp en todos los botones. La tipografía es la de Material 3, que escala con el `TextScaler` del sistema.
+- Componentes (`lib/src/components`), diseñados para que cumplir el §14 sea lo fácil:
+
+| Componente | Garantía de accesibilidad |
+| :--- | :--- |
+| `AppButton` (primary / secondary / text, `isLoading`) | Mín. 48 dp; con `isLoading` se desactiva y conserva la etiqueta |
+| `AppIconButton` | `tooltip` **obligatorio**: es la etiqueta para TalkBack/VoiceOver |
+| `AppTextField` | `label` obligatorio |
+| `AppCard` | Con `onTap` es un único control con `semanticLabel` |
+| `AppSectionHeader` | Marcado como encabezado semántico |
+| `AppStatusView` | Hace scroll: no se desborda al 200 % |
+| `AppLoadingView` | Anunciado como "Cargando…" |
+| `showAppConfirmDialog` | Devuelve `true` solo al confirmar; textos por defecto de `core_ui` |
+
+- Los tests validan `androidTapTargetGuideline`, `iOSTapTargetGuideline`, `labeledTapTargetGuideline` y `textContrastGuideline` en ambos temas. La galería `packages/design_system/example` permite revisar tema, idioma y escala de texto.
 
 ---
 
@@ -884,8 +959,10 @@ gantt
     core_utils & core_events             :f2_0, after f1_2, 1d
     Implementación Isar en core_storage  :f2_1, after f2_0, 3d
     Abstracciones Cámara & NFC           :f2_2, after f2_1, 4d
-    section Fase 3: Plugin & UI
-    Desarrollo Domain & Data ItemTracker :f3_1, after f2_2, 5d
+    section Fase 3a: UI base, Domain & Data
+    core_ui (slang) & design_system      :f3_0, after f2_2, 3d
+    Desarrollo Domain & Data ItemTracker :f3_1, after f3_0, 5d
+    section Fase 3b: Presentation
     Desarrollo Presentation & BLoC       :f3_2, after f3_1, 5d
     section Fase 4: Integración
     Ensamblado en apps/app & GoRouter    :f4_1, after f3_2, 3d
