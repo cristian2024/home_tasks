@@ -87,7 +87,8 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 +-------------------------------------------------------------------+
 ```
 
-- **Compile-Time Discovery**: Todos los plugins conocidos se registran estáticamente en la aplicación principal (`apps/app/lib/app_module_registrar.dart`).
+- **Compile-Time Discovery**: Todos los plugins conocidos se registran estáticamente en la aplicación principal (`apps/app/lib/app_module_registrar.dart`) como una lista de `PluginFactory`. Cada factoría construye su plugin y registra sus traducciones (para que el catálogo muestre su nombre aunque esté desactivado). **Para añadir un plugin**: dependencia en `apps/app/pubspec.yaml` y una entrada en `appPluginFactories`.
+- **Arranque** (`apps/app/lib/bootstrap.dart`): idioma → servicios base en `core_di` (`EventBus`, `IdGenerator`, `Clock`) → registro de plugins → `LocalDatabase.open` con los esquemas de **todos** los plugins → `Isar` en `core_di` → `PluginLifecycleManager` con `IsarPluginPreferenceRepository` → carga de los plugins activos y disponibles.
 - **Run-Time Activation**: Un plugin registrado puede ser desactivado por el usuario. Al desactivarse:
   - Sus rutas de navegación se remueven o bloquean.
   - Sus Widgets en la pantalla de inicio no se renderizan.
@@ -398,6 +399,12 @@ class UserPluginPreference extends Equatable {
 4. Ordena la lista resultante según el campo `sortOrder`.
 5. Renderiza un `ReorderableListView` invocando `plugin.buildDashboardTile(context)` para cada uno.
 6. Si la inicialización de un plugin falla (`plugin.initialize()`), captura la excepción, registra el error y muestra un Tile con estado de error local sin bloquear los demás plugins.
+
+**Implementación**: `PluginController` (`apps/app/lib/plugins`) envuelve a `PluginLifecycleManager` como `ChangeNotifier` y es la fuente única del estado de los plugins para el `HomeBloc`, el `CatalogCubit` y el guard del router.
+- **Reordenar** (`onReorderItem`) persiste el nuevo `sortOrder`; los plugins que no se muestran conservan su orden relativo al final.
+- **La tarjeta de error** ofrece *Reintentar*, que vuelve a llamar a `load()`.
+- **Sin plugins activos**, un estado vacío lleva al catálogo.
+- **Catálogo** (`/plugins-catalog`): un interruptor por plugin con su nombre y descripción traducidos (`LocalizationCoordinator.translate(nameKey)`). Los no disponibles no se pueden activar.
 
 ---
 
@@ -829,6 +836,11 @@ graph TD
 
 ### 12.3. Manejo de Excepciones de Navegación
 - **Plugin Desactivado**: Si el usuario intenta navegar mediante Deep Link a una ruta de un plugin desactivado (`/item-tracker/...`), `GoRouter` intercepta la ruta en su `redirect` guard y la redirige a `/` mostrando un SnackBar informativo.
+- **Implementación** (`PluginRouteGuard`):
+  - El router incluye las rutas de **todos** los plugins registrados. El prefijo de cada plugin es el primer segmento de sus rutas (`/item-tracker`), así que el contrato `HomePlugin` no cambia.
+  - Solo se abren las rutas de plugins en estado `ready`. Los `failed` también se bloquean, porque sus dependencias no están registradas, y muestran otro aviso.
+  - El router se reevalúa con cada cambio del `PluginController` (`refreshListenable`).
+- **Cambio de idioma con la app abierta**: los textos de slang son globales y las páginas abiertas no se enteran del cambio. `LanguageScope` (`core_ui`) expone el idioma, y el router envuelve el contenido de cada ruta en `LanguageRebuilder`, que lo vuelve a montar al cambiar el idioma sin tocar la pila de navegación. La app sigue el idioma del sistema (`didChangeLocales`).
 
 ---
 
@@ -945,8 +957,13 @@ abstract final class AppSizes {
 
 ### 17.2. Comando de Verificación Completa
 ```bash
-melos run analyze && melos run test
+melos run verify   # analyze + verify:arch + test (lo que ejecuta la CI)
 ```
+
+- **CI** (`.github/workflows/ci.yml`): GitHub Actions en Ubuntu con Flutter 3.47.7 y Melos 8.9.0. Ejecuta `melos run verify` en cada PR y en cada push a `main`.
+- **Criterios de aceptación de integración**:
+  - En la CI corren como widget tests: AC-02 con Isar real y el arranque real (`apps/app/test/ac02_persistence_test.dart`), y AC-03/04/05/06 por el router del plugin.
+  - En dispositivo o emulador: `cd apps/app && flutter test integration_test`. Recorre AC-01, AC-04, la creación de un objeto y AC-02 con reinicio real, y está verificado en el simulador de iPhone 16 Pro.
 
 ---
 
@@ -983,7 +1000,7 @@ gantt
     Presentation, BLoC & i18n del plugin :f3_2, after f3_1, 5d
     section Fase 4: Integración
     Ensamblado en apps/app & GoRouter    :f4_1, after f3_2, 3d
-    Ejecución Pruebas AC y CI/CD         :f4_2, after f4_1, 3d
+    Pruebas AC, integration_test y CI    :f4_2, after f4_1, 3d
 ```
 
 ---
@@ -992,14 +1009,27 @@ gantt
 
 Antes de dar por completada la implementación de la primera iteración, verifica los siguientes puntos:
 
-- [ ] ¿`melos bootstrap` resuelve el workspace (`pubspec.yaml` raíz) vinculando los paquetes locales sin errores de resolución de dependencias?
-- [ ] ¿Ningún archivo dentro de `packages/plugins/plugin_item_tracker/lib/src/domain/` importa paquetes de Flutter SDK ni de Isar DB?
-- [ ] ¿Todos los modelos de dominio generan su identificador primario utilizando la biblioteca `uuid` (UUID v4)?
-- [ ] ¿La interfaz `IdentifierScanner` aísla completamente las librerías `mobile_scanner` y `nfc_manager` de la capa de presentación?
-- [ ] ¿El catálogo de plugins persiste la preferencia del usuario (`UserPluginPreference`) separada de la definición estática del plugin (`HomePlugin`)?
-- [ ] ¿Las lecturas y escrituras de fechas en la base de datos se realizan convirtiendo explícitamente la estampa de tiempo a UTC (`.toUtc()`)?
-- [ ] ¿Todos los botones táctiles contienen propiedades `tooltip` o envoltorios `Semantics` localizados?
-- [ ] ¿Se ejecutan las pruebas automatizadas con el comando `melos run test` y finalizan con éxito sin fallos?
+- [x] ¿`melos bootstrap` resuelve el workspace (`pubspec.yaml` raíz) vinculando los paquetes locales sin errores de resolución de dependencias?
+- [x] ¿Ningún archivo dentro de `packages/plugins/plugin_item_tracker/lib/src/domain/` importa paquetes de Flutter SDK ni de Isar DB?
+- [x] ¿Todos los modelos de dominio generan su identificador primario utilizando la biblioteca `uuid` (UUID v4)?
+- [x] ¿La interfaz `IdentifierScanner` aísla completamente las librerías `mobile_scanner` y `nfc_manager` de la capa de presentación?
+- [x] ¿El catálogo de plugins persiste la preferencia del usuario (`UserPluginPreference`) separada de la definición estática del plugin (`HomePlugin`)?
+- [x] ¿Las lecturas y escrituras de fechas en la base de datos se realizan convirtiendo explícitamente la estampa de tiempo a UTC (`.toUtc()`)?
+- [x] ¿Todos los botones táctiles contienen propiedades `tooltip` o envoltorios `Semantics` localizados?
+- [x] ¿Se ejecutan las pruebas automatizadas con el comando `melos run test` y finalizan con éxito sin fallos?
+
+**Cómo se verifica cada punto (v1.0.0)**:
+
+| Punto | Verificación |
+| :--- | :--- |
+| `melos bootstrap` | Lo ejecuta la CI en cada PR. |
+| Dominio sin Flutter ni Isar | Regla 2 de `verify:arch`. |
+| UUID v4 | `UuidV4Generator` (`core_utils`), inyectado como `IdGenerator`; `isUuidV4` en sus tests. |
+| Aislamiento de hardware | Regla 4 de `verify:arch` (solo `core_hardware` importa los SDK nativos). |
+| Preferencias separadas | `PluginPreferenceRepository` frente a `HomePlugin`; AC-02 con Isar real. |
+| Fechas en UTC | `ItemDataMapper` convierte al leer y al escribir; tests con fechas en hora local. |
+| Accesibilidad | `AppIconButton` exige `tooltip`; `labeledTapTargetGuideline`, `androidTapTargetGuideline` y `textContrastGuideline` en el design system, el escáner, el inicio y el catálogo. |
+| Tests | `melos run verify`: 215 tests en verde. |
 
 ---
 
