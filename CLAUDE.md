@@ -54,7 +54,7 @@
 - **Regla 4 del verificador:** solo `core_hardware` puede importar `mobile_scanner`, `nfc_manager*` o `permission_handler`.
 - **IDs y tiempo:** inyectar `IdGenerator` (`UuidV4Generator`) y `Clock` (`SystemClock`, `FixedClock` en tests) de `core_utils` en lugar de llamar a `Uuid()` o `DateTime.now()` en dominio y data.
 - **ID del plugin de objetos:** `item_tracker` (scope DI, preferencia y namespace i18n); su ruta base es `/item-tracker`.
-- **App de ejemplo de hardware:** `packages/core/core_hardware/example`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** crear un Podfile.
+- **App de ejemplo de hardware:** `packages/core/core_hardware/example`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** escribir un Podfile a mano. Si un plugin no admite SPM (p. ej. `isar_community_flutter_libs`), Flutter genera el Podfile solo para él y se versionan `Podfile` y `Podfile.lock`.
 - **Widget tests con streams:** después de emitir desde un fake, usar `await tester.pumpAndSettle()`. Con un solo `pump()` el evento llega después del frame.
 
 ## Fase 3 (UI base y plugin item_tracker)
@@ -64,3 +64,11 @@
 - **Isar nativo:** una violación de índice único llega como `IsarError` con "Unique index violated", no como `IsarUniqueViolationError` (ese es solo para web).
 - **mocktail:** `captureAny` captura los argumentos con nombre en orden alfabético.
 - **Cobertura:** casos de uso y mappers deben quedar al 100 % (`flutter test --coverage`).
+- **Plugin item_tracker (presentación):** `ScanBloc` para el escaneo y Cubits para el resto. Las pantallas devuelven resultados con `context.pop(itemId)` (ver §12.1). En los tests de widgets usar `PluginHarness` (`test/helpers/presentation_fixtures.dart`), que monta el plugin real con hardware falso y repositorio en memoria.
+
+## Trampas conocidas en tests
+- **Handlers de bloc:** no hacer `await` de `subscription.cancel()` ni de `dispose()` de escáneres dentro de un handler. En `testWidgets` esos futuros no se completan con el reloj simulado y el bloc se queda bloqueado. Lanzarlos con `unawaited`.
+- **`blocTest`:** cierra el bloc antes de `verify`. Comprobar dentro de `act` el estado que el cierre cambia (p. ej. escáneres liberados).
+- **`tester.pageBack()`:** busca el tooltip en inglés. Con la app en español, usar `tester.tap(find.byType(BackButton))`.
+- **`pumpAndSettle`:** nunca termina con indicadores de carga animados visibles. Usar `pump()`.
+- **`SnackBar`:** llamar a `hideCurrentSnackBar()` antes de `showSnackBar` para que no se queden en cola.
