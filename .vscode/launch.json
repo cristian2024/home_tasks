@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "design_system example (debug)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "packages/design_system/example",
+      "program": "lib/main.dart",
+      "flutterMode": "debug"
+    },
+    {
       "name": "core_hardware example (debug)",
       "type": "dart",
       "request": "launch",

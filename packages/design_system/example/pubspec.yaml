@@ -1,0 +1,24 @@
+name: design_system_example
+description: Galería del sistema de diseño - tokens, componentes, temas, idioma y escala de texto.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_ui: ^0.1.0
+  design_system: ^0.1.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
