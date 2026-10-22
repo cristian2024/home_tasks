@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "core_hardware example (debug)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "packages/core/core_hardware/example",
+      "program": "lib/main.dart",
+      "flutterMode": "debug"
+    },
+    {
+      "name": "core_hardware example (profile)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "packages/core/core_hardware/example",
+      "program": "lib/main.dart",
+      "flutterMode": "profile"
+    },
+    {
+      "name": "core_hardware example (release)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "packages/core/core_hardware/example",
+      "program": "lib/main.dart",
+      "flutterMode": "release"
+    }
+  ]
+}

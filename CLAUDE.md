@@ -46,3 +46,13 @@
 - **Plugins:** implementan `HomePlugin` (`core_contracts`), incluido `isAvailable()`. El ciclo de vida lo aplica `PluginLifecycleManager`; las preferencias se persisten vía `PluginPreferenceRepository`.
 - **DI:** usar `ServiceLocator` de `core_di`, nunca `get_it` directamente. Cada plugin registra sus dependencias en un scope con su ID (`pushScope`) y lo libera en `dispose()` (`dropScope`).
 - **Igualdad por valor:** extender `Equatable` (paquete `equatable`) y declarar `props`; nunca sobrescribir `operator ==`/`hashCode` a mano. Aplica a entidades, value objects y estados de BLoC/Cubit.
+
+## Fase 2 (persistencia y hardware)
+- **Isar:** usar `isar_community` fijado en 3.3.2 (nunca `isar`). Las capas data importan Isar a través de `package:core_storage/core_storage.dart`, que la reexporta. Un plugin con colecciones implementa `StorageSchemaContributor`; la app abre la base con `LocalDatabase.open(contributors: ...)` incluyendo a **todos** los plugins registrados, también los desactivados.
+- **Tests con Isar:** `setUpAll(() => Isar.initializeIsarCore(download: true))`. Descarga `libisar.dylib` en el paquete (está en `.gitignore`).
+- **Hardware:** la presentación usa solo `CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions`. La cámara se muestra con `buildPreview()`. En tests usar los fakes de `package:core_hardware/testing.dart`.
+- **Regla 4 del verificador:** solo `core_hardware` puede importar `mobile_scanner`, `nfc_manager*` o `permission_handler`.
+- **IDs y tiempo:** inyectar `IdGenerator` (`UuidV4Generator`) y `Clock` (`SystemClock`, `FixedClock` en tests) de `core_utils` en lugar de llamar a `Uuid()` o `DateTime.now()` en dominio y data.
+- **ID del plugin de objetos:** `item_tracker` (scope DI, preferencia y namespace i18n); su ruta base es `/item-tracker`.
+- **App de ejemplo de hardware:** `packages/core/core_hardware/example`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** crear un Podfile.
+- **Widget tests con streams:** después de emitir desde un fake, usar `await tester.pumpAndSettle()`. Con un solo `pump()` el evento llega después del frame.

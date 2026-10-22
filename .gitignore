@@ -10,8 +10,15 @@ coverage/
 # IDE
 .idea/
 *.iml
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
 *.code-workspace
 
 # macOS
 .DS_Store
+
+# Binarios de Isar Core descargados por los tests
+*.dylib
+*.so
+isar.dll

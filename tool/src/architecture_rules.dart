@@ -19,11 +19,13 @@ class ArchitectureViolation {
 const _rule1 = 'Regla 1: un plugin no puede importar otro plugin';
 const _rule2 = 'Regla 2: Domain no puede importar Flutter ni persistencia';
 const _rule3 = 'Regla 3: design_system solo depende de Flutter y core_ui';
+const _rule4 = 'Regla 4: solo core_hardware importa SDKs nativos de hardware';
 
 final _directive = RegExp(r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''', multiLine: true);
 final _pubspecName = RegExp(r'^name:\s*(\S+)', multiLine: true);
 final _forbiddenInDomain = RegExp(r'^(package:(flutter|isar)\w*/|dart:ui$)');
 const _allowedInDesignSystem = {'flutter', 'core_ui'};
+final _nativeHardwarePackage = RegExp(r'^(mobile_scanner|nfc_manager\w*|permission_handler\w*)$');
 
 class _Package {
   final String name;
@@ -33,6 +35,7 @@ class _Package {
 
   bool get isPlugin => path.startsWith('packages/plugins/');
   bool get isDesignSystem => path == 'packages/design_system';
+  bool get isCoreHardware => path == 'packages/core/core_hardware';
 }
 
 /// Recorre `lib/` de cada paquete bajo `apps/` y `packages/` en [root] y
@@ -47,9 +50,7 @@ List<ArchitectureViolation> findViolations(Directory root) {
     if (!lib.existsSync()) {
       continue;
     }
-    final files = lib
-        .listSync(recursive: true)
-        .whereType<File>()
+    final files = _listFiles(lib)
         .where((file) => file.path.endsWith('.dart'))
         .toList()
       ..sort((a, b) => a.path.compareTo(b.path));
@@ -81,6 +82,11 @@ List<ArchitectureViolation> findViolations(Directory root) {
             !_allowedInDesignSystem.contains(importedPackage)) {
           report(_rule3);
         }
+        if (!package.isCoreHardware &&
+            importedPackage != null &&
+            _nativeHardwarePackage.hasMatch(importedPackage)) {
+          report(_rule4);
+        }
       }
     }
   }
@@ -94,10 +100,8 @@ List<_Package> _findPackages(Directory root) {
     if (!dir.existsSync()) {
       continue;
     }
-    for (final pubspec in dir.listSync(recursive: true).whereType<File>()) {
-      if (!pubspec.path.endsWith('/pubspec.yaml') ||
-          pubspec.path.contains('/.dart_tool/') ||
-          pubspec.path.contains('/build/')) {
+    for (final pubspec in _listFiles(dir)) {
+      if (!pubspec.path.endsWith('/pubspec.yaml')) {
         continue;
       }
       final name = _pubspecName.firstMatch(pubspec.readAsStringSync())?.group(1);
@@ -107,6 +111,22 @@ List<_Package> _findPackages(Directory root) {
     }
   }
   return packages;
+}
+
+/// Archivos bajo [dir] sin seguir enlaces simbólicos (Flutter enlaza el
+/// código de los plugins de terceros en `ios/.symlinks`) y sin entrar en
+/// directorios ocultos ni en `build/`.
+Iterable<File> _listFiles(Directory dir) sync* {
+  for (final entity in dir.listSync(followLinks: false)) {
+    final name = entity.uri.pathSegments.lastWhere((segment) => segment.isNotEmpty);
+    if (entity is Directory) {
+      if (!name.startsWith('.') && name != 'build') {
+        yield* _listFiles(entity);
+      }
+    } else if (entity is File) {
+      yield entity;
+    }
+  }
 }
 
 String _relative(Directory root, String path) {

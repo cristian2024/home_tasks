@@ -27,7 +27,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
   - Gestión de historial de eventos técnicos y funcionales (`ItemEvent`) con estampas de tiempo en UTC.
   - Inserción y validación de metadatos dinámicos estructurados.
   - Manejo integral de estados límite: identificadores desconocidos, denegación de permisos de cámara/NFC y ausencia de hardware nativo.
-- **Persistencia Local**: Base de datos NoSQL/Documental reactiva de alto rendimiento (**Isar DB**) aislada tras la capa de repositorios.
+- **Persistencia Local**: Base de datos NoSQL/Documental reactiva de alto rendimiento (**Isar DB**, vía el fork mantenido `isar_community`) aislada tras la capa de repositorios.
 - **UI/UX, Accesibilidad e Internacionalización**:
   - Navegación declarativa modularizada mediante `GoRouter`.
   - Internacionalización centralizada y modular por paquete mediante `slang`.
@@ -46,7 +46,10 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 ## 3. Decisiones Arquitectónicas Obligatorias
 
 ### 3.1. Plataformas y Aislamiento de Hardware
-- **Plataformas objetivo**: Android (API nivel 21+ / Android 5.0) e iOS (iOS 14.0+).
+- **Plataformas objetivo**: Android (API nivel 24+ / Android 7.0) e iOS (iOS 15.0+).
+  - Android sube de API 21 a **24** porque lo exige `nfc_manager` 4.x (`mobile_scanner` 7.x exige 23). Además hay que compilar contra la **API 37** (`compileSdk = 37`), que exige `permission_handler_android` 14.x.
+  - iOS 15.0 es el mínimo de la plantilla de Flutter 3.47.
+- **Configuración nativa de referencia**: `packages/core/core_hardware/example` (ver su README). En iOS los plugins se integran con **Swift Package Manager**, sin Podfile: `permission_handler` activa el permiso de cámara solo porque detecta `NSCameraUsageDescription` en el `Info.plist`. La lectura NFC requiere el entitlement `com.apple.developer.nfc.readersession.formats` (NDEF, TAG) y `NFCReaderUsageDescription`.
 - **Abstracción de Hardware**: La invocación a hardware (Cámara y NFC) debe estar aislada detrás de contratos abstractos (`IdentifierScanner`) ubicados en `packages/core/core_hardware`. La capa de presentación y dominio **nunca** importará paquetes nativos directos (`mobile_scanner` o `nfc_manager`).
 - **Diferencias y Limitaciones de Plataforma**:
   
@@ -93,7 +96,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 
 ### 3.3. Persistencia Local y Evolución Futura
 
-- **Tecnología Elegida**: **Isar DB**.
+- **Tecnología Elegida**: **Isar DB** a través de `isar_community` (fork mantenido con la misma API; `isar` 3.1.0+1 está abandonado y no compila con AGP 8).
 - **Justificación**: Motor de base de datos NoSQL ultrarrápido para Flutter, tipo-seguro, con soporte nativo para `Streams` de consultas, índices compuestos y ejecución asíncrona mediante Isolate dedicado.
 - **Estrategia Anti-Acoplamiento (Evolución Cloud)**:
   - **Identificadores Únicos**: Todas las entidades de dominio utilizan **UUID v4** (Strings estables de 128 bits) generados en el cliente. Prohibido el uso de autoincrementales numéricos para IDs de dominio.
@@ -109,10 +112,11 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 | **Flutter SDK (>=3.27.0)** | Framework UI | Estándar de la aplicación, alto rendimiento multiplataforma. | `apps/app`, `packages/*` | [flutter.dev](https://flutter.dev) |
 | **Melos (>=8.0.0)** | Monorepo Tooling | Gestión de múltiples paquetes Dart, enlace de dependencias locales y ejecución de scripts. | Raíz del Proyecto | [melos.invertase.dev](https://melos.invertase.dev) |
 | **flutter_bloc (>=8.1.3)** | Gestión de Estado | Predicibilidad de estados, separación entre eventos/UI, facilidad de pruebas unitarias. | `packages/plugins/*`, `apps/app` | [bloclibrary.dev](https://bloclibrary.dev) |
-| **isar (>=3.1.0+1)** | Persistencia Local | Base de datos NoSQL nativa de alto rendimiento con reactividad por `Streams`. | `packages/core/core_storage` | [isar.dev](https://isar.dev) |
+| **isar_community (3.3.2)** | Persistencia Local | Fork mantenido de Isar: NoSQL nativa de alto rendimiento con reactividad por `Streams`. Versión fijada: `isar_community_generator` 3.3.2 exige `analyzer` <11, lo que limita `build_runner` a 2.15.x. | `packages/core/core_storage` (reexporta la API) | [pub.dev/packages/isar_community](https://pub.dev/packages/isar_community) |
 | **go_router (>=14.0.0)** | Navegación Declarativa | Integración declarativa basada en URLs, soporte nativo para sub-rutas de plugins y `ShellRoute`. | `apps/app`, `packages/core/core_contracts` | [pub.dev/packages/go_router](https://pub.dev/packages/go_router) |
-| **mobile_scanner (>=6.0.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/core/core_hardware` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
-| **nfc_manager (>=3.0.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). | `packages/core/core_hardware` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
+| **mobile_scanner (>=7.4.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/core/core_hardware` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
+| **nfc_manager (>=4.2.0)** + **nfc_manager_ndef (>=1.1.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). En 4.x la lectura/escritura NDEF vive en `nfc_manager_ndef`. | `packages/core/core_hardware` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
+| **permission_handler (>=13.0.0)** | Permisos en runtime | Distingue denegación temporal y permanente y abre los Ajustes de la app (§3.1, AC-06). | `packages/core/core_hardware` | [pub.dev/packages/permission_handler](https://pub.dev/packages/permission_handler) |
 | **slang (>=4.0.0)** | Internacionalización | Tipo-seguro, soporta múltiples archivos JSON por paquete independientemente de `BuildContext`. | `packages/shared/core_ui` | [pub.dev/packages/slang](https://pub.dev/packages/slang) |
 | **get_it (>=8.0.0)** | Service Locator | Inyección de dependencias liviana y rápida para resolver contratos de plugins y repositorios. | `packages/core/core_di` | [pub.dev/packages/get_it](https://pub.dev/packages/get_it) |
 | **equatable (>=3.0.0)** | Igualdad por valor | Evita sobrescribir `==`/`hashCode` a mano en entidades, value objects y estados. | `packages/core/*`, `packages/plugins/*` | [pub.dev/packages/equatable](https://pub.dev/packages/equatable) |
@@ -186,6 +190,7 @@ graph TD
     PluginItemTracker --> DesignSystem
     PluginItemTracker --> CoreUI[packages/shared/core_ui]
     PluginItemTracker --> CoreUtils[packages/shared/core_utils]
+    PluginItemTracker --> CoreStorage
 
     CoreHardware --> CoreContracts
     CoreStorage --> CoreContracts
@@ -197,6 +202,9 @@ graph TD
 1. **Regla 1**: Un paquete situado en `packages/plugins/*` **NUNCA** debe importar otro paquete de `packages/plugins/*`.
 2. **Regla 2**: La capa de `Domain` dentro de cualquier paquete **NUNCA** debe importar código de Flutter (`package:flutter/...`) ni bibliotecas de persistencia (`package:isar/...`).
 3. **Regla 3**: `packages/design_system` **SOLO** depende de Flutter SDK y de `packages/shared/core_ui`. Prohibido importar paquetes de infraestructura o plugins.
+4. **Regla 4**: Solo `packages/core/core_hardware` importa `mobile_scanner`, `nfc_manager*` o `permission_handler`.
+
+Las cuatro reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`).
 
 ### 5.3. Archivos de Configuración del Monorepo
 
@@ -292,7 +300,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 abstract class HomePlugin {
-  /// Identificador único e inmutable del plugin (ej. 'home_item_tracker')
+  /// Identificador único e inmutable del plugin (ej. 'item_tracker'). Se usa también como nombre del scope en core_di, clave de su preferencia guardada y namespace i18n
   String get id;
 
   /// Clave i18n para el nombre localizable
@@ -425,38 +433,75 @@ graph LR
 
 ## 8. Primera Funcionalidad: Identificación de Objetos (`plugin_item_tracker`)
 
-### 8.1. Abstracciones de Lectura de Identificadores (`packages/core/core_hardware`)
+### 8.1. Abstracciones de Hardware (`packages/core/core_hardware`)
+
+La cámara y el NFC tienen disponibilidad, permisos y UI distintos (un iPad tiene cámara pero no NFC), así que se modelan como dos escáneres más un servicio de permisos. Cada escáner pertenece a una pantalla: se crea al entrar y se libera con `dispose()` al salir (§16).
 
 ```dart
 enum ScanType { qr, barcode, nfc }
 
-class PhysicalScanResult {
-  final String rawValue;
+class PhysicalScanResult extends Equatable {
+  final String rawValue;   // Ya saneado según §8.2
   final ScanType type;
-  final DateTime scannedAt;
-
-  PhysicalScanResult({
-    required this.rawValue,
-    required this.type,
-    DateTime? scannedAt,
-  }) : scannedAt = scannedAt ?? DateTime.now().toUtc();
+  final DateTime scannedAt; // Siempre UTC
 }
 
-abstract class IdentifierScanner {
+enum HardwareStatus { available, disabled, unsupported }
+
+enum ScanErrorCode {
+  permissionDenied, hardwareUnsupported, hardwareDisabled,
+  invalidValue, tagNotWritable, cancelled, unknown,
+}
+
+class ScanException implements Exception {
+  final ScanErrorCode code;
+  final String? message;
+  final Object? cause;
+}
+
+abstract interface class IdentifierScanner {
+  /// Broadcast. Los fallos llegan como errores ScanException; no se cierra hasta dispose().
   Stream<PhysicalScanResult> get scanStream;
-  Future<void> startScanning();
+  Future<HardwareStatus> checkHardware();
+  Future<void> startScanning(); // Sin hardware/permiso emite ScanException, no lanza
   Future<void> stopScanning();
-  Future<bool> isHardwareAvailable();
-  Future<bool> hasPermissions();
+  Future<void> dispose();
+}
+
+abstract interface class CameraIdentifierScanner implements IdentifierScanner {
+  /// Única vía para mostrar la cámara sin importar mobile_scanner en la presentación.
+  Widget buildPreview(
+    BuildContext context, {
+    Widget Function(BuildContext context, ScanException error)? errorBuilder,
+    WidgetBuilder? placeholderBuilder,
+  });
+}
+
+abstract interface class NfcIdentifierScanner implements IdentifierScanner {
+  /// Escribe value como registro NDEF Text en el próximo tag.
+  Future<void> writeTag(String value);
+}
+
+enum HardwarePermissionStatus { granted, denied, permanentlyDenied, restricted }
+
+abstract interface class HardwarePermissions {
+  Future<HardwarePermissionStatus> cameraStatus();
+  Future<HardwarePermissionStatus> requestCamera();
+  Future<bool> openSettings();
 }
 ```
+
+- **Adaptadores**: `MobileScannerCameraScanner`, `NfcManagerScanner` y `PermissionHandlerPermissions`. NFC no requiere permiso en runtime.
+- **Valor de un tag NFC**: el primer registro NDEF Text o URI legible; si no hay ninguno, el UID del tag en hexadecimal mayúscula (ej. `04A224B2C35E80`).
+- **Dobles de prueba**: `package:core_hardware/testing.dart` expone `FakeCameraScanner`, `FakeNfcScanner` y `FakeHardwarePermissions`.
 
 ### 8.2. Reglas de Validación de Códigos y Contenido Escaneado
 1. **Tratamiento de Datos**: Los valores leídos por escáneres (`rawValue`) se consideran **cadenas de texto no confiables**.
 2. **Validación de Formato**:
-   - Todo código escaneado se sanitiza eliminando caracteres de control no imprimibles (`\x00-\x1F`).
+   - Todo código escaneado se sanitiza eliminando caracteres de control no imprimibles (`\x00-\x1F` y `\x7F`). Un valor vacío tras sanear se rechaza (`ScanErrorCode.invalidValue`).
    - Si el valor es un URL externo (`https://...`), la aplicación no lo navegará automáticamente. Se almacenará como literal plano identificador.
-   - Longitud máxima permitida para un `rawValue`: 2048 caracteres.
+   - Longitud máxima permitida para un `rawValue`: 2048 caracteres, medida tras sanear.
+   - Implementación: `ScannedValueSanitizer.sanitize()` en `core_hardware`, aplicado por todos los adaptadores y también a los valores que se escriben en tags NFC.
 
 ---
 
@@ -487,12 +532,14 @@ class HouseholdItem {
 
 #### `PhysicalIdentifier`
 ```dart
-enum ScanType { qr, barcode, nfc }
+/// Enum propio del dominio: el dominio no depende de core_hardware. La capa
+/// data traduce ScanType -> IdentifierType con un mapper.
+enum IdentifierType { qr, barcode, nfc }
 
 class PhysicalIdentifier {
   final String id; // UUID v4
   final String rawValue;
-  final ScanType type;
+  final IdentifierType type;
   final String itemId; // Foreign Key hacia HouseholdItem.id
   final DateTime boundAt;
 
@@ -528,7 +575,7 @@ class ItemEvent {
 ### 9.2. Colecciones Isar para Persistencia Local (`packages/plugins/plugin_item_tracker/lib/src/data/models`)
 
 ```dart
-import 'package:isar/isar.dart';
+import 'package:core_storage/core_storage.dart'; // Reexporta la API de Isar
 
 part 'isar_household_item.g.dart';
 
@@ -559,7 +606,7 @@ class IsarPhysicalIdentifier {
   late String rawValue; // Un identificador físico solo puede estar ligado a 1 objeto
 
   @Enumerated(EnumType.name)
-  late String type;
+  late IdentifierType type; // @Enumerated solo es válido sobre un enum
 
   @Index()
   late String itemId;
@@ -639,13 +686,23 @@ Future<void> saveItemWithIdentifier(
   IsarPhysicalIdentifier identifier,
 ) async {
   await isar.writeTxn(() async {
-    await isar.isarHouseholdItems.putByStringId(item);
-    await isar.isarPhysicalIdentifiers.putByStringId(identifier);
+    // Isar genera putBy<Campo> para cada índice único: el campo `id` produce putById.
+    await isar.isarHouseholdItems.putById(item);
+    await isar.isarPhysicalIdentifiers.putById(identifier);
   });
 }
 ```
 
-### 10.2. Preparación para Sincronización Remota Futura
+### 10.2. Registro de Colecciones por Plugin
+Isar exige conocer todos los esquemas al abrir la base de datos, pero las colecciones viven en la capa data de cada plugin y `core_storage` no puede depender de los plugins:
+
+1. El plugin implementa `StorageSchemaContributor` (`core_storage`) además de `HomePlugin`, y expone sus esquemas en `storageSchemas`.
+2. Al arrancar, la app reúne los contribuidores de **todos** los plugins registrados, incluidos los desactivados (de lo contrario Isar no abriría sus colecciones y se violaría AC-02), y llama a `LocalDatabase.open(directory:, contributors:)`.
+3. `LocalDatabase` añade siempre los esquemas de infraestructura (`IsarPluginPreference`) y rechaza con `StateError` dos esquemas distintos con el mismo nombre de colección.
+
+La implementación de `PluginPreferenceRepository` es `IsarPluginPreferenceRepository` (`core_storage`).
+
+### 10.3. Preparación para Sincronización Remota Futura
 Para garantizar que la adición de un servidor remoto no quiebre la arquitectura:
 1. **Campos Inmutables**: `id` y `createdAt` jamás cambian tras su creación local.
 2. **Soft Deletes**: Los elementos no se borran físicamente mediante `DELETE`, sino que se marcarán en el futuro mediante un flag opcional de infraestructura `isDeleted` para propagar el borrado a la nube.
@@ -683,13 +740,10 @@ class EventBus {
     _subject.add(event);
   }
 
-  Stream<T> on<T extends CrossPluginEvent>() {
-    return _subject.ofType(TypeToken<T>());
-  }
+  // ofType(TypeToken) ya no existe en rxdart 0.28; whereType es el equivalente.
+  Stream<T> on<T extends CrossPluginEvent>() => _subject.whereType<T>();
 
-  void dispose() {
-    _subject.close();
-  }
+  Future<void> dispose() => _subject.close(); // publish() tras dispose se descarta
 }
 ```
 
@@ -742,7 +796,7 @@ graph TD
 1. **Labels Semánticos**: Ningún `IconButton` o control táctil debe carecer de la propiedad `tooltip` o un wrapper `Semantics(label: ...)`.
 2. **Dimensiones de Objetivos Táctiles**: Todos los botones interactivos deben tener un área de toque mínima de **48x48 dp** según la directriz WCAG 2.1 AA.
 3. **Escalado de Texto**: Todas las tipografías deben definirse utilizando unidades relativas para soportar el escalado del SO fino hasta un factor de **200%** sin desbordamiento de pantalla (uso de `SingleChildScrollView` en formularios).
-4. **Anuncios para Lectores de Pantalla**: Al completar exitosamente un escaneo NFC o QR, se invoca `SemanticsService.announce(message, TextDirection.ltr)` para notificar la lectura al usuario ciego o de baja visión.
+4. **Anuncios para Lectores de Pantalla**: Al completar exitosamente un escaneo NFC o QR, se invoca `SemanticsService.sendAnnouncement(View.of(context), message, Directionality.of(context))` (`announce` está deprecado desde Flutter 3.35) para notificar la lectura al usuario ciego o de baja visión.
 
 ---
 
@@ -808,7 +862,7 @@ melos run analyze && melos run test
 
 | ID | Criterio de Aceptación | Precondiciones | Acciones | Resultado Esperado | Tipo de Prueba | Plataforma |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **AC-01** | Registro de Plugins | Monorepo limpio. | Ejecutar `main.dart`. | `PluginRegistry` tiene registrado el plugin `home_item_tracker`. | Unit | Ambos |
+| **AC-01** | Registro de Plugins | Monorepo limpio. | Ejecutar `main.dart`. | `PluginRegistry` tiene registrado el plugin `item_tracker`. | Unit | Ambos |
 | **AC-02** | Persistencia de Desactivación | App instalada en dispositivo. | Desactivar plugin de la lista en `/plugins-catalog` y reiniciar app. | El plugin no aparece en el Dashboard de Inicio; sus datos locales en Isar se conservan intactos. | Integración | Ambos |
 | **AC-03** | Escaneo QR Exitoso | Objeto "Caja A" guardado con QR "QR-123". | Abrir cámara y escanear "QR-123". | La app navega automáticamente a la pantalla de detalle de "Caja A". | Widget/Manual | Ambos |
 | **AC-04** | Identificador Desconocido | QR "UNKNOWN-99" no existe en BD. | Escanear "UNKNOWN-99". | Muestra pantalla de "Código No Encontrado" con opciones: "Crear Nuevo Objeto" o "Asociar a Existente". | Widget | Ambos |
@@ -827,7 +881,8 @@ gantt
     Configuración Monorepo & Melos       :f1_1, 2026-11-01, 2d
     Creación de core_contracts & core_di :f1_2, after f1_1, 3d
     section Fase 2: Persistencia & Hardware
-    Implementación Isar en core_storage  :f2_1, after f1_2, 3d
+    core_utils & core_events             :f2_0, after f1_2, 1d
+    Implementación Isar en core_storage  :f2_1, after f2_0, 3d
     Abstracciones Cámara & NFC           :f2_2, after f2_1, 4d
     section Fase 3: Plugin & UI
     Desarrollo Domain & Data ItemTracker :f3_1, after f2_2, 5d
