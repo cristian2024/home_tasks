@@ -12,6 +12,7 @@ coverage/
 *.iml
 .vscode/*
 !.vscode/launch.json
+!.vscode/settings.json
 *.code-workspace
 
 # macOS

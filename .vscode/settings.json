@@ -1,0 +1,6 @@
+{
+  // Los proyectos Flutter del monorepo están hasta 4 niveles por debajo de la
+  // raíz (packages/core/core_hardware/example). Con el valor por defecto (3) la
+  // extensión Dart no los encuentra y trata el workspace como "Dart-only".
+  "dart.projectSearchDepth": 6
+}
