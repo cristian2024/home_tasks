@@ -1,0 +1,140 @@
+{
+  "item_tracker": {
+    "title": "Item Tracker",
+    "description": "Identify your belongings with QR codes, barcodes or NFC tags.",
+    "dashboard": {
+      "scan": "Scan",
+      "items": "View items",
+      "items_count(plural)": {
+        "zero": "No items registered yet",
+        "one": "1 item registered",
+        "other": "{n} items registered"
+      }
+    },
+    "identifier_types": {
+      "qr": "QR",
+      "barcode": "Barcode",
+      "nfc": "NFC"
+    },
+    "scan": {
+      "title": "Scan",
+      "mode_label": "Identification mode",
+      "mode_camera": "Camera",
+      "mode_nfc": "NFC",
+      "mode_manual": "Code",
+      "prompt_camera": "Point at the QR code or barcode.",
+      "prompt_nfc": "Tap “Read tag” and hold the NFC tag near the phone.",
+      "nfc_start": "Read tag",
+      "nfc_cancel": "Cancel reading",
+      "nfc_waiting": "Hold the NFC tag near the phone…",
+      "manual_label": "Code",
+      "manual_hint": "Type the code exactly as shown",
+      "type_label": "Identifier type",
+      "manual_submit": "Search",
+      "looking_up": "Looking up the item…",
+      "read_announcement": "{type} read: {value}",
+      "camera_permission_title": "Camera access needed",
+      "camera_permission_message": "Allow camera access to scan codes, or type the code instead.",
+      "camera_permanently_denied_message": "Camera access is denied. Enable it in the app Settings or type the code instead.",
+      "camera_restricted_message": "The system does not allow using the camera on this device. Type the code instead.",
+      "grant_permission": "Allow access",
+      "open_settings": "Open Settings",
+      "use_manual": "Type the code",
+      "nfc_unsupported_title": "This device has no NFC",
+      "nfc_unsupported_message": "You can identify the item with the camera or by typing the code.",
+      "nfc_disabled_title": "NFC is turned off",
+      "nfc_disabled_message": "Turn it on in the system Settings and check again.",
+      "check_again": "Check again",
+      "camera_error": "The camera could not be used. Type the code instead.",
+      "read_error": "The identifier could not be read. Please try again.",
+      "read_cancelled": "Reading cancelled."
+    },
+    "not_found": {
+      "title": "Unregistered identifier",
+      "message": "This {type} is not linked to any item.",
+      "create": "Create new item",
+      "associate": "Link to an existing item"
+    },
+    "list": {
+      "title": "Items",
+      "search": "Search by name",
+      "empty_title": "No items yet",
+      "empty_message": "Scan a code to register the first one.",
+      "no_results": "No items match the search.",
+      "create": "Create item"
+    },
+    "detail": {
+      "title": "Item details",
+      "missing_title": "Item not found",
+      "missing_message": "It may have been removed.",
+      "edit": "Edit item",
+      "add_event": "Add note",
+      "metadata": "Additional data",
+      "identifiers": "Identifiers",
+      "no_identifiers": "No linked identifiers.",
+      "history": "History",
+      "events_count(plural)": {
+        "zero": "No events",
+        "one": "1 event recorded",
+        "other": "{n} events recorded"
+      },
+      "yes": "Yes",
+      "no": "No"
+    },
+    "events": {
+      "created": "Item created as “{name}”",
+      "updated": "Edited: {fields}",
+      "identifier_bound": "{type} linked: {value}",
+      "field_name": "name",
+      "field_description": "description",
+      "field_metadata": "additional data"
+    },
+    "form": {
+      "create_title": "New item",
+      "edit_title": "Edit item",
+      "name": "Name",
+      "description": "Description",
+      "metadata": "Additional data",
+      "metadata_help": "Lowercase keys with underscores, for example label_color.",
+      "add_field": "Add data",
+      "remove_field": "Remove data {key}",
+      "key": "Key",
+      "value": "Value",
+      "value_type": "Type",
+      "type_text": "Text",
+      "type_number": "Number",
+      "type_boolean": "Yes / No",
+      "initial_identifier": "The {type} will be linked: {value}",
+      "save": "Save"
+    },
+    "associate": {
+      "title": "Link to an item",
+      "identifier": "{type}: {value}",
+      "search": "Search item by name",
+      "empty": "No items match the search.",
+      "select": "Link to {name}",
+      "success": "Identifier linked to {name}."
+    },
+    "add_event": {
+      "title": "Add note",
+      "event_title": "Title",
+      "event_description": "Description",
+      "save": "Save note"
+    },
+    "errors": {
+      "item_not_found": "The item no longer exists.",
+      "already_bound_other": "This identifier is already linked to another item.",
+      "already_bound_same": "This identifier is already linked to this item.",
+      "open_bound_item": "View item",
+      "required": "This field is required.",
+      "too_long": "The text is too long.",
+      "identifier_invalid": "The code contains invalid characters.",
+      "metadata_key_invalid": "The key “{key}” is not valid.",
+      "metadata_key_duplicated": "The key “{key}” is repeated.",
+      "metadata_value_invalid": "The value of “{key}” is not valid.",
+      "metadata_too_many": "There is too much additional data.",
+      "number_invalid": "Enter a valid number.",
+      "unexpected": "An unexpected error occurred."
+    }
+  }
+}

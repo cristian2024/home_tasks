@@ -27,7 +27,7 @@ class ItemMetadata extends Equatable {
     if (values.length > maxEntries) {
       throw ItemValidationException(
         ValidationField.metadata,
-        ValidationReason.tooLong,
+        ValidationReason.tooManyEntries,
         detail: '${values.length} > $maxEntries',
       );
     }

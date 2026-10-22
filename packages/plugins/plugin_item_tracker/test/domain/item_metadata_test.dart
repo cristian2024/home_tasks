@@ -41,7 +41,10 @@ void main() {
     Map<String, Object?> entries(int n) => {for (var i = 0; i < n; i++) 'k$i': i};
 
     expect(ItemMetadata(entries(50)).values, hasLength(50));
-    expect(() => ItemMetadata(entries(51)), throwsValidation(ValidationField.metadata, ValidationReason.tooLong));
+    expect(
+      () => ItemMetadata(entries(51)),
+      throwsValidation(ValidationField.metadata, ValidationReason.tooManyEntries),
+    );
   });
 
   test('rechaza valores no escalares, nulos y números no finitos', () {
