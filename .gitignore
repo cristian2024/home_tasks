@@ -15,3 +15,8 @@ coverage/
 
 # macOS
 .DS_Store
+
+# Binarios de Isar Core descargados por los tests
+*.dylib
+*.so
+isar.dll
