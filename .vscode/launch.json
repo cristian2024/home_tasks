@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "item_tracker example (debug)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "packages/plugins/plugin_item_tracker/example",
+      "program": "lib/main.dart",
+      "flutterMode": "debug"
+    },
+    {
       "name": "design_system example (debug)",
       "type": "dart",
       "request": "launch",

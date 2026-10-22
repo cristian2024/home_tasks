@@ -1,6 +1,7 @@
 /// Plugin de identificación y seguimiento de objetos del hogar.
 library;
 
+export 'plugin_definition.dart';
 export 'src/data/item_tracker_storage.dart';
 export 'src/data/repositories/isar_household_item_repository.dart';
 export 'src/domain/entities/household_item.dart';
@@ -16,3 +17,5 @@ export 'src/domain/use_cases/find_item_by_identifier.dart';
 export 'src/domain/use_cases/item_queries.dart';
 export 'src/domain/use_cases/update_item.dart';
 export 'src/domain/value_objects/item_metadata.dart';
+export 'src/item_tracker_dependencies.dart';
+export 'src/presentation/item_tracker_routes.dart';

@@ -56,6 +56,14 @@ import 'package:design_system/tokens.dart';
     expect(violations.single.import, 'package:plugin_b/b.dart');
   });
 
+  test('Regla 1: la app de ejemplo de un plugin puede importarlo', () {
+    package('packages/plugins/plugin_a', 'plugin_a');
+    package('packages/plugins/plugin_a/example', 'plugin_a_example');
+    source('packages/plugins/plugin_a/example/lib/main.dart', "import 'package:plugin_a/plugin_a.dart';\n");
+
+    expect(findViolations(root), isEmpty);
+  });
+
   test('Regla 2: detecta Flutter, Isar y dart:ui en Domain', () {
     package('packages/plugins/plugin_a', 'plugin_a');
     source('packages/plugins/plugin_a/lib/src/domain/item.dart', '''

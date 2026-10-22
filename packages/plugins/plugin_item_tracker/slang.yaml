@@ -1,0 +1,13 @@
+base_locale: es
+fallback_strategy: base_always
+input_directory: lib/src/i18n
+input_file_pattern: .i18n.json
+output_directory: lib/src/i18n
+output_file_name: strings.g.dart
+key_case: camel
+string_interpolation: braces
+translate_var: itemTrackerStrings
+enum_name: ItemTrackerLocale
+class_name: ItemTrackerTranslations
+# Carga diferida solo aporta en web; en móvil impide cambiar de idioma de forma síncrona.
+lazy: false

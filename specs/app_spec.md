@@ -49,7 +49,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 - **Plataformas objetivo**: Android (API nivel 24+ / Android 7.0) e iOS (iOS 15.0+).
   - Android sube de API 21 a **24** porque lo exige `nfc_manager` 4.x (`mobile_scanner` 7.x exige 23). Además hay que compilar contra la **API 37** (`compileSdk = 37`), que exige `permission_handler_android` 14.x.
   - iOS 15.0 es el mínimo de la plantilla de Flutter 3.47.
-- **Configuración nativa de referencia**: `packages/core/core_hardware/example` (ver su README). En iOS los plugins se integran con **Swift Package Manager**, sin Podfile: `permission_handler` activa el permiso de cámara solo porque detecta `NSCameraUsageDescription` en el `Info.plist`. La lectura NFC requiere el entitlement `com.apple.developer.nfc.readersession.formats` (NDEF, TAG) y `NFCReaderUsageDescription`.
+- **Configuración nativa de referencia**: `packages/core/core_hardware/example` (ver su README). En iOS los plugins se integran con **Swift Package Manager**; `isar_community_flutter_libs` aún no lo admite, así que en las apps que usan Isar Flutter genera un Podfile solo para él (modo mixto). En cualquier caso: `permission_handler` activa el permiso de cámara solo porque detecta `NSCameraUsageDescription` en el `Info.plist`. La lectura NFC requiere el entitlement `com.apple.developer.nfc.readersession.formats` (NDEF, TAG) y `NFCReaderUsageDescription`.
 - **Abstracción de Hardware**: La invocación a hardware (Cámara y NFC) debe estar aislada detrás de contratos abstractos (`IdentifierScanner`) ubicados en `packages/core/core_hardware`. La capa de presentación y dominio **nunca** importará paquetes nativos directos (`mobile_scanner` o `nfc_manager`).
 - **Diferencias y Limitaciones de Plataforma**:
   
@@ -806,11 +806,28 @@ graph TD
     NotFound -->|Crear Nuevo| Create[/item-tracker/item/create - CreateItemScreen\]
     NotFound -->|Asociar a Existente| Associate[/item-tracker/item/associate - AssociateScreen\]
     Detail --> AddEvent[/item-tracker/item/:id/event/add - AddEventScreen\]
+    Detail --> Edit[/item-tracker/item/:id/edit - ItemFormScreen\]
+    Home --> Items[/item-tracker/items - ItemListScreen\]
+    Items --> Detail
 ```
 
+- **Rutas planas y absolutas** (`ItemTrackerRoutes`), en el orden en que deben registrarse: `create` y `associate` antes de `item/:id`. `/item-tracker` redirige a `/item-tracker/scan`.
+- El identificador viaja en query params (`?value=…&type=qr`), así que las pantallas funcionan como deep link; sin ellos, `not-found` y `associate` redirigen a `scan`.
+- **Resultado por `pop`**: crear y asociar hacen `pop` con el ID del objeto, "no encontrado" lo reenvía, y `ScanScreen` abre el detalle. Al volver del detalle se pulsa atrás y se regresa a escanear, sin pantallas intermedias.
+- **Añadidos respecto a la versión inicial**: listado de objetos (consulta del §2.1 y selección al asociar) y edición de objetos (§2.1).
+
+- **`ScanBloc`**: solo existe el escáner del modo activo, y al cambiar de modo el anterior se libera sin bloquear la UI. Las lecturas de **cámara** iguales se ignoran durante 2 s (la cámara las repite mientras el código sigue en el encuadre, también al volver de otra pantalla). Las de **NFC** no se deduplican, porque cada una es una acción explícita del usuario. Mientras se busca o se navega, se ignoran las lecturas nuevas.
 - **Entrada manual en `ScanScreen`**: un selector alterna entre **Escanear** y **Escribir código**. En modo escritura se oculta (y se libera) la cámara y se muestra un campo de texto con el selector de tipo (QR, código de barras, NFC); en modo escaneo se oculta el campo. Es la alternativa cuando se deniega la cámara o no hay NFC (§3.1, AC-06).
 
-### 12.2. Manejo de Excepciones de Navegación
+### 12.2. Definición del Plugin (`plugin_item_tracker/lib/plugin_definition.dart`)
+`ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor`:
+- **Del scope base de `core_di` toma**: `Isar` (obligatorio), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos).
+- **`initialize()`**: registra su idioma en `LocalizationCoordinator` y crea su scope `item_tracker` con `ItemTrackerDependencies` (casos de uso, factorías de escáner y permisos). **`dispose()`** descarta ese scope.
+- **Inyección por constructor**: factorías de escáner, `HardwarePermissions` y `repositoryFactory`, para poder probarlo con los fakes de `core_hardware/testing.dart` y el `InMemoryHouseholdItemRepository` de `plugin_item_tracker/testing.dart`.
+- `nameKey` / `descriptionKey` son rutas de slang (`itemTracker.title`). En la Fase 4 hay que decidir cómo resuelve el catálogo esas claves entre paquetes.
+- **App de ejemplo**: `plugin_item_tracker/example` arranca igual que lo hará `apps/app` (servicios base, `LocalDatabase.open` con los esquemas del plugin, idioma del dispositivo) e incluye datos de ejemplo para recorrer AC-03/04/05 a mano.
+
+### 12.3. Manejo de Excepciones de Navegación
 - **Plugin Desactivado**: Si el usuario intenta navegar mediante Deep Link a una ruta de un plugin desactivado (`/item-tracker/...`), `GoRouter` intercepta la ruta en su `redirect` guard y la redirige a `/` mostrando un SnackBar informativo.
 
 ---
@@ -819,7 +836,7 @@ graph TD
 
 ### 13.1. Estrategia con `slang`
 - Cada paquete gestiona sus traducciones en `lib/src/i18n/` (`es.i18n.json`, `en.i18n.json`) con un `slang.yaml` propio y las genera con la CLI (`dart run slang`), sin `build_runner`.
-- Configuración común de `slang.yaml`: `base_locale: es`, `key_case: camel`, `lazy: false` (la carga diferida solo aporta en web e impide cambiar de idioma de forma síncrona) y un `enum_name`/`class_name`/`translate_var` propios por paquete para evitar colisiones.
+- Configuración común de `slang.yaml`: `base_locale: es`, `key_case: camel`, `string_interpolation: braces` (`{name}`; por defecto slang usa `$name`), `lazy: false` (la carga diferida solo aporta en web e impide cambiar de idioma de forma síncrona) y un `enum_name`/`class_name`/`translate_var` propios por paquete para evitar colisiones.
 - Idioma predeterminado: **Español (`es`)**. Idioma secundario: **Inglés (`en`)**.
 - **Coordinación**: `LocalizationCoordinator` (`core_ui`) mantiene el mismo idioma en todos los paquetes. Cada paquete se registra con `register(packageName, applier)` y la app solo llama a `setLanguage(code)`. También expone `supportedLocales` y `localizationsDelegates` (Material/Cupertino/Widgets de `flutter_localizations`) para `MaterialApp`.
 - Textos comunes (`Cancelar`, `Guardar`, `Reintentar`…): `commonStrings.common.*` de `core_ui`.
@@ -963,7 +980,7 @@ gantt
     core_ui (slang) & design_system      :f3_0, after f2_2, 3d
     Desarrollo Domain & Data ItemTracker :f3_1, after f3_0, 5d
     section Fase 3b: Presentation
-    Desarrollo Presentation & BLoC       :f3_2, after f3_1, 5d
+    Presentation, BLoC & i18n del plugin :f3_2, after f3_1, 5d
     section Fase 4: Integración
     Ensamblado en apps/app & GoRouter    :f4_1, after f3_2, 3d
     Ejecución Pruebas AC y CI/CD         :f4_2, after f4_1, 3d

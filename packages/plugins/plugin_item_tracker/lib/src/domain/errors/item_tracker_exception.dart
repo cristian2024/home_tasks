@@ -39,8 +39,11 @@ enum ValidationReason {
   /// Vacío (tras recortar espacios cuando aplica).
   empty,
 
-  /// Supera la longitud o el tamaño máximo.
+  /// Supera la longitud máxima.
   tooLong,
+
+  /// Supera el número máximo de entradas (metadatos).
+  tooManyEntries,
 
   /// Formato no válido (clave de metadato, caracteres de control).
   invalidFormat,
