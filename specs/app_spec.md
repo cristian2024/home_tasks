@@ -115,6 +115,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 | **nfc_manager (>=3.0.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). | `packages/core/core_hardware` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
 | **slang (>=4.0.0)** | Internacionalización | Tipo-seguro, soporta múltiples archivos JSON por paquete independientemente de `BuildContext`. | `packages/shared/core_ui` | [pub.dev/packages/slang](https://pub.dev/packages/slang) |
 | **get_it (>=8.0.0)** | Service Locator | Inyección de dependencias liviana y rápida para resolver contratos de plugins y repositorios. | `packages/core/core_di` | [pub.dev/packages/get_it](https://pub.dev/packages/get_it) |
+| **equatable (>=3.0.0)** | Igualdad por valor | Evita sobrescribir `==`/`hashCode` a mano en entidades, value objects y estados. | `packages/core/*`, `packages/plugins/*` | [pub.dev/packages/equatable](https://pub.dev/packages/equatable) |
 | **uuid (>=4.4.0)** | Generación UUID | Creación de identificadores de dominio RFC4122 v4 independientes de la infraestructura. | `packages/shared/core_utils` | [pub.dev/packages/uuid](https://pub.dev/packages/uuid) |
 | **rxdart (>=0.28.0)** | Programación Reactiva | Utilizado para el Bus de Eventos desacoplado entre módulos independientes. | `packages/core/core_events` | [pub.dev/packages/rxdart](https://pub.dev/packages/rxdart) |
 
@@ -348,7 +349,9 @@ class PluginRegistry {
 
 #### `UserPluginPreference.dart`
 ```dart
-class UserPluginPreference {
+import 'package:equatable/equatable.dart';
+
+class UserPluginPreference extends Equatable {
   final String pluginId;
   final bool isEnabled;
   final int sortOrder;
@@ -369,6 +372,9 @@ class UserPluginPreference {
       sortOrder: sortOrder ?? this.sortOrder,
     );
   }
+
+  @override
+  List<Object?> get props => [pluginId, isEnabled, sortOrder];
 }
 ```
 

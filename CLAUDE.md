@@ -45,3 +45,4 @@
 - **Reglas de importación (§5.2):** `melos run verify:arch` ejecuta `tool/verify_architecture.dart` (lógica en `tool/src/`, tests en `tool/test/`).
 - **Plugins:** implementan `HomePlugin` (`core_contracts`), incluido `isAvailable()`. El ciclo de vida lo aplica `PluginLifecycleManager`; las preferencias se persisten vía `PluginPreferenceRepository`.
 - **DI:** usar `ServiceLocator` de `core_di`, nunca `get_it` directamente. Cada plugin registra sus dependencias en un scope con su ID (`pushScope`) y lo libera en `dispose()` (`dropScope`).
+- **Igualdad por valor:** extender `Equatable` (paquete `equatable`) y declarar `props`; nunca sobrescribir `operator ==`/`hashCode` a mano. Aplica a entidades, value objects y estados de BLoC/Cubit.

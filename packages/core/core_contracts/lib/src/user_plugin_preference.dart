@@ -1,4 +1,6 @@
-class UserPluginPreference {
+import 'package:equatable/equatable.dart';
+
+class UserPluginPreference extends Equatable {
   final String pluginId;
   final bool isEnabled;
   final int sortOrder;
@@ -21,16 +23,8 @@ class UserPluginPreference {
   }
 
   @override
-  bool operator ==(Object other) =>
-      other is UserPluginPreference &&
-      other.pluginId == pluginId &&
-      other.isEnabled == isEnabled &&
-      other.sortOrder == sortOrder;
+  List<Object?> get props => [pluginId, isEnabled, sortOrder];
 
   @override
-  int get hashCode => Object.hash(pluginId, isEnabled, sortOrder);
-
-  @override
-  String toString() =>
-      'UserPluginPreference(pluginId: $pluginId, isEnabled: $isEnabled, sortOrder: $sortOrder)';
+  bool get stringify => true;
 }
