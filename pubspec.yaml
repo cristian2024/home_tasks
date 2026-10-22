@@ -67,6 +67,13 @@ melos:
       description: Verifica las reglas de importación del §5.2 de la spec.
       run: dart run tool/verify_architecture.dart
 
+    build:apk:
+      description: Genera el APK de release de apps/app (apps/app/build/app/outputs/flutter-apk/app-release.apk).
+      packageFilters:
+        scope: home_utility_app
+      exec:
+        command: flutter build apk --release
+
     build:g:
       description: Genera código (Isar, Slang, Mocktail) en todos los paquetes.
       packageFilters:

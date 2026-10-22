@@ -5,6 +5,7 @@
 - **Análisis estático:** `melos run analyze`[cite: 1]
 - **Ejecutar pruebas:** `melos run test`[cite: 1]
 - **Generar código (Isar / Slang):** `melos run build:g`[cite: 1]
+- **Generar APK de release (apps/app):** `melos run build:apk` → `apps/app/build/app/outputs/flutter-apk/app-release.apk`
 
 ---
 
@@ -94,3 +95,4 @@
   - En dispositivo o simulador: `cd apps/app && flutter test integration_test -d <id>`.
 - **`HomeUtilityApp`:** crea su router con el primer `AppEnvironment`. Para simular un reinicio en un test, usar `key: ObjectKey(environment)`.
 - **CI:** `.github/workflows/ci.yml` ejecuta `melos run verify` en Ubuntu. Si se sube la versión de Flutter o Melos, actualizarla también ahí.
+- **Archivos del editor:** `.vscode/` no se versiona (es configuración personal). Para que la extensión Dart encuentre los proyectos Flutter anidados, cada desarrollador pone `"dart.projectSearchDepth": 6` en su configuración.

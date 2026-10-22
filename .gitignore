@@ -10,10 +10,9 @@ coverage/
 # IDE
 .idea/
 *.iml
-.vscode/*
-!.vscode/launch.json
-!.vscode/settings.json
+.vscode/
 *.code-workspace
+devtools_options.yaml
 
 # macOS
 .DS_Store

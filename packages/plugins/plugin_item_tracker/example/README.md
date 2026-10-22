@@ -10,7 +10,7 @@ App anfitriona mínima para probar el plugin `item_tracker` en un dispositivo re
 
 ```bash
 cd packages/plugins/plugin_item_tracker/example
-flutter run      # o la configuración "item_tracker example (debug)" de VS Code
+flutter run
 flutter test     # widget test con hardware falso y repositorio en memoria
 ```
 
