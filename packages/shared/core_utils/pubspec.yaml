@@ -1,0 +1,16 @@
+name: core_utils
+description: Utilidades neutrales compartidas (generación de UUID v4, reloj UTC).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  uuid: ^4.6.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  test: ^1.28.0
