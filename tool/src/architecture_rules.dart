@@ -33,7 +33,9 @@ class _Package {
 
   _Package(this.name, this.path);
 
-  bool get isPlugin => path.startsWith('packages/plugins/');
+  /// Solo los hijos directos de `packages/plugins/` son plugins; sus apps de
+  /// ejemplo (`packages/plugins/<plugin>/example`) son anfitriones.
+  bool get isPlugin => RegExp(r'^packages/plugins/[^/]+$').hasMatch(path);
   bool get isDesignSystem => path == 'packages/design_system';
   bool get isCoreHardware => path == 'packages/core/core_hardware';
 }
