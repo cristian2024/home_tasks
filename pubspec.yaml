@@ -5,6 +5,7 @@ environment:
   sdk: ^3.11.0
 
 workspace:
+  - apps/app
   - packages/core/*
   - packages/shared/*
   - packages/core/core_hardware/example

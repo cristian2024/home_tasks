@@ -1,0 +1,26 @@
+{
+  "app": {
+    "title": "Home Utilities",
+    "home": {
+      "title": "Home",
+      "open_catalog": "Modules",
+      "empty_title": "No active modules",
+      "empty_message": "Turn on a module in the catalog to see it here.",
+      "reorder_hint": "Long-press a card to change the order.",
+      "plugin_failed": "“{name}” could not be started.",
+      "retry": "Retry"
+    },
+    "catalog": {
+      "title": "Modules",
+      "description": "Turn modules on or off. Turning one off keeps its data.",
+      "unavailable": "Not available on this device.",
+      "failed": "On, but it could not be started.",
+      "enabled": "On",
+      "disabled": "Off"
+    },
+    "guard": {
+      "plugin_disabled": "That module is turned off. Turn it on in the catalog to use it.",
+      "plugin_unavailable": "That module is not available right now."
+    }
+  }
+}

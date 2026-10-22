@@ -1,0 +1,26 @@
+{
+  "app": {
+    "title": "Utilidades del Hogar",
+    "home": {
+      "title": "Inicio",
+      "open_catalog": "Módulos",
+      "empty_title": "No hay módulos activos",
+      "empty_message": "Activa algún módulo en el catálogo para verlo aquí.",
+      "reorder_hint": "Mantén pulsada una tarjeta para cambiar el orden.",
+      "plugin_failed": "No se pudo iniciar «{name}».",
+      "retry": "Reintentar"
+    },
+    "catalog": {
+      "title": "Módulos",
+      "description": "Activa o desactiva los módulos. Al desactivar uno, sus datos se conservan.",
+      "unavailable": "No disponible en este dispositivo.",
+      "failed": "Activo, pero no se pudo iniciar.",
+      "enabled": "Activo",
+      "disabled": "Desactivado"
+    },
+    "guard": {
+      "plugin_disabled": "Ese módulo está desactivado. Actívalo en el catálogo para usarlo.",
+      "plugin_unavailable": "Ese módulo no está disponible en este momento."
+    }
+  }
+}

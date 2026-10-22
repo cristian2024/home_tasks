@@ -1,0 +1,41 @@
+name: home_utility_app
+description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  bloc: ^9.2.0
+  core_contracts: ^0.1.0
+  core_di: ^0.1.0
+  core_events: ^0.1.0
+  core_storage: ^0.1.0
+  core_ui: ^0.1.0
+  core_utils: ^0.1.0
+  design_system: ^0.1.0
+  equatable: ^3.0.0
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  go_router: ">=14.0.0 <17.0.0"
+  path_provider: ^2.1.6
+  plugin_item_tracker: ^0.1.0
+  slang: ^4.19.0
+  slang_flutter: ^4.19.0
+
+dev_dependencies:
+  bloc_test: ^10.0.0
+  core_hardware: ^0.1.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
