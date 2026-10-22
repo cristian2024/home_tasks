@@ -1,0 +1,68 @@
+name: home_utility_monorepo
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+workspace:
+  - packages/core/*
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  melos: ^8.9.0
+  test: ^1.28.0
+
+melos:
+  repository: https://github.com/org/home_utility_monorepo
+
+  scripts:
+    verify:
+      description: Verificación completa (análisis, arquitectura y pruebas).
+      steps:
+        - analyze
+        - verify:arch
+        - test
+
+    analyze:
+      description: Ejecuta el análisis estático en todo el workspace.
+      run: dart analyze --fatal-infos .
+
+    test:
+      description: Ejecuta las pruebas de todos los paquetes y del tooling.
+      steps:
+        - test:flutter
+        - test:dart
+        - test:tool
+
+    test:flutter:
+      description: Pruebas de los paquetes que dependen de Flutter.
+      packageFilters:
+        flutter: true
+        dirExists: test
+      exec:
+        command: flutter test
+        concurrency: 1
+
+    test:dart:
+      description: Pruebas de los paquetes Dart puros.
+      packageFilters:
+        flutter: false
+        dirExists: test
+      exec:
+        command: dart test
+        concurrency: 1
+
+    test:tool:
+      description: Pruebas del verificador de arquitectura.
+      run: dart test tool/test
+
+    verify:arch:
+      description: Verifica las reglas de importación del §5.2 de la spec.
+      run: dart run tool/verify_architecture.dart
+
+    build:g:
+      description: Genera código (Isar, Slang, Mocktail) en todos los paquetes.
+      packageFilters:
+        dependsOn: build_runner
+      exec:
+        command: dart run build_runner build --delete-conflicting-outputs

@@ -1,0 +1,21 @@
+name: core_contracts
+description: Contratos base del sistema de plugins (HomePlugin, registro, preferencias y ciclo de vida).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  equatable: ^3.0.0
+  flutter:
+    sdk: flutter
+  go_router: ">=14.0.0 <17.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
