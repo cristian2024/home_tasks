@@ -10,6 +10,7 @@ workspace:
   - packages/core/core_hardware/example
   - packages/design_system
   - packages/design_system/example
+  - packages/plugins/*
 
 dev_dependencies:
   flutter_lints: ^6.0.0
