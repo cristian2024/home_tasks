@@ -8,6 +8,10 @@ analyzer:
     missing_required_param: error
     body_might_complete_normally: error
     todo: ignore
+    # Aviso no bloqueante mientras se tipa el código existente: `melos run
+    # analyze` lo cuenta pero no falla. Pasará a ser obligatorio cuando queden
+    # pocos casos.
+    always_specify_types: warning
   exclude:
     - "**/*.g.dart"
     - "**/*.i18n.json"
@@ -15,6 +19,7 @@ analyzer:
 linter:
   rules:
     - always_declare_return_types
+    - always_specify_types
     - avoid_empty_else
     - avoid_relative_lib_imports
     - avoid_shadowing_type_parameters
