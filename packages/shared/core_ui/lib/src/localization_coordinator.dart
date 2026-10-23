@@ -11,6 +11,11 @@ typedef LanguageApplier = void Function(String languageCode);
 /// actual, o devuelve `null` si no la conoce.
 typedef KeyTranslator = String? Function(String key);
 
+/// Reemplaza textos del paquete en un idioma. [overrides] tiene la misma
+/// estructura que sus JSON de slang y solo las claves que cambian; un mapa
+/// vacío quita los reemplazos de ese idioma.
+typedef TranslationOverrider = void Function(String languageCode, Map<String, Object?> overrides);
+
 /// Mantiene sincronizado el idioma de todos los paquetes.
 ///
 /// Cada paquete genera sus propias traducciones con slang (una por paquete,
@@ -18,12 +23,22 @@ typedef KeyTranslator = String? Function(String key);
 /// idioma y, opcionalmente, cómo traducir sus claves; la app solo llama a
 /// [setLanguage] y resuelve claves de otros paquetes con [translate] (p. ej.
 /// `HomePlugin.nameKey` en el catálogo).
+///
+/// La app puede reemplazar textos de cualquier paquete con
+/// [overrideTranslations]; las claves que no reemplaza salen del propio
+/// paquete.
 class LocalizationCoordinator {
   LocalizationCoordinator() {
     register(
       'core_ui',
       (code) => core_ui_i18n.LocaleSettings.setLocaleRawSync(code),
       translate: (key) => _asString(core_ui_i18n.commonStrings[key]),
+      override: (String code, Map<String, Object?> overrides) =>
+          core_ui_i18n.LocaleSettings.instance.overrideTranslationsFromMapSync(
+            locale: core_ui_i18n.AppLocaleUtils.parse(code),
+            isFlatMap: false,
+            map: overrides,
+          ),
     );
   }
 
@@ -47,6 +62,8 @@ class LocalizationCoordinator {
 
   final Map<String, LanguageApplier> _appliers = {};
   final Map<String, KeyTranslator> _translators = {};
+  final Map<String, TranslationOverrider> _overriders = <String, TranslationOverrider>{};
+  final Map<String, Map<String, Map<String, Object?>>> _overrides = <String, Map<String, Map<String, Object?>>>{};
   final ValueNotifier<String> _languageCode = ValueNotifier(
     defaultLanguageCode,
   );
@@ -54,12 +71,14 @@ class LocalizationCoordinator {
   /// Idioma actual. Se puede escuchar para reconstruir la UI.
   ValueListenable<String> get languageCode => _languageCode;
 
-  /// Registra un paquete y le aplica el idioma actual. Registrar de nuevo el
-  /// mismo [packageName] reemplaza sus funciones.
+  /// Registra un paquete y le aplica el idioma actual y los reemplazos que la
+  /// app ya haya indicado para él. Registrar de nuevo el mismo [packageName]
+  /// reemplaza sus funciones.
   void register(
     String packageName,
     LanguageApplier apply, {
     KeyTranslator? translate,
+    TranslationOverrider? override,
   }) {
     _appliers[packageName] = apply;
     if (translate == null) {
@@ -67,7 +86,32 @@ class LocalizationCoordinator {
     } else {
       _translators[packageName] = translate;
     }
+    if (override == null) {
+      _overriders.remove(packageName);
+    } else {
+      _overriders[packageName] = override;
+      final Map<String, Map<String, Object?>> pending =
+          _overrides[packageName] ?? const <String, Map<String, Object?>>{};
+      for (final MapEntry<String, Map<String, Object?>> entry in pending.entries) {
+        override(entry.key, entry.value);
+      }
+    }
     apply(_languageCode.value);
+  }
+
+  /// Reemplaza textos de [packageName] en [languageCode]: tienen prioridad
+  /// sobre los JSON del paquete. [overrides] sigue la estructura de esos JSON
+  /// y solo lleva las claves que cambian. Sustituye los reemplazos anteriores
+  /// de ese paquete e idioma; con un mapa vacío se quitan.
+  ///
+  /// Se puede llamar antes de que el paquete se registre: se aplican al
+  /// registrarlo. Solo admite idiomas de [supportedLanguageCodes].
+  void overrideTranslations(String packageName, String languageCode, Map<String, Object?> overrides) {
+    if (!supportedLanguageCodes.contains(languageCode)) {
+      throw ArgumentError.value(languageCode, 'languageCode', 'Idioma no soportado');
+    }
+    (_overrides[packageName] ??= <String, Map<String, Object?>>{})[languageCode] = overrides;
+    _overriders[packageName]?.call(languageCode, overrides);
   }
 
   /// Traduce [key] con el primer paquete que la conozca; si ninguno la
