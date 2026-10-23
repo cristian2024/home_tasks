@@ -7,7 +7,7 @@ import '../../plugins/plugin_controller.dart';
 class HomeState extends Equatable {
   const HomeState({
     this.loading = true,
-    this.tiles = const [],
+    this.tiles = const <PluginState>[],
     this.retrying = false,
   });
 
@@ -19,9 +19,9 @@ class HomeState extends Equatable {
   final bool retrying;
 
   @override
-  List<Object?> get props => [
+  List<Object?> get props => <Object?>[
     loading,
-    [for (final tile in tiles) (tile.plugin.id, tile.status)],
+    <(String, PluginStatus)>[for (final PluginState tile in tiles) (tile.plugin.id, tile.status)],
     retrying,
   ];
 }
@@ -56,11 +56,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this._controller) : super(const HomeState()) {
     on<HomeStarted>(_onStarted);
     on<HomeTileMoved>(
-      (event, _) =>
+      (HomeTileMoved event, _) =>
           _controller.moveDashboardTile(event.oldIndex, event.newIndex),
     );
     on<HomeRetryRequested>(_onRetry);
-    on<_HomePluginsChanged>((_, emit) => emit(_fromController()));
+    on<_HomePluginsChanged>((_, Emitter<HomeState> emit) => emit(_fromController()));
     _controller.addListener(_onControllerChanged);
   }
 

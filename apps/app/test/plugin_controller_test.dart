@@ -13,7 +13,7 @@ void main() {
   late List<FakeHomePlugin> plugins;
 
   setUp(() {
-    plugins = [FakeHomePlugin('a'), FakeHomePlugin('b'), FakeHomePlugin('c'), FakeHomePlugin('d')];
+    plugins = <FakeHomePlugin>[FakeHomePlugin('a'), FakeHomePlugin('b'), FakeHomePlugin('c'), FakeHomePlugin('d')];
     registry = PluginRegistry();
     plugins.forEach(registry.register);
     preferences = InMemoryPluginPreferenceRepository();
@@ -22,10 +22,10 @@ void main() {
 
   tearDown(() => preferences.close());
 
-  List<String> ids(List<PluginState> states) => [for (final s in states) s.plugin.id];
+  List<String> ids(List<PluginState> states) => <String>[for (final PluginState s in states) s.plugin.id];
 
   test('notifica al cargar y expone el dashboard', () async {
-    var notifications = 0;
+    int notifications = 0;
     controller.addListener(() => notifications++);
     expect(controller.isLoaded, isFalse);
 
@@ -33,7 +33,7 @@ void main() {
 
     expect(controller.isLoaded, isTrue);
     expect(notifications, 1);
-    expect(ids(controller.dashboard), ['a', 'b', 'c', 'd']);
+    expect(ids(controller.dashboard), <String>['a', 'b', 'c', 'd']);
     expect(controller.stateOf('b')?.status, PluginStatus.ready);
     expect(controller.stateOf('x'), isNull);
   });
@@ -41,15 +41,15 @@ void main() {
   test('mover una tarjeta conserva al final los plugins ocultos', () async {
     await controller.load();
     await controller.setEnabled('b', enabled: false);
-    expect(ids(controller.dashboard), ['a', 'c', 'd']);
+    expect(ids(controller.dashboard), <String>['a', 'c', 'd']);
 
     await controller.moveDashboardTile(2, 0); // d al principio
 
-    expect(ids(controller.dashboard), ['d', 'a', 'c']);
-    expect(ids(controller.states), ['d', 'a', 'c', 'b']);
+    expect(ids(controller.dashboard), <String>['d', 'a', 'c']);
+    expect(ids(controller.states), <String>['d', 'a', 'c', 'b']);
 
     await controller.moveDashboardTile(0, 2); // d al final
-    expect(ids(controller.dashboard), ['a', 'c', 'd']);
+    expect(ids(controller.dashboard), <String>['a', 'c', 'd']);
   });
 
   test('el guard bloquea las rutas de plugins no listos', () async {
@@ -57,7 +57,7 @@ void main() {
     plugins[3].failOnInitialize = true;
     await controller.load();
     await controller.setEnabled('b', enabled: false);
-    final guard = PluginRouteGuard(registry: registry, controller: controller);
+    final PluginRouteGuard guard = PluginRouteGuard(registry: registry, controller: controller);
 
     expect(guard.check('/a'), isNull);
     expect(guard.check('/a/sub/ruta'), isNull);

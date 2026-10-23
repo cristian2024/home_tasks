@@ -14,11 +14,11 @@ class HomeDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = appStrings.app.home;
+    final AppTranslations$app$home$es t = appStrings.app.home;
     return Scaffold(
       appBar: AppBar(
         title: Text(appStrings.app.title),
-        actions: [
+        actions: <Widget>[
           AppIconButton(
             icon: Icons.settings_outlined,
             tooltip: t.openSettings,
@@ -27,7 +27,7 @@ class HomeDashboardScreen extends StatelessWidget {
         ],
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
-        builder: (context, state) {
+        builder: (BuildContext context, HomeState state) {
           if (state.loading) {
             return const AppLoadingView();
           }
@@ -55,12 +55,12 @@ class HomeDashboardScreen extends StatelessWidget {
                   )
                 : null,
             itemCount: state.tiles.length,
-            onReorderItem: (oldIndex, newIndex) =>
+            onReorderItem: (int oldIndex, int newIndex) =>
                 context.read<HomeBloc>().add(HomeTileMoved(oldIndex, newIndex)),
-            itemBuilder: (context, index) {
-              final tile = state.tiles[index];
+            itemBuilder: (BuildContext context, int index) {
+              final PluginState tile = state.tiles[index];
               return Padding(
-                key: ValueKey(tile.plugin.id),
+                key: ValueKey<String>(tile.plugin.id),
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: tile.status == PluginStatus.ready
                     ? tile.plugin.buildDashboardTile(context)
@@ -83,13 +83,13 @@ class _FailedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = appStrings.app.home;
-    final name = context.read<LocalizationCoordinator>().translate(
+    final AppTranslations$app$home$es t = appStrings.app.home;
+    final String name = context.read<LocalizationCoordinator>().translate(
       tile.plugin.nameKey,
     );
     return AppCard(
       child: Row(
-        children: [
+        children: <Widget>[
           Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
           const SizedBox(width: AppSpacing.md),
           Expanded(child: Text(t.pluginFailed(name: name))),
