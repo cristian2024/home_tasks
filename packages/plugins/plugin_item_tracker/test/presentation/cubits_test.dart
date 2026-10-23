@@ -6,6 +6,7 @@ import 'package:plugin_item_tracker/src/presentation/associate/associate_cubit.d
 import 'package:plugin_item_tracker/src/presentation/detail/item_detail_cubit.dart';
 import 'package:plugin_item_tracker/src/presentation/form/item_form_cubit.dart';
 import 'package:plugin_item_tracker/src/presentation/list/item_list_cubit.dart';
+import 'package:plugin_item_tracker/src/presentation/move/move_item_cubit.dart';
 
 import '../helpers/presentation_fixtures.dart';
 
@@ -18,7 +19,7 @@ void main() {
     test('lista los objetos y filtra por nombre sin distinguir mayúsculas', () async {
       await useCases.createItem(name: 'Caja de herramientas');
       await useCases.createItem(name: 'Cama');
-      final cubit = ItemListCubit(WatchItems(useCases.repository));
+      final cubit = ItemListCubit(useCases.watchItemTree);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
@@ -28,6 +29,17 @@ void main() {
       cubit.search('  CAJA ');
       expect(cubit.state.visible.map((i) => i.name), ['Caja de herramientas']);
     });
+
+    test('incluye los objetos que están dentro de otros con su jerarquía', () async {
+      final furniture = await useCases.createItem(name: 'Mueble');
+      final drawer = await useCases.createItem(name: 'Cajón', parentId: furniture.id);
+      final cubit = ItemListCubit(useCases.watchItemTree);
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.all.map((i) => i.name), unorderedEquals(['Cajón', 'Mueble']));
+      expect(cubit.state.tree.pathOf(drawer.id), [furniture]);
+    });
   });
 
   group('ItemDetailCubit', () {
@@ -36,7 +48,10 @@ void main() {
           watchItem: WatchItem(useCases.repository),
           watchItemIdentifiers: WatchItemIdentifiers(useCases.repository),
           watchItemEvents: WatchItemEvents(useCases.repository),
+          watchItemTree: useCases.watchItemTree,
           unbindIdentifier: useCases.unbindIdentifier,
+          moveItem: useCases.moveItem,
+          containmentPolicy: useCases.policy,
         );
 
     test('combina objeto, identificadores e historial y reacciona a cambios', () async {
@@ -80,6 +95,58 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(cubit.state.status, ItemDetailStatus.missing);
+    });
+
+    test('muestra la ruta y el contenido, y saca el objeto de su contenedor', () async {
+      final furniture = await useCases.createItem(name: 'Mueble');
+      final organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      final drawer = await useCases.createItem(name: 'Cajón', parentId: organizer.id);
+      final cubit = build(organizer.id);
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.path, [furniture]);
+      expect(cubit.state.children, [drawer]);
+      expect(cubit.state.depth, 2);
+      expect(cubit.state.canHoldMore, isTrue);
+      expect(cubit.state.isOverflowing, isFalse);
+
+      expect(await cubit.moveOut(), isNull);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.path, isEmpty);
+      expect(cubit.state.depth, 1);
+      expect(cubit.state.item?.parentId, isNull);
+    });
+
+    test('señala el contenedor lleno y el desbordado cuando se bajó el límite', () async {
+      useCases = TestUseCases(policy: const ContainmentPolicy(maxDepth: 2));
+      final furniture = await useCases.createItem(name: 'Mueble');
+      final organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      // El cajón quedó en el nivel 3 antes de bajar el límite.
+      final drawer = await useCases.createItem(name: 'Cajón');
+      await useCases.repository.moveItem(drawer.copyWith(parentId: () => organizer.id), const []);
+
+      final full = build(furniture.id);
+      final overflowing = build(organizer.id);
+      final leaf = build(drawer.id);
+      addTearDown(full.close);
+      addTearDown(overflowing.close);
+      addTearDown(leaf.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(full.state.canHoldMore, isTrue);
+      expect(overflowing.state.canHoldMore, isFalse);
+      expect(overflowing.state.isOverflowing, isTrue);
+      expect(leaf.state.isOverflowing, isFalse);
+      expect(leaf.state.maxDepth, 2);
+    });
+
+    test('sacar un objeto que ya no existe devuelve el error', () async {
+      final cubit = build('missing');
+      addTearDown(cubit.close);
+
+      expect(await cubit.moveOut(), isA<ItemNotFoundException>());
     });
   });
 
@@ -196,6 +263,129 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect((cubit.state.error! as ItemFormGeneralError).error, isA<ItemNotFoundException>());
+    });
+
+    test('crea el objeto dentro del contenedor indicado y muestra su ruta', () async {
+      final furniture = await useCases.createItem(name: 'Mueble');
+      final organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      final cubit = ItemFormCubit.create(
+        createItem: useCases.createItem,
+        parentId: organizer.id,
+        watchItemTree: useCases.watchItemTree,
+      );
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.parentPath, [furniture, organizer]);
+
+      await cubit.submit(name: 'Cajón', description: '');
+
+      expect(cubit.state.status, ItemFormStatus.saved);
+      expect((await useCases.repository.getById(cubit.state.savedItemId!))!.parentId, organizer.id);
+    });
+
+    test('si el contenedor ya no existe, no muestra ruta y el error llega al guardar', () async {
+      final cubit = ItemFormCubit.create(
+        createItem: useCases.createItem,
+        parentId: 'missing',
+        watchItemTree: useCases.watchItemTree,
+      );
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.parentPath, isEmpty);
+
+      await cubit.submit(name: 'Cajón', description: '');
+
+      expect((cubit.state.error! as ItemFormGeneralError).error, isA<ItemNotFoundException>());
+    });
+  });
+
+  group('MoveItemCubit', () {
+    late HouseholdItem furniture;
+    late HouseholdItem organizer;
+    late HouseholdItem drawer;
+    late HouseholdItem scissors;
+
+    // Mueble › Organizador › Cajón y Tijeras suelta.
+    setUp(() async {
+      furniture = await useCases.createItem(name: 'Mueble');
+      organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      drawer = await useCases.createItem(name: 'Cajón', parentId: organizer.id);
+      scissors = await useCases.createItem(name: 'Tijeras');
+    });
+
+    MoveItemCubit build(String id) => MoveItemCubit(
+          id,
+          watchItemTree: useCases.watchItemTree,
+          moveItem: useCases.moveItem,
+          containmentPolicy: useCases.policy,
+        );
+
+    test('excluye el objeto y su contenido, y marca el contenedor actual', () async {
+      final cubit = build(organizer.id);
+      addTearDown(cubit.close);
+      expect(cubit.state.status, MoveItemStatus.loading);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.status, MoveItemStatus.ready);
+      expect(cubit.state.item, organizer);
+      expect(cubit.state.candidates, [
+        MoveCandidate(item: furniture, path: const [], block: MoveBlock.current),
+        MoveCandidate(item: scissors, path: const []),
+      ]);
+
+      cubit.search(' TIJ ');
+      expect(cubit.state.visible.map((c) => c.item), [scissors]);
+    });
+
+    test('bloquea los destinos que superarían el máximo de niveles', () async {
+      final cubit = MoveItemCubit(
+        furniture.id,
+        watchItemTree: useCases.watchItemTree,
+        moveItem: useCases.moveItem,
+        containmentPolicy: const ContainmentPolicy(maxDepth: 3),
+      );
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      // El mueble ocupa 3 niveles: solo cabe sin contenedor.
+      expect(cubit.state.candidates.single, MoveCandidate(item: scissors, path: const [], block: MoveBlock.tooDeep));
+      expect(cubit.maxDepth, 3);
+    });
+
+    test('mueve el objeto al contenedor elegido', () async {
+      final cubit = build(drawer.id);
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.moveTo(scissors);
+
+      expect(cubit.state.status, MoveItemStatus.moved);
+      expect(cubit.state.destination, scissors);
+      expect((await useCases.repository.getById(drawer.id))!.parentId, scissors.id);
+
+      await cubit.moveTo(furniture); // Ya terminó: se ignora.
+      expect((await useCases.repository.getById(drawer.id))!.parentId, scissors.id);
+    });
+
+    test('muestra el error si el destino dejó de ser válido', () async {
+      final cubit = build(furniture.id);
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.moveTo(drawer); // Está dentro del mueble.
+
+      expect(cubit.state.status, MoveItemStatus.ready);
+      expect(cubit.state.error, isA<ItemContainmentCycleException>());
+    });
+
+    test('informa missing si el objeto no existe', () async {
+      final cubit = build('missing');
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.status, MoveItemStatus.missing);
     });
   });
 

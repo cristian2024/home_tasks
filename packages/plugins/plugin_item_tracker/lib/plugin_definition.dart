@@ -35,6 +35,8 @@ import 'src/presentation/form/item_form_screen.dart';
 import 'src/presentation/item_tracker_routes.dart';
 import 'src/presentation/list/item_list_cubit.dart';
 import 'src/presentation/list/item_list_screen.dart';
+import 'src/presentation/move/move_item_cubit.dart';
+import 'src/presentation/move/move_item_screen.dart';
 import 'src/presentation/not_found/not_found_screen.dart';
 import 'src/presentation/scan/scan_bloc.dart';
 import 'src/presentation/scan/scan_screen.dart';
@@ -195,7 +197,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         GoRoute(
           path: ItemTrackerRoutes.items,
           builder: (context, state) => BlocProvider(
-            create: (_) => ItemListCubit(_dependencies.watchItems),
+            create: (_) => ItemListCubit(_dependencies.watchItemTree),
             child: const ItemListScreen(),
           ),
         ),
@@ -213,6 +215,8 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
             create: (_) => ItemFormCubit.create(
               createItem: _dependencies.createItem,
               identifier: ItemTrackerRoutes.identifierFrom(state.uri.queryParameters),
+              parentId: state.uri.queryParameters['parent'],
+              watchItemTree: _dependencies.watchItemTree,
             ),
             child: const ItemFormScreen(),
           ),
@@ -240,7 +244,10 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
                 watchItem: deps.watchItem,
                 watchItemIdentifiers: deps.watchItemIdentifiers,
                 watchItemEvents: deps.watchItemEvents,
+                watchItemTree: deps.watchItemTree,
                 unbindIdentifier: deps.unbindIdentifier,
+                moveItem: deps.moveItem,
+                containmentPolicy: deps.containmentPolicy,
               ),
               child: const ItemDetailScreen(),
             );
@@ -262,6 +269,18 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
           builder: (context, state) => BlocProvider(
             create: (_) => AddEventCubit(state.pathParameters['id']!, addItemEvent: _dependencies.addItemEvent),
             child: const AddEventScreen(),
+          ),
+        ),
+        GoRoute(
+          path: ItemTrackerRoutes.movePattern,
+          builder: (context, state) => BlocProvider(
+            create: (_) => MoveItemCubit(
+              state.pathParameters['id']!,
+              watchItemTree: _dependencies.watchItemTree,
+              moveItem: _dependencies.moveItem,
+              containmentPolicy: _dependencies.containmentPolicy,
+            ),
+            child: const MoveItemScreen(),
           ),
         ),
         GoRoute(

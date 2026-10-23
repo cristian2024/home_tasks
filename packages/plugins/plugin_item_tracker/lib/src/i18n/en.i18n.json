@@ -90,7 +90,21 @@
       "remove_identifier_title": "Remove the identifier?",
       "remove_identifier_message": "The {type} “{value}” will no longer open this item. You can link it again to any item.",
       "remove_identifier_confirm": "Remove",
-      "identifier_removed": "Identifier removed."
+      "identifier_removed": "Identifier removed.",
+      "location": "Location",
+      "location_root": "Not inside any item.",
+      "open_container": "Open “{name}”",
+      "move": "Move to…",
+      "move_out": "Take out of container",
+      "move_out_title": "Take out of the container?",
+      "move_out_message": "“{name}” will no longer be inside “{container}”. Everything it holds moves with it.",
+      "move_out_confirm": "Take out",
+      "moved_out": "Taken out of “{name}”.",
+      "contents": "Contents",
+      "no_contents": "Holds no items.",
+      "add_inside": "Add item here",
+      "full": "No more levels fit inside this item (maximum {max}).",
+      "overflowing": "This item is at level {depth} and the maximum is {max}: what it holds exceeds the limit. Move it or take it out."
     },
     "events": {
       "created": "Item created as “{name}”",
@@ -124,7 +138,8 @@
       "save": "Save",
       "identifiers": "Identifiers",
       "identifiers_help": "They are linked right away, no need to save.",
-      "add_identifier": "Add identifier"
+      "add_identifier": "Add identifier",
+      "parent": "Will be created inside: {path}"
     },
     "associate": {
       "title": "Link to an item",
@@ -133,6 +148,15 @@
       "empty": "No items match the search.",
       "select": "Link to {name}",
       "success": "Identifier linked to {name}."
+    },
+    "move": {
+      "title": "Move “{name}”",
+      "search": "Search container by name",
+      "empty": "No item matches the search.",
+      "select": "Move to {name}",
+      "current": "Already here",
+      "too_deep": "Would exceed the maximum of {max} levels",
+      "moved": "Moved to “{name}”."
     },
     "add_event": {
       "title": "Add note",
@@ -154,7 +178,9 @@
       "metadata_too_many": "There is too much additional data.",
       "number_invalid": "Enter a valid number.",
       "unexpected": "An unexpected error occurred.",
-      "identifier_not_found": "The identifier is no longer linked to this item."
+      "identifier_not_found": "The identifier is no longer linked to this item.",
+      "containment_cycle": "An item cannot go inside itself or inside something it holds.",
+      "containment_too_deep": "It would exceed the maximum of {max} levels."
     }
   }
 }

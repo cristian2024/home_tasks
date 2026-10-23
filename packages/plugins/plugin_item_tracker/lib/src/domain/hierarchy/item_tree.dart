@@ -23,6 +23,9 @@ class ItemTree {
 
   HouseholdItem? operator [](String id) => _items[id];
 
+  /// Todos los objetos, en el orden en que se recibieron.
+  List<HouseholdItem> get items => List.unmodifiable(_items.values);
+
   /// Contenido directo de [id], ordenado por nombre.
   List<HouseholdItem> childrenOf(String id) => List.unmodifiable(_children[id] ?? const <HouseholdItem>[]);
 

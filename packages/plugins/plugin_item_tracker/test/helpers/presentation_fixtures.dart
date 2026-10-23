@@ -42,14 +42,17 @@ class FakeHardware {
 
 /// Casos de uso reales sobre un repositorio en memoria.
 class TestUseCases {
-  TestUseCases() : repository = InMemoryHouseholdItemRepository();
+  TestUseCases({this.policy = const ContainmentPolicy()}) : repository = InMemoryHouseholdItemRepository();
 
   final InMemoryHouseholdItemRepository repository;
+  final ContainmentPolicy policy;
   final ids = _Ids();
   final clock = FixedClock(DateTime.utc(2026, 10, 21, 14, 30));
   final eventBus = EventBus();
 
-  CreateItem get createItem => CreateItem(repository, ids, clock, eventBus);
+  CreateItem get createItem => CreateItem(repository, ids, clock, eventBus, policy);
+  MoveItem get moveItem => MoveItem(repository, ids, clock, policy);
+  WatchItemTree get watchItemTree => WatchItemTree(repository);
   UpdateItem get updateItem => UpdateItem(repository, ids, clock);
   BindIdentifier get bindIdentifier => BindIdentifier(repository, ids, clock);
   UnbindIdentifier get unbindIdentifier => UnbindIdentifier(repository, ids, clock);
@@ -66,7 +69,7 @@ class _Ids implements IdGenerator {
 /// Monta el plugin inicializado dentro de una app mínima con su dashboard en
 /// `/` y sus rutas. El plugin se inicializa la primera vez que hace falta.
 class PluginHarness {
-  PluginHarness({FakeHardware? hardware}) : hardware = hardware ?? FakeHardware() {
+  PluginHarness({FakeHardware? hardware, int? maxContainmentDepth}) : hardware = hardware ?? FakeHardware() {
     locator
       ..registerSingleton<IdGenerator>(_Ids())
       ..registerSingleton<Clock>(FixedClock(DateTime.utc(2026, 10, 21, 14, 30)));
@@ -77,6 +80,7 @@ class PluginHarness {
       permissions: this.hardware.permissions,
       repositoryFactory: (_) => repository,
       localization: localization,
+      maxContainmentDepth: maxContainmentDepth,
     );
   }
 
@@ -116,12 +120,13 @@ class PluginHarness {
     await tester.pumpAndSettle();
   }
 
-  Future<HouseholdItem> createItem(String name, {String? qr, String? nfc}) async {
+  Future<HouseholdItem> createItem(String name, {String? qr, String? nfc, String? parentId}) async {
     await _ensureInitialized();
     final deps = locator.get<ItemTrackerDependencies>();
     final item = await deps.createItem(
       name: name,
       identifier: qr == null ? null : (rawValue: qr, type: IdentifierType.qr),
+      parentId: parentId,
     );
     if (nfc != null) {
       await deps.bindIdentifier(item.id, rawValue: nfc, type: IdentifierType.nfc);

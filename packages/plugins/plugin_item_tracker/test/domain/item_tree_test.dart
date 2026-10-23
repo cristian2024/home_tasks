@@ -23,6 +23,7 @@ void main() {
       expect(tree.childrenOf('scissors'), isEmpty);
       expect(tree['organizer']?.name, 'Organizador');
       expect(tree['missing'], isNull);
+      expect(tree.items.map((i) => i.id), ['furniture', 'organizer', 'drawer2', 'drawer1', 'scissors']);
     });
 
     test('altura del subárbol y pertenencia', () {

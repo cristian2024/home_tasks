@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/household_item.dart';
 import '../../domain/entities/physical_identifier.dart';
 import '../../domain/errors/item_tracker_exception.dart';
 import '../../domain/use_cases/create_item.dart';
@@ -94,6 +95,8 @@ class ItemFormState extends Equatable {
     this.description = '',
     this.entries = const [],
     this.initialIdentifier,
+    this.parentId,
+    this.parentPath = const [],
     this.error,
     this.savedItemId,
   });
@@ -107,6 +110,11 @@ class ItemFormState extends Equatable {
 
   /// Identificador que se asociará al crear (desde "Crear nuevo objeto").
   final ({String rawValue, IdentifierType type})? initialIdentifier;
+
+  /// Contenedor en el que se creará el objeto ("Añadir objeto aquí") y su
+  /// ruta completa, incluido él mismo, cuando ya se ha cargado.
+  final String? parentId;
+  final List<HouseholdItem> parentPath;
   final ItemFormError? error;
   final String? savedItemId;
 
@@ -115,6 +123,7 @@ class ItemFormState extends Equatable {
     String? name,
     String? description,
     List<MetadataEntry>? entries,
+    List<HouseholdItem>? parentPath,
     ItemFormError? Function()? error,
     String? savedItemId,
   }) {
@@ -124,25 +133,35 @@ class ItemFormState extends Equatable {
       description: description ?? this.description,
       entries: entries ?? this.entries,
       initialIdentifier: initialIdentifier,
+      parentId: parentId,
+      parentPath: parentPath ?? this.parentPath,
       error: error == null ? this.error : error(),
       savedItemId: savedItemId ?? this.savedItemId,
     );
   }
 
   @override
-  List<Object?> get props => [status, name, description, entries, initialIdentifier, error, savedItemId];
+  List<Object?> get props =>
+      [status, name, description, entries, initialIdentifier, parentId, parentPath, error, savedItemId];
 }
 
 /// Formulario de creación y edición de objetos (Cubit, §11.1).
 class ItemFormCubit extends Cubit<ItemFormState> {
-  /// Formulario de creación, opcionalmente con el identificador escaneado.
+  /// Formulario de creación, opcionalmente con el identificador escaneado o
+  /// dentro de un contenedor ([parentId], cuya ruta se lee de [watchItemTree]).
   ItemFormCubit.create({
     required CreateItem createItem,
     ({String rawValue, IdentifierType type})? identifier,
+    String? parentId,
+    WatchItemTree? watchItemTree,
   })  : _createItem = createItem,
         _updateItem = null,
         _itemId = null,
-        super(ItemFormState(status: ItemFormStatus.editing, initialIdentifier: identifier));
+        super(ItemFormState(status: ItemFormStatus.editing, initialIdentifier: identifier, parentId: parentId)) {
+    if (parentId != null && watchItemTree != null) {
+      _loadParentPath(parentId, watchItemTree);
+    }
+  }
 
   /// Formulario de edición: carga el objeto con [getItem].
   ItemFormCubit.edit(
@@ -165,6 +184,16 @@ class ItemFormCubit extends Cubit<ItemFormState> {
 
   /// Objeto que se edita; `null` al crear.
   String? get itemId => _itemId;
+
+  /// Si el contenedor ya no existe, la ruta queda vacía y el error llega al
+  /// guardar.
+  Future<void> _loadParentPath(String parentId, WatchItemTree watchItemTree) async {
+    final tree = await watchItemTree().first;
+    final parent = tree[parentId];
+    if (parent != null && !isClosed) {
+      emit(state.copyWith(parentPath: [...tree.pathOf(parentId), parent]));
+    }
+  }
 
   Future<void> _load(GetItem getItem) async {
     try {
@@ -225,6 +254,7 @@ class ItemFormCubit extends Cubit<ItemFormState> {
               description: description,
               metadata: metadata,
               identifier: state.initialIdentifier,
+              parentId: state.parentId,
             ))
               .id;
       emit(state.copyWith(status: ItemFormStatus.saved, savedItemId: itemId));
