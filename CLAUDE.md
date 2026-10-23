@@ -4,7 +4,9 @@
 - **Instalación/Bootstrap:** `melos bs`
 - **Análisis estático:** `melos run analyze`[cite: 1]
 - **Ejecutar pruebas:** `melos run test`[cite: 1]
-- **Generar código (Isar / Slang):** `melos run build:g`[cite: 1]
+- **Generar código (Isar / Slang):** `melos run gen` (`gen:isar` + `gen:i18n`). `melos bs` lo ejecuta al terminar.
+- **Código generado:** los `*.g.dart` no se versionan (`.gitignore`). Después de cambiar de rama o tocar un modelo Isar o un JSON de traducciones, ejecutar `melos run gen`. Los paquetes que aún tengan generados versionados los sacan del índice (`git rm --cached`) en la primera rama que los toque.
+- **build_runner y `example/`:** un paquete con `build_runner` y app de ejemplo debe tener un `build.yaml` que excluya `example/**`. Si no, build_runner sigue `example/ios/.symlinks` hasta `~/.pub-cache` y borra archivos de otros paquetes.
 - **Generar APK de release (apps/app):** `melos run build:apk` → `apps/app/build/app/outputs/flutter-apk/app-release.apk`
 
 ---

@@ -7,6 +7,9 @@ pubspec_overrides.yaml
 .flutter-plugins-dependencies
 coverage/
 
+# Código generado (`melos run gen`, se ejecuta tras `melos bs`)
+*.g.dart
+
 # IDE
 .idea/
 *.iml

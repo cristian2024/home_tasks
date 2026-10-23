@@ -10,6 +10,10 @@ class HouseholdItem extends Equatable {
   final DateTime createdAt; // UTC, inmutable
   final DateTime updatedAt; // UTC, se actualiza en cada escritura (LWW futuro)
 
+  /// Objeto que lo contiene (p. ej. el organizador de un cajón); `null` si no
+  /// está dentro de ningún otro.
+  final String? parentId;
+
   const HouseholdItem({
     required this.id,
     required this.name,
@@ -17,6 +21,7 @@ class HouseholdItem extends Equatable {
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
+    this.parentId,
   });
 
   HouseholdItem copyWith({
@@ -24,6 +29,7 @@ class HouseholdItem extends Equatable {
     String? description,
     ItemMetadata? metadata,
     DateTime? updatedAt,
+    String? Function()? parentId,
   }) {
     return HouseholdItem(
       id: id,
@@ -32,11 +38,12 @@ class HouseholdItem extends Equatable {
       metadata: metadata ?? this.metadata,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      parentId: parentId == null ? this.parentId : parentId(),
     );
   }
 
   @override
-  List<Object?> get props => [id, name, description, metadata, createdAt, updatedAt];
+  List<Object?> get props => [id, name, description, metadata, createdAt, updatedAt, parentId];
 
   @override
   bool get stringify => true;

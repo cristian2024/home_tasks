@@ -22,6 +22,15 @@ void main() {
     expect(item().toString(), contains('Caja A'));
   });
 
+  test('HouseholdItem.copyWith asigna, conserva y quita el contenedor', () {
+    final inside = item().copyWith(parentId: () => 'box');
+
+    expect(inside.parentId, 'box');
+    expect(inside.copyWith(name: 'Caja B').parentId, 'box');
+    expect(inside.copyWith(parentId: () => null).parentId, isNull);
+    expect(inside, isNot(item()));
+  });
+
   test('igualdad por valor de las entidades', () {
     expect(identifier(), identifier());
     expect(identifier(), isNot(identifier(type: IdentifierType.nfc)));

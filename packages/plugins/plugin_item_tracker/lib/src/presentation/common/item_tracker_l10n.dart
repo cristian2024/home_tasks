@@ -56,6 +56,12 @@ IdentifierType identifierTypeFromScan(ScanType type) => switch (type) {
         ),
         subtitle: null,
       ),
+    ItemEventKind.moved => (
+        title: event.title.isEmpty ? events.movedOut : events.moved(name: event.title),
+        subtitle: null,
+      ),
+    ItemEventKind.childAdded => (title: events.childAdded(name: event.title), subtitle: null),
+    ItemEventKind.childRemoved => (title: events.childRemoved(name: event.title), subtitle: null),
     ItemEventKind.note => (title: event.title, subtitle: event.description.isEmpty ? null : event.description),
   };
 }

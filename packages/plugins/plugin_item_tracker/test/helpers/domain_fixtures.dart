@@ -23,6 +23,7 @@ HouseholdItem item({
   String description = '',
   ItemMetadata metadata = const ItemMetadata.empty(),
   DateTime? updatedAt,
+  String? parentId,
 }) =>
     HouseholdItem(
       id: id,
@@ -31,6 +32,7 @@ HouseholdItem item({
       metadata: metadata,
       createdAt: t0,
       updatedAt: updatedAt ?? t0,
+      parentId: parentId,
     );
 
 PhysicalIdentifier identifier({

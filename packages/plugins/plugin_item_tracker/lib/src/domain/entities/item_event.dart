@@ -16,6 +16,18 @@ enum ItemEventKind {
   /// Técnico. `title`: `IdentifierType.name`. `description`: el `rawValue`.
   identifierUnbound,
 
+  /// Técnico, en el objeto movido. `title`: nombre del contenedor nuevo.
+  /// `description`: su ID. Ambos vacíos si ya no está en ningún contenedor.
+  moved,
+
+  /// Técnico, en el contenedor. `title`: nombre del objeto que entró.
+  /// `description`: su ID.
+  childAdded,
+
+  /// Técnico, en el contenedor. `title`: nombre del objeto que salió.
+  /// `description`: su ID.
+  childRemoved,
+
   /// Funcional, escrito por el usuario. `title` y `description` son texto libre.
   note,
 }

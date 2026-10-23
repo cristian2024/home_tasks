@@ -20,4 +20,9 @@ class IsarHouseholdItem {
 
   @Index()
   late DateTime updatedAt;
+
+  /// `HouseholdItem.parentId`. Los registros anteriores a este campo se leen
+  /// como `null` (sin contenedor).
+  @Index()
+  String? parentId;
 }

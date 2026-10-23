@@ -100,6 +100,7 @@ void main() {
     });
 
     test('deja de contar en búsquedas y listados pero se conserva marcado', () async {
+      expect(await repository.getIdentifier('i1'), ident('i1', 'QR-123', IdentifierType.qr));
       final deletedAt = t0.add(const Duration(hours: 1));
       await repository.unbindIdentifier('i1', deletedAt: deletedAt, event: event('e1', kind: ItemEventKind.identifierUnbound));
 
@@ -130,6 +131,22 @@ void main() {
 
       expect(await repository.watchEvents('item-1').first, hasLength(1));
     });
+  });
+
+  test('moveItem guarda el contenedor y los eventos de todos en una transacción', () async {
+    await repository.createItem(item(id: 'box', name: 'Caja'), events: const []);
+    await repository.createItem(item(), events: const []);
+
+    await repository.moveItem(
+      item(parentId: 'box', updatedAt: t0.add(const Duration(hours: 1))),
+      [event('e1', kind: ItemEventKind.moved), event('e2', itemId: 'box', kind: ItemEventKind.childAdded)],
+    );
+
+    expect((await repository.getById('item-1'))?.parentId, 'box');
+    expect((await repository.getAll()).map((i) => i.id), containsAll(['box', 'item-1']));
+    expect((await repository.watchEvents('box').first).single.kind, ItemEventKind.childAdded);
+    final tree = await WatchItemTree(repository)().first;
+    expect(tree.childrenOf('box').single.id, 'item-1');
   });
 
   test('createItem es atómico: si el identificador choca no guarda el objeto', () async {

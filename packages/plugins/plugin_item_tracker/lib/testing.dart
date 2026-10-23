@@ -59,6 +59,18 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   Future<HouseholdItem?> getById(String id) async => _items[id];
 
   @override
+  Future<List<HouseholdItem>> getAll() async => _items.values.toList();
+
+  @override
+  Future<void> moveItem(HouseholdItem item, List<ItemEvent> events) async {
+    _items[item.id] = item;
+    for (final event in events) {
+      _events[event.id] = event;
+    }
+    _changes.add(null);
+  }
+
+  @override
   Stream<HouseholdItem?> watchById(String id) => _watch(() => _items[id]);
 
   List<HouseholdItem> _sortedItems() => _items.values.toList()..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));

@@ -19,6 +19,13 @@ abstract interface class HouseholdItemRepository {
 
   Future<HouseholdItem?> getById(String id);
 
+  /// Todos los objetos, sin orden garantizado.
+  Future<List<HouseholdItem>> getAll();
+
+  /// Reemplaza el objeto (con su nuevo `parentId`) y registra [events] (en el
+  /// objeto y en sus contenedores) en una sola transacción.
+  Future<void> moveItem(HouseholdItem item, List<ItemEvent> events);
+
   /// Emite el objeto (o `null` si no existe) cada vez que cambia.
   Stream<HouseholdItem?> watchById(String id);
 
