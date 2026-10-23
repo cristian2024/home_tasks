@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 import '../plugins/plugin_controller.dart';
 
 class CatalogState extends Equatable {
-  const CatalogState({this.plugins = const [], this.pending = const {}});
+  const CatalogState({this.plugins = const <PluginState>[], this.pending = const <String>{}});
 
   /// Todos los plugins registrados, en el orden del dashboard.
   final List<PluginState> plugins;
@@ -14,8 +14,8 @@ class CatalogState extends Equatable {
   final Set<String> pending;
 
   @override
-  List<Object?> get props => [
-    [for (final p in plugins) (p.plugin.id, p.status)],
+  List<Object?> get props => <Object?>[
+    <(String, PluginStatus)>[for (final PluginState p in plugins) (p.plugin.id, p.status)],
     pending,
   ];
 }
@@ -39,7 +39,7 @@ class CatalogCubit extends Cubit<CatalogState> {
     emit(
       CatalogState(
         plugins: state.plugins,
-        pending: {...state.pending, pluginId},
+        pending: <String>{...state.pending, pluginId},
       ),
     );
     try {
@@ -49,7 +49,7 @@ class CatalogCubit extends Cubit<CatalogState> {
         emit(
           CatalogState(
             plugins: _controller.states,
-            pending: {...state.pending}..remove(pluginId),
+            pending: <String>{...state.pending}..remove(pluginId),
           ),
         );
       }

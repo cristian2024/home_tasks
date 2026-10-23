@@ -28,16 +28,16 @@ GoRouter buildAppRouter({
   required GlobalKey<ScaffoldMessengerState> messengerKey,
   String initialLocation = AppRoutes.home,
 }) {
-  final guard = PluginRouteGuard(registry: registry, controller: controller);
+  final PluginRouteGuard guard = PluginRouteGuard(registry: registry, controller: controller);
   return GoRouter(
     initialLocation: initialLocation,
     refreshListenable: controller,
-    redirect: (context, state) {
-      final reason = guard.check(state.uri.path);
+    redirect: (BuildContext context, GoRouterState state) {
+      final BlockedReason? reason = guard.check(state.uri.path);
       if (reason == null) {
         return null;
       }
-      final message = switch (reason) {
+      final String message = switch (reason) {
         BlockedReason.disabled => appStrings.app.guard.pluginDisabled,
         BlockedReason.unavailable => appStrings.app.guard.pluginUnavailable,
       };
@@ -49,17 +49,17 @@ GoRouter buildAppRouter({
       });
       return AppRoutes.home;
     },
-    routes: withLanguageRebuild([
+    routes: withLanguageRebuild(<RouteBase>[
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => BlocProvider(
+        builder: (BuildContext context, GoRouterState state) => BlocProvider<HomeBloc>(
           create: (_) => HomeBloc(controller)..add(const HomeStarted()),
           child: const HomeDashboardScreen(),
         ),
       ),
       GoRoute(
         path: AppRoutes.catalog,
-        builder: (context, state) => BlocProvider(
+        builder: (BuildContext context, GoRouterState state) => BlocProvider<CatalogCubit>(
           create: (_) => CatalogCubit(controller),
           child: const CatalogScreen(),
         ),
@@ -69,7 +69,7 @@ GoRouter buildAppRouter({
         builder: (BuildContext context, GoRouterState state) =>
             const SettingsScreen(),
       ),
-      for (final plugin in registry.allPlugins) ...plugin.routes,
+      for (final HomePlugin plugin in registry.allPlugins) ...plugin.routes,
     ]),
   );
 }
@@ -77,15 +77,15 @@ GoRouter buildAppRouter({
 /// Envuelve el contenido de cada `GoRoute` con [LanguageRebuilder] para que
 /// las páginas abiertas cambien de idioma (ver su documentación). Las rutas
 /// con `pageBuilder` se dejan igual: ningún plugin lo usa todavía.
-List<RouteBase> withLanguageRebuild(List<RouteBase> routes) => [
-  for (final route in routes)
+List<RouteBase> withLanguageRebuild(List<RouteBase> routes) => <RouteBase>[
+  for (final RouteBase route in routes)
     if (route is GoRoute && route.builder != null)
       GoRoute(
         path: route.path,
         name: route.name,
         redirect: route.redirect,
         parentNavigatorKey: route.parentNavigatorKey,
-        builder: (context, state) =>
+        builder: (BuildContext context, GoRouterState state) =>
             LanguageRebuilder(child: route.builder!(context, state)),
         routes: withLanguageRebuild(route.routes),
       )
