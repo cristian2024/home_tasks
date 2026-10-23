@@ -88,7 +88,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 ```
 
 - **Compile-Time Discovery**: Todos los plugins conocidos se registran estáticamente en la aplicación principal (`apps/app/lib/app_module_registrar.dart`) como una lista de `PluginFactory`. Cada factoría construye su plugin y registra sus traducciones (para que el catálogo muestre su nombre aunque esté desactivado). **Para añadir un plugin**: dependencia en `apps/app/pubspec.yaml` y una entrada en `appPluginFactories`.
-- **Arranque** (`apps/app/lib/bootstrap.dart`): idioma → servicios base en `core_di` (`EventBus`, `IdGenerator`, `Clock`) → registro de plugins → `LocalDatabase.open` con los esquemas de **todos** los plugins → `Isar` en `core_di` → `PluginLifecycleManager` con `IsarPluginPreferenceRepository` → carga de los plugins activos y disponibles.
+- **Arranque** (`apps/app/lib/bootstrap.dart`): preferencias de la app (tema e idioma, de `shared_preferences`) → servicios base en `core_di` (`EventBus`, `IdGenerator`, `Clock`) → registro de plugins → `LocalDatabase.open` con los esquemas de **todos** los plugins → `Isar` en `core_di` → `PluginLifecycleManager` con `IsarPluginPreferenceRepository` → carga de los plugins activos y disponibles.
 - **Run-Time Activation**: Un plugin registrado puede ser desactivado por el usuario. Al desactivarse:
   - Sus rutas de navegación se remueven o bloquean.
   - Sus Widgets en la pantalla de inicio no se renderizan.
@@ -420,7 +420,13 @@ class UserPluginPreference extends Equatable {
 - **Reordenar** (`onReorderItem`) persiste el nuevo `sortOrder`; los plugins que no se muestran conservan su orden relativo al final.
 - **La tarjeta de error** ofrece *Reintentar*, que vuelve a llamar a `load()`.
 - **Sin plugins activos**, un estado vacío lleva al catálogo.
-- **Catálogo** (`/plugins-catalog`): un interruptor por plugin con su nombre y descripción traducidos (`LocalizationCoordinator.translate(nameKey)`). Los no disponibles no se pueden activar.
+- **Catálogo** (`/plugins-catalog`): un interruptor por plugin con su nombre y descripción traducidos (`LocalizationCoordinator.translate(nameKey)`). Los no disponibles no se pueden activar. Se abre desde Configuración.
+- **Configuración** (`/settings`, engranaje de la barra de inicio):
+  - **Apariencia**: tema *Sistema / Claro / Oscuro* (`ThemeMode` de `MaterialApp`).
+  - **Idioma**: *Sistema / Español / English*, cada idioma con su propio nombre. Con *Sistema* la app sigue el idioma del dispositivo, también si cambia con la app abierta; con uno fijado, esos cambios se ignoran.
+  - **Módulos**: abre el catálogo.
+  - **Datos**: *Exportar / importar datos*, visible pero desactivado (*Próximamente*). Pendiente de diseño (§21).
+  - **Persistencia**: `AppSettingsRepository` con `SharedPreferencesAppSettingsRepository`. Las preferencias de la app van en `shared_preferences`, separadas de la base de datos de los plugins; un valor que ya no se reconoce se lee como el valor por defecto. `AppSettingsController` (Cubit) aplica el idioma y guarda cada cambio; se cargan antes del primer frame.
 
 ---
 
@@ -849,7 +855,9 @@ class EventBus {
 
 ```mermaid
 graph TD
-    Home[/ - HomeDashboardScreen\] --> Catalog[/plugins-catalog - CatalogScreen\]
+    Home[/ - HomeDashboardScreen\] --> Settings[/settings - SettingsScreen\]
+    Settings --> Catalog[/plugins-catalog - CatalogScreen\]
+    Home -->|Sin módulos activos| Catalog
     Home --> Scan[/item-tracker/scan - ScanScreen\]
     Scan -->|Identificado Exitoso| Detail[/item-tracker/item/:id - DetailScreen\]
     Scan -->|Identificador Desconocido| NotFound[/item-tracker/not-found - UnknownCodeScreen\]
@@ -889,7 +897,7 @@ graph TD
   - El router incluye las rutas de **todos** los plugins registrados. El prefijo de cada plugin es el primer segmento de sus rutas (`/item-tracker`), así que el contrato `HomePlugin` no cambia.
   - Solo se abren las rutas de plugins en estado `ready`. Los `failed` también se bloquean, porque sus dependencias no están registradas, y muestran otro aviso.
   - El router se reevalúa con cada cambio del `PluginController` (`refreshListenable`).
-- **Cambio de idioma con la app abierta**: los textos de slang son globales y las páginas abiertas no se enteran del cambio. `LanguageScope` (`core_ui`) expone el idioma, y el router envuelve el contenido de cada ruta en `LanguageRebuilder`, que lo vuelve a montar al cambiar el idioma sin tocar la pila de navegación. La app sigue el idioma del sistema (`didChangeLocales`).
+- **Cambio de idioma con la app abierta**: los textos de slang son globales y las páginas abiertas no se enteran del cambio. `LanguageScope` (`core_ui`) expone el idioma, y el router envuelve el contenido de cada ruta en `LanguageRebuilder`, que lo vuelve a montar al cambiar el idioma sin tocar la pila de navegación. La app sigue el idioma del sistema (`didChangeLocales`) salvo que el usuario haya fijado uno en Configuración.
 
 ---
 
@@ -981,6 +989,9 @@ abstract final class AppSizes {
 | `AppCard` | Con `onTap` es un único control con `semanticLabel` |
 | `AppSectionHeader` | Marcado como encabezado semántico |
 | `AppStatusView` | Hace scroll: no se desborda al 200 % |
+| `AppSettingsSection` | Título como encabezado semántico; filas en una tarjeta |
+| `AppSettingsTile` | Fila de 48 dp o más; con `enabled: false` no responde (funciones futuras) |
+| `AppChoiceSelector<T>` | `ChoiceChip` que pasan a la línea siguiente: no desborda al 200 %; anuncia la opción elegida |
 | `AppLoadingView` | Anunciado como "Cargando…" |
 | `showAppConfirmDialog` | Devuelve `true` solo al confirmar; textos por defecto de `core_ui` |
 
@@ -1086,3 +1097,4 @@ Antes de dar por completada la implementación de la primera iteración, verific
 
 1. **Cifrado de Base de Datos Local**: Evaluar en la versión `v1.1.0` la inclusión de la clave de cifrado Isar mediante `flutter_secure_storage` si se añaden datos con nivel alto de sensibilidad personal.
 2. **Sincronización Cloud**: La arquitectura de repositorios actual admite la futura adición de un paquete `core_network` con soporte Dio / GraphQL sin requerir cambios estructurales en los plugins funcionales existentes.
+3. **Exportar / importar datos**: la entrada ya está en Configuración, desactivada. Falta decidir el formato, qué incluye (datos de los plugins, preferencias de módulos y de la app) y cómo participa cada plugin.
