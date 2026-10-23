@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:plugin_item_tracker/src/domain/hierarchy/item_tree.dart';
 
 import '../../domain/entities/household_item.dart';
 import '../../domain/entities/physical_identifier.dart';
@@ -35,7 +36,7 @@ class MetadataEntry extends Equatable {
       );
 
   @override
-  List<Object?> get props => [id, key, type, text, flag];
+  List<Object?> get props => <Object?>[id, key, type, text, flag];
 }
 
 enum ItemFormStatus { loading, editing, submitting, saved }
@@ -54,7 +55,7 @@ final class ItemFormValidationError extends ItemFormError {
   final int? entryId;
 
   @override
-  List<Object?> get props => [error.field, error.reason, error.detail, entryId];
+  List<Object?> get props => <Object?>[error.field, error.reason, error.detail, entryId];
 }
 
 /// Clave repetida en dos filas.
@@ -65,7 +66,7 @@ final class ItemFormDuplicatedKey extends ItemFormError {
   final int entryId;
 
   @override
-  List<Object?> get props => [key, entryId];
+  List<Object?> get props => <Object?>[key, entryId];
 }
 
 /// Número que no se puede interpretar.
@@ -75,7 +76,7 @@ final class ItemFormInvalidNumber extends ItemFormError {
   final int entryId;
 
   @override
-  List<Object?> get props => [entryId];
+  List<Object?> get props => <Object?>[entryId];
 }
 
 /// Error no ligado a un campo (identificador ya asociado, objeto borrado…).
@@ -85,7 +86,7 @@ final class ItemFormGeneralError extends ItemFormError {
   final Object error;
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => <Object?>[error];
 }
 
 class ItemFormState extends Equatable {
@@ -93,10 +94,10 @@ class ItemFormState extends Equatable {
     required this.status,
     this.name = '',
     this.description = '',
-    this.entries = const [],
+    this.entries = const <MetadataEntry>[],
     this.initialIdentifier,
     this.parentId,
-    this.parentPath = const [],
+    this.parentPath = const <HouseholdItem>[],
     this.error,
     this.savedItemId,
   });
@@ -142,7 +143,7 @@ class ItemFormState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [status, name, description, entries, initialIdentifier, parentId, parentPath, error, savedItemId];
+      <Object?>[status, name, description, entries, initialIdentifier, parentId, parentPath, error, savedItemId];
 }
 
 /// Formulario de creación y edición de objetos (Cubit, §11.1).
@@ -188,23 +189,23 @@ class ItemFormCubit extends Cubit<ItemFormState> {
   /// Si el contenedor ya no existe, la ruta queda vacía y el error llega al
   /// guardar.
   Future<void> _loadParentPath(String parentId, WatchItemTree watchItemTree) async {
-    final tree = await watchItemTree().first;
-    final parent = tree[parentId];
+    final ItemTree tree = await watchItemTree().first;
+    final HouseholdItem? parent = tree[parentId];
     if (parent != null && !isClosed) {
-      emit(state.copyWith(parentPath: [...tree.pathOf(parentId), parent]));
+      emit(state.copyWith(parentPath: <HouseholdItem>[...tree.pathOf(parentId), parent]));
     }
   }
 
   Future<void> _load(GetItem getItem) async {
     try {
-      final item = await getItem(_itemId!);
+      final HouseholdItem item = await getItem(_itemId!);
       emit(
         state.copyWith(
           status: ItemFormStatus.editing,
           name: item.name,
           description: item.description,
-          entries: [
-            for (final MapEntry(:key, :value) in item.metadata.values.entries)
+          entries: <MetadataEntry>[
+            for (final MapEntry<String, Object>(:String key, :Object value) in item.metadata.values.entries)
               MetadataEntry(
                 id: _nextEntryId++,
                 key: key,
@@ -224,13 +225,16 @@ class ItemFormCubit extends Cubit<ItemFormState> {
     }
   }
 
-  void addEntry() => emit(state.copyWith(entries: [...state.entries, MetadataEntry(id: _nextEntryId++)]));
+  void addEntry() =>
+      emit(state.copyWith(entries: <MetadataEntry>[...state.entries, MetadataEntry(id: _nextEntryId++)]));
 
   void removeEntry(int entryId) =>
-      emit(state.copyWith(entries: state.entries.where((entry) => entry.id != entryId).toList()));
+      emit(state.copyWith(entries: state.entries.where((MetadataEntry entry) => entry.id != entryId).toList()));
 
   void updateEntry(MetadataEntry entry) => emit(
-        state.copyWith(entries: [for (final e in state.entries) e.id == entry.id ? entry : e]),
+        state.copyWith(
+          entries: <MetadataEntry>[for (final MetadataEntry e in state.entries) e.id == entry.id ? entry : e],
+        ),
       );
 
   Future<void> submit({required String name, required String description}) async {
@@ -247,7 +251,7 @@ class ItemFormCubit extends Cubit<ItemFormState> {
 
     emit(state.copyWith(status: ItemFormStatus.submitting, error: () => null));
     try {
-      final itemId = isEditing
+      final String itemId = isEditing
           ? (await _updateItem!(_itemId!, name: name, description: description, metadata: metadata)).id
           : (await _createItem!(
               name: name,
@@ -259,8 +263,8 @@ class ItemFormCubit extends Cubit<ItemFormState> {
               .id;
       emit(state.copyWith(status: ItemFormStatus.saved, savedItemId: itemId));
     } on ItemValidationException catch (error) {
-      final entryId = error.field == ValidationField.metadata
-          ? state.entries.where((entry) => entry.key.trim() == error.detail).firstOrNull?.id
+      final int? entryId = error.field == ValidationField.metadata
+          ? state.entries.where((MetadataEntry entry) => entry.key.trim() == error.detail).firstOrNull?.id
           : null;
       emit(state.copyWith(status: ItemFormStatus.editing, error: () => ItemFormValidationError(error, entryId: entryId)));
     } catch (error) {
@@ -269,9 +273,9 @@ class ItemFormCubit extends Cubit<ItemFormState> {
   }
 
   Map<String, Object?> _buildMetadata() {
-    final metadata = <String, Object?>{};
-    for (final entry in state.entries) {
-      final key = entry.key.trim();
+    final Map<String, Object?> metadata = <String, Object?>{};
+    for (final MetadataEntry entry in state.entries) {
+      final String key = entry.key.trim();
       if (key.isEmpty && entry.text.trim().isEmpty && entry.type != MetadataValueType.boolean) {
         continue; // Fila vacía: se ignora.
       }
@@ -289,7 +293,7 @@ class ItemFormCubit extends Cubit<ItemFormState> {
 
   /// Acepta coma o punto decimal. Sin decimales devuelve un `int`.
   static num? _parseNumber(String text) {
-    final normalized = text.trim().replaceAll(',', '.');
+    final String normalized = text.trim().replaceAll(',', '.');
     return int.tryParse(normalized) ?? double.tryParse(normalized);
   }
 }

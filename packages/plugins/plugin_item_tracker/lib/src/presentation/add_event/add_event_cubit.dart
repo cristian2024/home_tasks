@@ -12,7 +12,7 @@ class AddEventState extends Equatable {
   final Object? error;
 
   @override
-  List<Object?> get props => [status, error];
+  List<Object?> get props => <Object?>[status, error];
 }
 
 /// Añade una nota al historial de un objeto.

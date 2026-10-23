@@ -15,7 +15,7 @@ class SequentialIdGenerator implements IdGenerator {
   String newId() => 'id-${_next++}';
 }
 
-final t0 = DateTime.utc(2026, 10, 21, 14, 30);
+final DateTime t0 = DateTime.utc(2026, 10, 21, 14, 30);
 
 HouseholdItem item({
   String id = 'item-1',
@@ -53,6 +53,6 @@ void registerDomainFallbacks() {
 
 Matcher throwsValidation(ValidationField field, ValidationReason reason) => throwsA(
       isA<ItemValidationException>()
-          .having((e) => e.field, 'field', field)
-          .having((e) => e.reason, 'reason', reason),
+          .having((ItemValidationException e) => e.field, 'field', field)
+          .having((ItemValidationException e) => e.reason, 'reason', reason),
     );

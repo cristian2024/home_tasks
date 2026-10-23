@@ -8,11 +8,11 @@ import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
 
 void main() {
-  testWidgets('carga los datos de ejemplo y abre «Caja A» al escanear QR-123', (tester) async {
-    final camera = FakeCameraScanner();
-    final locator = ServiceLocator();
-    final localization = LocalizationCoordinator();
-    final plugin = ItemTrackerPlugin(
+  testWidgets('carga los datos de ejemplo y abre «Caja A» al escanear QR-123', (WidgetTester tester) async {
+    final FakeCameraScanner camera = FakeCameraScanner();
+    final ServiceLocator locator = ServiceLocator();
+    final LocalizationCoordinator localization = LocalizationCoordinator();
+    final ItemTrackerPlugin plugin = ItemTrackerPlugin(
       locator: locator,
       cameraScannerFactory: () => camera,
       nfcScannerFactory: FakeNfcScanner.new,

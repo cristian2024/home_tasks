@@ -14,7 +14,7 @@ class AddItemEvent {
   final Clock _clock;
 
   Future<ItemEvent> call(String itemId, {required String title, String description = ''}) async {
-    final event = ItemEvent(
+    final ItemEvent event = ItemEvent(
       id: _ids.newId(),
       itemId: itemId,
       kind: ItemEventKind.note,

@@ -18,10 +18,10 @@ class ItemDetailState extends Equatable {
   const ItemDetailState({
     this.status = ItemDetailStatus.loading,
     this.item,
-    this.identifiers = const [],
-    this.events = const [],
-    this.path = const [],
-    this.children = const [],
+    this.identifiers = const <PhysicalIdentifier>[],
+    this.events = const <ItemEvent>[],
+    this.path = const <HouseholdItem>[],
+    this.children = const <HouseholdItem>[],
     this.depth = 1,
     this.maxDepth = ContainmentPolicy.defaultMaxDepth,
   });
@@ -48,7 +48,7 @@ class ItemDetailState extends Equatable {
   bool get isOverflowing => depth >= maxDepth && children.isNotEmpty;
 
   @override
-  List<Object?> get props => [status, item, identifiers, events, path, children, depth, maxDepth];
+  List<Object?> get props => <Object?>[status, item, identifiers, events, path, children, depth, maxDepth];
 }
 
 /// Detalle reactivo de un objeto: datos, ubicación, contenido,
@@ -69,21 +69,21 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
         _moveItem = moveItem,
         _policy = containmentPolicy,
         super(ItemDetailState(maxDepth: containmentPolicy.maxDepth)) {
-    _subscriptions = [
-      watchItem(itemId).listen((item) {
+    _subscriptions = <StreamSubscription<Object?>>[
+      watchItem(itemId).listen((HouseholdItem? item) {
         _itemLoaded = true;
         _item = item;
         _emitCombined();
       }),
-      watchItemIdentifiers(itemId).listen((identifiers) {
+      watchItemIdentifiers(itemId).listen((List<PhysicalIdentifier> identifiers) {
         _identifiers = identifiers;
         _emitCombined();
       }),
-      watchItemEvents(itemId).listen((events) {
+      watchItemEvents(itemId).listen((List<ItemEvent> events) {
         _events = events;
         _emitCombined();
       }),
-      watchItemTree().listen((tree) {
+      watchItemTree().listen((ItemTree tree) {
         _tree = tree;
         _emitCombined();
       }),
@@ -97,8 +97,8 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
   late final List<StreamSubscription<Object?>> _subscriptions;
   bool _itemLoaded = false;
   HouseholdItem? _item;
-  List<PhysicalIdentifier> _identifiers = const [];
-  List<ItemEvent> _events = const [];
+  List<PhysicalIdentifier> _identifiers = const <PhysicalIdentifier>[];
+  List<ItemEvent> _events = const <ItemEvent>[];
   ItemTree? _tree;
 
   void _emitCombined() {
@@ -110,8 +110,8 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
         item: _item,
         identifiers: _identifiers,
         events: _events,
-        path: _tree?.pathOf(itemId) ?? const [],
-        children: _tree?.childrenOf(itemId) ?? const [],
+        path: _tree?.pathOf(itemId) ?? const <HouseholdItem>[],
+        children: _tree?.childrenOf(itemId) ?? const <HouseholdItem>[],
         depth: _tree?.depthOf(itemId) ?? 1,
         maxDepth: _policy.maxDepth,
       ),
@@ -141,7 +141,7 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
 
   @override
   Future<void> close() async {
-    for (final subscription in _subscriptions) {
+    for (final StreamSubscription<Object?> subscription in _subscriptions) {
       await subscription.cancel();
     }
     return super.close();

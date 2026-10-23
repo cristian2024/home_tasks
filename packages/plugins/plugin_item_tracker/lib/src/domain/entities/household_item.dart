@@ -43,7 +43,7 @@ class HouseholdItem extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, description, metadata, createdAt, updatedAt, parentId];
+  List<Object?> get props => <Object?>[id, name, description, metadata, createdAt, updatedAt, parentId];
 
   @override
   bool get stringify => true;

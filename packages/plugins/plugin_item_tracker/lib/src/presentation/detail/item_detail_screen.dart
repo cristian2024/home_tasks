@@ -2,6 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plugin_item_tracker/src/domain/entities/item_event.dart';
 
 import '../../domain/entities/household_item.dart';
 import '../../domain/entities/physical_identifier.dart';
@@ -15,14 +16,14 @@ class ItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.detail;
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
     return BlocBuilder<ItemDetailCubit, ItemDetailState>(
-      builder: (context, state) {
-        final item = state.item;
+      builder: (BuildContext context, ItemDetailState state) {
+        final HouseholdItem? item = state.item;
         return Scaffold(
           appBar: AppBar(
             title: Text(item?.name ?? t.title),
-            actions: [
+            actions: <Widget>[
               if (item != null)
                 AppIconButton(
                   icon: Icons.edit,
@@ -54,19 +55,19 @@ class _DetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.detail;
-    final textTheme = Theme.of(context).textTheme;
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
+    final TextTheme textTheme = Theme.of(context).textTheme;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
-      children: [
+      children: <Widget>[
         ..._location(context),
-        if (item.description.isNotEmpty) ...[
+        if (item.description.isNotEmpty) ...<Widget>[
           Text(item.description, style: textTheme.bodyLarge),
           const SizedBox(height: AppSpacing.md),
         ],
-        if (!item.metadata.isEmpty) ...[
+        if (!item.metadata.isEmpty) ...<Widget>[
           AppSectionHeader(t.metadata),
-          for (final MapEntry(:key, :value) in item.metadata.values.entries)
+          for (final MapEntry<String, Object>(:String key, :Object value) in item.metadata.values.entries)
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(key),
@@ -90,7 +91,7 @@ class _DetailBody extends StatelessWidget {
         if (state.identifiers.isEmpty)
           Text(t.noIdentifiers)
         else
-          for (final identifier in state.identifiers)
+          for (final PhysicalIdentifier identifier in state.identifiers)
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(switch (identifier.type) {
@@ -116,16 +117,16 @@ class _DetailBody extends StatelessWidget {
           ),
         ),
         Text(t.eventsCount(n: state.events.length), style: textTheme.bodySmall),
-        for (final event in state.events)
+        for (final ItemEvent event in state.events)
           Builder(
-            builder: (context) {
-              final text = describeEvent(event);
+            builder: (BuildContext context) {
+              final ({String? subtitle, String title}) text = describeEvent(event);
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(event.isTechnical ? Icons.history : Icons.sticky_note_2_outlined),
                 title: Text(text.title),
                 subtitle: Text(
-                  [?text.subtitle, formatTimestamp(context, event.timestamp)].join('\n'),
+                  <String>[?text.subtitle, formatTimestamp(context, event.timestamp)].join('\n'),
                 ),
               );
             },
@@ -136,16 +137,16 @@ class _DetailBody extends StatelessWidget {
 
   /// Contenedores navegables y acciones para mover el objeto.
   List<Widget> _location(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.detail;
-    return [
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
+    return <Widget>[
       AppSectionHeader(t.location),
       if (state.path.isEmpty)
         Text(t.locationRoot)
       else
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            for (final (index, container) in state.path.indexed) ...[
+          children: <Widget>[
+            for (final (int index, HouseholdItem container) in state.path.indexed) ...<Widget>[
               if (index > 0) const ExcludeSemantics(child: Text('›')),
               Tooltip(
                 message: t.openContainer(name: container.name),
@@ -162,7 +163,7 @@ class _DetailBody extends StatelessWidget {
       Wrap(
         spacing: AppSpacing.sm,
         runSpacing: AppSpacing.sm,
-        children: [
+        children: <Widget>[
           AppButton(
             label: t.move,
             icon: Icons.drive_file_move_outline,
@@ -184,9 +185,9 @@ class _DetailBody extends StatelessWidget {
 
   /// Lo que contiene el objeto, con el aviso si supera el límite de niveles.
   List<Widget> _contents(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.detail;
-    final colors = Theme.of(context).colorScheme;
-    return [
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
+    final ColorScheme colors = Theme.of(context).colorScheme;
+    return <Widget>[
       AppSectionHeader(
         t.contents,
         trailing: AppButton(
@@ -199,7 +200,7 @@ class _DetailBody extends StatelessWidget {
       if (state.isOverflowing)
         AppCard(
           child: Row(
-            children: [
+            children: <Widget>[
               Icon(Icons.warning_amber_rounded, color: colors.error),
               const SizedBox(width: AppSpacing.sm),
               Expanded(child: Text(t.overflowing(depth: state.depth, max: state.maxDepth))),
@@ -211,7 +212,7 @@ class _DetailBody extends StatelessWidget {
       if (state.children.isEmpty)
         Text(t.noContents)
       else
-        for (final child in state.children)
+        for (final HouseholdItem child in state.children)
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.inventory_2_outlined),
@@ -223,9 +224,9 @@ class _DetailBody extends StatelessWidget {
   }
 
   Future<void> _moveOut(BuildContext context, String containerName) async {
-    final t = itemTrackerStrings.itemTracker.detail;
-    final cubit = context.read<ItemDetailCubit>();
-    final confirmed = await showAppConfirmDialog(
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
+    final ItemDetailCubit cubit = context.read<ItemDetailCubit>();
+    final bool confirmed = await showAppConfirmDialog(
       context,
       title: t.moveOutTitle,
       message: t.moveOutMessage(name: item.name, container: containerName),
@@ -234,7 +235,7 @@ class _DetailBody extends StatelessWidget {
     if (!confirmed) {
       return;
     }
-    final error = await cubit.moveOut();
+    final Object? error = await cubit.moveOut();
     if (!context.mounted) {
       return;
     }
@@ -244,9 +245,9 @@ class _DetailBody extends StatelessWidget {
   }
 
   Future<void> _removeIdentifier(BuildContext context, PhysicalIdentifier identifier) async {
-    final t = itemTrackerStrings.itemTracker.detail;
-    final cubit = context.read<ItemDetailCubit>();
-    final confirmed = await showAppConfirmDialog(
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
+    final ItemDetailCubit cubit = context.read<ItemDetailCubit>();
+    final bool confirmed = await showAppConfirmDialog(
       context,
       title: t.removeIdentifierTitle,
       message: t.removeIdentifierMessage(type: identifierTypeLabel(identifier.type), value: identifier.rawValue),
@@ -256,7 +257,7 @@ class _DetailBody extends StatelessWidget {
     if (!confirmed) {
       return;
     }
-    final error = await cubit.removeIdentifier(identifier);
+    final Object? error = await cubit.removeIdentifier(identifier);
     if (!context.mounted) {
       return;
     }

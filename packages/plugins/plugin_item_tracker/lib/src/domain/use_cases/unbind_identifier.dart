@@ -18,12 +18,12 @@ class UnbindIdentifier {
     if (await _repository.getById(itemId) == null) {
       throw ItemNotFoundException(itemId);
     }
-    final identifier = await _repository.getIdentifier(identifierId);
+    final PhysicalIdentifier? identifier = await _repository.getIdentifier(identifierId);
     if (identifier == null || identifier.itemId != itemId) {
       throw IdentifierNotFoundException(identifierId);
     }
 
-    final now = _clock.nowUtc();
+    final DateTime now = _clock.nowUtc();
     await _repository.unbindIdentifier(
       identifier.id,
       deletedAt: now,

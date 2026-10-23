@@ -21,7 +21,7 @@ class IsarLocalDataSource {
   Future<void> saveItemWithIdentifier(
     IsarHouseholdItem item, {
     IsarPhysicalIdentifier? identifier,
-    List<IsarItemEvent> events = const [],
+    List<IsarItemEvent> events = const <IsarItemEvent>[],
   }) async {
     await _isar.writeTxn(() async {
       await _items.putById(item);
@@ -45,7 +45,7 @@ class IsarLocalDataSource {
   /// transacción. No hace nada si el identificador no existe.
   Future<void> softDeleteIdentifierWithEvent(String identifierId, DateTime deletedAt, IsarItemEvent event) async {
     await _isar.writeTxn(() async {
-      final identifier = await _identifiers.getById(identifierId);
+      final IsarPhysicalIdentifier? identifier = await _identifiers.getById(identifierId);
       if (identifier == null || identifier.isDeleted) {
         return;
       }
@@ -69,7 +69,7 @@ class IsarLocalDataSource {
       .where()
       .idEqualTo(id)
       .watch(fireImmediately: true)
-      .map((rows) => rows.isEmpty ? null : rows.first);
+      .map((List<IsarHouseholdItem> rows) => rows.isEmpty ? null : rows.first);
 
   Stream<List<IsarHouseholdItem>> watchItems() =>
       _items.where().sortByUpdatedAtDesc().watch(fireImmediately: true);
@@ -83,7 +83,7 @@ class IsarLocalDataSource {
 
   /// Identificador activo con ese [id].
   Future<IsarPhysicalIdentifier?> getIdentifier(String id) async {
-    final identifier = await _identifiers.getById(id);
+    final IsarPhysicalIdentifier? identifier = await _identifiers.getById(id);
     return identifier == null || identifier.isDeleted ? null : identifier;
   }
 

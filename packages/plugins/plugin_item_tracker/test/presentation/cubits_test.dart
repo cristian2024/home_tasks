@@ -19,7 +19,7 @@ void main() {
     test('lista los objetos y filtra por nombre sin distinguir mayúsculas', () async {
       await useCases.createItem(name: 'Caja de herramientas');
       await useCases.createItem(name: 'Cama');
-      final cubit = ItemListCubit(useCases.watchItemTree);
+      final ItemListCubit cubit = ItemListCubit(useCases.watchItemTree);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
@@ -27,18 +27,18 @@ void main() {
       expect(cubit.state.visible, hasLength(2));
 
       cubit.search('  CAJA ');
-      expect(cubit.state.visible.map((i) => i.name), ['Caja de herramientas']);
+      expect(cubit.state.visible.map((HouseholdItem i) => i.name), <String>['Caja de herramientas']);
     });
 
     test('incluye los objetos que están dentro de otros con su jerarquía', () async {
-      final furniture = await useCases.createItem(name: 'Mueble');
-      final drawer = await useCases.createItem(name: 'Cajón', parentId: furniture.id);
-      final cubit = ItemListCubit(useCases.watchItemTree);
+      final HouseholdItem furniture = await useCases.createItem(name: 'Mueble');
+      final HouseholdItem drawer = await useCases.createItem(name: 'Cajón', parentId: furniture.id);
+      final ItemListCubit cubit = ItemListCubit(useCases.watchItemTree);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.all.map((i) => i.name), unorderedEquals(['Cajón', 'Mueble']));
-      expect(cubit.state.tree.pathOf(drawer.id), [furniture]);
+      expect(cubit.state.all.map((HouseholdItem i) => i.name), unorderedEquals(<dynamic>['Cajón', 'Mueble']));
+      expect(cubit.state.tree.pathOf(drawer.id), <HouseholdItem>[furniture]);
     });
   });
 
@@ -55,8 +55,9 @@ void main() {
         );
 
     test('combina objeto, identificadores e historial y reacciona a cambios', () async {
-      final item = await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
-      final cubit = build(item.id);
+      final HouseholdItem item =
+          await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
+      final ItemDetailCubit cubit = build(item.id);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
@@ -73,23 +74,24 @@ void main() {
     });
 
     test('quita un identificador y el detalle se actualiza; un segundo intento devuelve el error', () async {
-      final item = await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
-      final cubit = build(item.id);
+      final HouseholdItem item =
+          await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
+      final ItemDetailCubit cubit = build(item.id);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
-      final identifier = cubit.state.identifiers.single;
+      final PhysicalIdentifier identifier = cubit.state.identifiers.single;
 
       expect(await cubit.removeIdentifier(identifier), isNull);
       await Future<void>.delayed(Duration.zero);
 
       expect(cubit.state.identifiers, isEmpty);
       // El reloj fijo da a todos los eventos el mismo instante: no se compara el orden.
-      expect(cubit.state.events.map((event) => event.kind), contains(ItemEventKind.identifierUnbound));
+      expect(cubit.state.events.map((ItemEvent event) => event.kind), contains(ItemEventKind.identifierUnbound));
       expect(await cubit.removeIdentifier(identifier), isA<IdentifierNotFoundException>());
     });
 
     test('informa missing si el objeto no existe', () async {
-      final cubit = build('missing');
+      final ItemDetailCubit cubit = build('missing');
       addTearDown(cubit.close);
       expect(cubit.state.status, ItemDetailStatus.loading);
       await Future<void>.delayed(Duration.zero);
@@ -98,15 +100,15 @@ void main() {
     });
 
     test('muestra la ruta y el contenido, y saca el objeto de su contenedor', () async {
-      final furniture = await useCases.createItem(name: 'Mueble');
-      final organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
-      final drawer = await useCases.createItem(name: 'Cajón', parentId: organizer.id);
-      final cubit = build(organizer.id);
+      final HouseholdItem furniture = await useCases.createItem(name: 'Mueble');
+      final HouseholdItem organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      final HouseholdItem drawer = await useCases.createItem(name: 'Cajón', parentId: organizer.id);
+      final ItemDetailCubit cubit = build(organizer.id);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.path, [furniture]);
-      expect(cubit.state.children, [drawer]);
+      expect(cubit.state.path, <HouseholdItem>[furniture]);
+      expect(cubit.state.children, <HouseholdItem>[drawer]);
       expect(cubit.state.depth, 2);
       expect(cubit.state.canHoldMore, isTrue);
       expect(cubit.state.isOverflowing, isFalse);
@@ -121,15 +123,15 @@ void main() {
 
     test('señala el contenedor lleno y el desbordado cuando se bajó el límite', () async {
       useCases = TestUseCases(policy: const ContainmentPolicy(maxDepth: 2));
-      final furniture = await useCases.createItem(name: 'Mueble');
-      final organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      final HouseholdItem furniture = await useCases.createItem(name: 'Mueble');
+      final HouseholdItem organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
       // El cajón quedó en el nivel 3 antes de bajar el límite.
-      final drawer = await useCases.createItem(name: 'Cajón');
-      await useCases.repository.moveItem(drawer.copyWith(parentId: () => organizer.id), const []);
+      final HouseholdItem drawer = await useCases.createItem(name: 'Cajón');
+      await useCases.repository.moveItem(drawer.copyWith(parentId: () => organizer.id), const <ItemEvent>[]);
 
-      final full = build(furniture.id);
-      final overflowing = build(organizer.id);
-      final leaf = build(drawer.id);
+      final ItemDetailCubit full = build(furniture.id);
+      final ItemDetailCubit overflowing = build(organizer.id);
+      final ItemDetailCubit leaf = build(drawer.id);
       addTearDown(full.close);
       addTearDown(overflowing.close);
       addTearDown(leaf.close);
@@ -143,7 +145,7 @@ void main() {
     });
 
     test('sacar un objeto que ya no existe devuelve el error', () async {
-      final cubit = build('missing');
+      final ItemDetailCubit cubit = build('missing');
       addTearDown(cubit.close);
 
       expect(await cubit.moveOut(), isA<ItemNotFoundException>());
@@ -155,14 +157,15 @@ void main() {
         ItemFormCubit.create(createItem: useCases.createItem, identifier: identifier);
 
     test('crea el objeto con metadatos tipados y el identificador inicial', () async {
-      final cubit = create(identifier: (rawValue: 'UNKNOWN-99', type: IdentifierType.qr));
+      final ItemFormCubit cubit = create(identifier: (rawValue: 'UNKNOWN-99', type: IdentifierType.qr));
       addTearDown(cubit.close);
       cubit
         ..addEntry()
         ..addEntry()
         ..addEntry()
         ..addEntry();
-      final [color, weight, fragile, empty] = cubit.state.entries;
+      final [MetadataEntry color, MetadataEntry weight, MetadataEntry fragile, MetadataEntry empty] =
+          cubit.state.entries;
       cubit
         ..updateEntry(color.copyWith(key: 'color_etiqueta', text: 'Azul'))
         ..updateEntry(weight.copyWith(key: 'peso_kg', type: MetadataValueType.number, text: '12,5'))
@@ -172,18 +175,18 @@ void main() {
       await cubit.submit(name: 'Caja A', description: '');
 
       expect(cubit.state.status, ItemFormStatus.saved);
-      final saved = (await useCases.repository.getById(cubit.state.savedItemId!))!;
-      expect(saved.metadata.values, {'color_etiqueta': 'Azul', 'peso_kg': 12.5, 'fragil': true});
+      final HouseholdItem saved = (await useCases.repository.getById(cubit.state.savedItemId!))!;
+      expect(saved.metadata.values, <String, Object>{'color_etiqueta': 'Azul', 'peso_kg': 12.5, 'fragil': true});
       expect(await useCases.findItemByIdentifier(rawValue: 'UNKNOWN-99', type: IdentifierType.qr), saved);
     });
 
     test('señala claves repetidas y números inválidos en su fila', () async {
-      final cubit = create();
+      final ItemFormCubit cubit = create();
       addTearDown(cubit.close);
       cubit
         ..addEntry()
         ..addEntry();
-      final [first, second] = cubit.state.entries;
+      final [MetadataEntry first, MetadataEntry second] = cubit.state.entries;
       cubit
         ..updateEntry(first.copyWith(key: 'a', text: '1'))
         ..updateEntry(second.copyWith(key: 'a', text: '2'));
@@ -198,7 +201,7 @@ void main() {
     });
 
     test('mapea los errores de validación al campo o a la fila', () async {
-      final cubit = create();
+      final ItemFormCubit cubit = create();
       addTearDown(cubit.close);
       await cubit.submit(name: ' ', description: '');
       expect(
@@ -207,10 +210,10 @@ void main() {
       );
 
       cubit.addEntry();
-      final entry = cubit.state.entries.single;
+      final MetadataEntry entry = cubit.state.entries.single;
       cubit.updateEntry(entry.copyWith(key: 'Mal', text: 'x'));
       await cubit.submit(name: 'Caja', description: '');
-      final error = cubit.state.error! as ItemFormValidationError;
+      final ItemFormValidationError error = cubit.state.error! as ItemFormValidationError;
       expect(error.entryId, entry.id);
       expect(error.error.reason, ValidationReason.invalidFormat);
 
@@ -220,7 +223,7 @@ void main() {
 
     test('un identificador ya asociado es un error general', () async {
       await useCases.createItem(name: 'Otro', identifier: (rawValue: 'QR', type: IdentifierType.qr));
-      final cubit = create(identifier: (rawValue: 'QR', type: IdentifierType.qr));
+      final ItemFormCubit cubit = create(identifier: (rawValue: 'QR', type: IdentifierType.qr));
       addTearDown(cubit.close);
 
       await cubit.submit(name: 'Caja', description: '');
@@ -229,8 +232,12 @@ void main() {
     });
 
     test('edición: carga el objeto con sus metadatos y guarda los cambios', () async {
-      final item = await useCases.createItem(name: 'Caja', metadata: {'peso_kg': 3, 'fragil': false, 'color': 'Azul'});
-      final cubit = ItemFormCubit.edit(
+      final HouseholdItem item = await useCases.createItem(
+        name: 'Caja',
+        metadata: <String,
+        Object?>{'peso_kg': 3, 'fragil': false, 'color': 'Azul'},
+      );
+      final ItemFormCubit cubit = ItemFormCubit.edit(
         item.id,
         getItem: GetItem(useCases.repository),
         updateItem: UpdateItem(useCases.repository, useCases.ids, useCases.clock),
@@ -241,11 +248,14 @@ void main() {
 
       expect(cubit.isEditing, isTrue);
       expect(cubit.state.name, 'Caja');
-      expect(cubit.state.entries.map((e) => (e.key, e.type, e.text, e.flag)), [
-        ('peso_kg', MetadataValueType.number, '3', false),
-        ('fragil', MetadataValueType.boolean, '', false),
-        ('color', MetadataValueType.text, 'Azul', false),
-      ]);
+      expect(
+        cubit.state.entries.map((MetadataEntry e) => (e.key, e.type, e.text, e.flag)),
+        <(String, MetadataValueType, String, bool)>[
+          ('peso_kg', MetadataValueType.number, '3', false),
+          ('fragil', MetadataValueType.boolean, '', false),
+          ('color', MetadataValueType.text, 'Azul', false),
+        ],
+      );
 
       await cubit.submit(name: 'Caja grande', description: 'Garaje');
 
@@ -254,7 +264,7 @@ void main() {
     });
 
     test('edición de un objeto inexistente muestra un error general', () async {
-      final cubit = ItemFormCubit.edit(
+      final ItemFormCubit cubit = ItemFormCubit.edit(
         'missing',
         getItem: GetItem(useCases.repository),
         updateItem: UpdateItem(useCases.repository, useCases.ids, useCases.clock),
@@ -266,9 +276,9 @@ void main() {
     });
 
     test('crea el objeto dentro del contenedor indicado y muestra su ruta', () async {
-      final furniture = await useCases.createItem(name: 'Mueble');
-      final organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
-      final cubit = ItemFormCubit.create(
+      final HouseholdItem furniture = await useCases.createItem(name: 'Mueble');
+      final HouseholdItem organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      final ItemFormCubit cubit = ItemFormCubit.create(
         createItem: useCases.createItem,
         parentId: organizer.id,
         watchItemTree: useCases.watchItemTree,
@@ -276,7 +286,7 @@ void main() {
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.parentPath, [furniture, organizer]);
+      expect(cubit.state.parentPath, <HouseholdItem>[furniture, organizer]);
 
       await cubit.submit(name: 'Cajón', description: '');
 
@@ -285,7 +295,7 @@ void main() {
     });
 
     test('si el contenedor ya no existe, no muestra ruta y el error llega al guardar', () async {
-      final cubit = ItemFormCubit.create(
+      final ItemFormCubit cubit = ItemFormCubit.create(
         createItem: useCases.createItem,
         parentId: 'missing',
         watchItemTree: useCases.watchItemTree,
@@ -323,24 +333,24 @@ void main() {
         );
 
     test('excluye el objeto y su contenido, y marca el contenedor actual', () async {
-      final cubit = build(organizer.id);
+      final MoveItemCubit cubit = build(organizer.id);
       addTearDown(cubit.close);
       expect(cubit.state.status, MoveItemStatus.loading);
       await Future<void>.delayed(Duration.zero);
 
       expect(cubit.state.status, MoveItemStatus.ready);
       expect(cubit.state.item, organizer);
-      expect(cubit.state.candidates, [
-        MoveCandidate(item: furniture, path: const [], block: MoveBlock.current),
-        MoveCandidate(item: scissors, path: const []),
+      expect(cubit.state.candidates, <MoveCandidate>[
+        MoveCandidate(item: furniture, path: const <HouseholdItem>[], block: MoveBlock.current),
+        MoveCandidate(item: scissors, path: const <HouseholdItem>[]),
       ]);
 
       cubit.search(' TIJ ');
-      expect(cubit.state.visible.map((c) => c.item), [scissors]);
+      expect(cubit.state.visible.map((MoveCandidate c) => c.item), <HouseholdItem>[scissors]);
     });
 
     test('bloquea los destinos que superarían el máximo de niveles', () async {
-      final cubit = MoveItemCubit(
+      final MoveItemCubit cubit = MoveItemCubit(
         furniture.id,
         watchItemTree: useCases.watchItemTree,
         moveItem: useCases.moveItem,
@@ -350,12 +360,15 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       // El mueble ocupa 3 niveles: solo cabe sin contenedor.
-      expect(cubit.state.candidates.single, MoveCandidate(item: scissors, path: const [], block: MoveBlock.tooDeep));
+      expect(
+        cubit.state.candidates.single,
+        MoveCandidate(item: scissors, path: const <HouseholdItem>[], block: MoveBlock.tooDeep),
+      );
       expect(cubit.maxDepth, 3);
     });
 
     test('mueve el objeto al contenedor elegido', () async {
-      final cubit = build(drawer.id);
+      final MoveItemCubit cubit = build(drawer.id);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
@@ -370,7 +383,7 @@ void main() {
     });
 
     test('muestra el error si el destino dejó de ser válido', () async {
-      final cubit = build(furniture.id);
+      final MoveItemCubit cubit = build(furniture.id);
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
@@ -381,7 +394,7 @@ void main() {
     });
 
     test('informa missing si el objeto no existe', () async {
-      final cubit = build('missing');
+      final MoveItemCubit cubit = build('missing');
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
 
@@ -397,9 +410,10 @@ void main() {
         );
 
     test('AC-05: asocia el identificador al objeto elegido', () async {
-      final bed = await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
+      final HouseholdItem bed =
+          await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
       await useCases.createItem(name: 'Mesa');
-      final cubit = build();
+      final AssociateCubit cubit = build();
       addTearDown(cubit.close);
       await Future<void>.delayed(Duration.zero);
       expect(cubit.state.results, hasLength(2));
@@ -416,9 +430,10 @@ void main() {
     });
 
     test('rechaza un identificador ya asociado', () async {
-      final other = await useCases.createItem(name: 'Otro', identifier: (rawValue: 'NFC-BED', type: IdentifierType.nfc));
-      final bed = await useCases.createItem(name: 'Cama');
-      final cubit = build();
+      final HouseholdItem other =
+          await useCases.createItem(name: 'Otro', identifier: (rawValue: 'NFC-BED', type: IdentifierType.nfc));
+      final HouseholdItem bed = await useCases.createItem(name: 'Cama');
+      final AssociateCubit cubit = build();
       addTearDown(cubit.close);
 
       await cubit.bind(bed);
@@ -426,7 +441,8 @@ void main() {
       expect(cubit.state.status, AssociateStatus.ready);
       expect(
         cubit.state.error,
-        isA<IdentifierAlreadyBoundException>().having((e) => e.boundItemId, 'boundItemId', other.id),
+        isA<IdentifierAlreadyBoundException>()
+            .having((IdentifierAlreadyBoundException e) => e.boundItemId, 'boundItemId', other.id),
       );
     });
   });
@@ -436,8 +452,8 @@ void main() {
       'guarda la nota',
       setUp: () async => useCases.createItem(name: 'Caja'),
       build: () => AddEventCubit('id-1', addItemEvent: AddItemEvent(useCases.repository, useCases.ids, useCases.clock)),
-      act: (cubit) => cubit.submit(title: 'Mudanza', description: 'Al altillo'),
-      expect: () => [
+      act: (AddEventCubit cubit) => cubit.submit(title: 'Mudanza', description: 'Al altillo'),
+      expect: () => <AddEventState>[
         const AddEventState(status: AddEventStatus.submitting),
         const AddEventState(status: AddEventStatus.saved),
       ],
@@ -446,10 +462,10 @@ void main() {
     blocTest<AddEventCubit, AddEventState>(
       'sin título vuelve a edición con el error',
       build: () => AddEventCubit('id-1', addItemEvent: AddItemEvent(useCases.repository, useCases.ids, useCases.clock)),
-      act: (cubit) => cubit.submit(title: '', description: ''),
-      expect: () => [
+      act: (AddEventCubit cubit) => cubit.submit(title: '', description: ''),
+      expect: () => <Object>[
         const AddEventState(status: AddEventStatus.submitting),
-        isA<AddEventState>().having((s) => s.error, 'error', isA<ItemValidationException>()),
+        isA<AddEventState>().having((AddEventState s) => s.error, 'error', isA<ItemValidationException>()),
       ],
     );
   });

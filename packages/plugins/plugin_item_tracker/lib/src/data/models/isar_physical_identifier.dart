@@ -15,7 +15,7 @@ class IsarPhysicalIdentifier {
   /// un objeto. Sin `replace`: un duplicado hace fallar la transacción. Los
   /// quitados llevan su propio [deletedId], así que no chocan con el activo ni
   /// entre sí.
-  @Index(composite: [CompositeIndex('type'), CompositeIndex('deletedId')], unique: true)
+  @Index(composite: <CompositeIndex>[CompositeIndex('type'), CompositeIndex('deletedId')], unique: true)
   late String rawValue;
 
   @Enumerated(EnumType.name)
