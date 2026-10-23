@@ -10,6 +10,9 @@ import 'package:core_utils/core_utils.dart';
 import 'app_module_registrar.dart';
 import 'i18n/strings.g.dart' as i18n;
 import 'plugins/plugin_controller.dart';
+import 'settings/app_settings.dart';
+import 'settings/app_settings_controller.dart';
+import 'settings/app_settings_repository.dart';
 
 /// Todo lo que la app necesita tras arrancar.
 class AppEnvironment {
@@ -18,6 +21,7 @@ class AppEnvironment {
     required this.localization,
     required this.registry,
     required this.plugins,
+    required this.settings,
     this.isar,
   });
 
@@ -26,6 +30,9 @@ class AppEnvironment {
   final PluginRegistry registry;
   final PluginController plugins;
 
+  /// Tema e idioma elegidos por el usuario.
+  final AppSettingsController settings;
+
   /// `null` en los widget tests, que usan repositorios en memoria.
   final Isar? isar;
 
@@ -33,6 +40,7 @@ class AppEnvironment {
   Future<void> dispose() async {
     await plugins.disposePlugins();
     plugins.dispose();
+    await settings.close();
     await locator.reset();
     if (isar?.isOpen ?? false) {
       await isar!.close();
@@ -41,14 +49,16 @@ class AppEnvironment {
 }
 
 /// Arranque de la app (§3.2, §10.2):
-/// 1. Idioma y servicios base en el scope raíz de `core_di`.
+/// 1. Preferencias de la app (tema e idioma; [systemLanguageCode] si el
+///    usuario no fijó uno) y servicios base en el scope raíz de `core_di`.
 /// 2. Registro de plugins en tiempo de compilación ([appPluginFactories]).
 /// 3. Base de datos con los esquemas de **todos** los plugins registrados,
 ///    también los desactivados (sus datos deben seguir accesibles, AC-02).
 /// 4. Ciclo de vida: inicializa los plugins activos y disponibles.
 Future<AppEnvironment> bootstrapApp({
   required String databaseDirectory,
-  required String languageCode,
+  required String systemLanguageCode,
+  AppSettingsRepository settingsRepository = const SharedPreferencesAppSettingsRepository(),
   ServiceLocator? locator,
   LocalizationCoordinator? localization,
   List<PluginFactory> pluginFactories = appPluginFactories,
@@ -56,16 +66,21 @@ Future<AppEnvironment> bootstrapApp({
 }) async {
   final services = locator ?? ServiceLocator.instance;
   final l10n = localization ?? LocalizationCoordinator.instance;
-  l10n
-    ..register(
-      'app',
-      (code) => i18n.LocaleSettings.setLocaleRawSync(code),
-      translate: (key) {
-        final value = i18n.appStrings[key];
-        return value is String ? value : null;
-      },
-    )
-    ..setLanguage(languageCode);
+  l10n.register(
+    'app',
+    (code) => i18n.LocaleSettings.setLocaleRawSync(code),
+    translate: (key) {
+      final value = i18n.appStrings[key];
+      return value is String ? value : null;
+    },
+  );
+  final AppSettings savedSettings = await settingsRepository.load();
+  final AppSettingsController settings = AppSettingsController(
+    repository: settingsRepository,
+    localization: l10n,
+    initial: savedSettings,
+    systemLanguageCode: systemLanguageCode,
+  );
 
   services
     ..registerSingleton<EventBus>(EventBus(), dispose: (bus) => bus.dispose())
@@ -104,6 +119,7 @@ Future<AppEnvironment> bootstrapApp({
     localization: l10n,
     registry: registry,
     plugins: plugins,
+    settings: settings,
     isar: isar,
   );
 }

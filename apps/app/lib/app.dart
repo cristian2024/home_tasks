@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'bootstrap.dart';
 import 'i18n/strings.g.dart';
 import 'navigation/app_router.dart';
+import 'settings/app_settings.dart';
+import 'settings/app_settings_controller.dart';
 
 class HomeUtilityApp extends StatefulWidget {
   const HomeUtilityApp({
@@ -48,13 +50,12 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     );
   }
 
-  /// Sigue al idioma del sistema si el usuario lo cambia con la app abierta.
+  /// Sigue al idioma del sistema si el usuario lo cambia con la app abierta
+  /// (solo si no fijó uno en Configuración).
   @override
   void didChangeLocales(List<Locale>? locales) {
     if (locales != null) {
-      widget.environment.localization.setLanguage(
-        LocalizationCoordinator.resolveLanguage(locales),
-      );
+      widget.environment.settings.systemLocalesChanged(locales);
     }
   }
 
@@ -70,21 +71,32 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     final localization = widget.environment.localization;
     return RepositoryProvider<LocalizationCoordinator>.value(
       value: localization,
-      // Las páginas (ver `withLanguageRebuild`) dependen de este scope.
-      child: LanguageScope(
-        languageCode: localization.languageCode,
-        child: ValueListenableBuilder<String>(
-          valueListenable: localization.languageCode,
-          builder: (context, languageCode, _) => MaterialApp.router(
-            onGenerateTitle: (_) => appStrings.app.title,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            locale: Locale(languageCode),
-            supportedLocales: LocalizationCoordinator.supportedLocales,
-            localizationsDelegates:
-                LocalizationCoordinator.localizationsDelegates,
-            scaffoldMessengerKey: _messengerKey,
-            routerConfig: _router,
+      child: BlocProvider<AppSettingsController>.value(
+        value: widget.environment.settings,
+        // Las páginas (ver `withLanguageRebuild`) dependen de este scope.
+        child: LanguageScope(
+          languageCode: localization.languageCode,
+          child: ValueListenableBuilder<String>(
+            valueListenable: localization.languageCode,
+            builder: (context, languageCode, _) => MaterialApp.router(
+              onGenerateTitle: (_) => appStrings.app.title,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: switch (context
+                  .watch<AppSettingsController>()
+                  .state
+                  .theme) {
+                AppThemePreference.system => ThemeMode.system,
+                AppThemePreference.light => ThemeMode.light,
+                AppThemePreference.dark => ThemeMode.dark,
+              },
+              locale: Locale(languageCode),
+              supportedLocales: LocalizationCoordinator.supportedLocales,
+              localizationsDelegates:
+                  LocalizationCoordinator.localizationsDelegates,
+              scaffoldMessengerKey: _messengerKey,
+              routerConfig: _router,
+            ),
           ),
         ),
       ),

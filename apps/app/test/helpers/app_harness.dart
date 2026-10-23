@@ -11,8 +11,12 @@ import 'package:home_utility_app/app_module_registrar.dart';
 import 'package:home_utility_app/bootstrap.dart';
 import 'package:home_utility_app/i18n/strings.g.dart' as app_i18n;
 import 'package:home_utility_app/plugins/plugin_controller.dart';
+import 'package:home_utility_app/settings/app_settings.dart';
+import 'package:home_utility_app/settings/app_settings_controller.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
+
+import 'in_memory_app_settings_repository.dart';
 
 /// Plugin mínimo para probar la app con más de un módulo.
 class FakeHomePlugin implements HomePlugin {
@@ -66,9 +70,10 @@ class FakeHomePlugin implements HomePlugin {
 /// Entorno de la app sin Isar: plugin real con hardware falso y repositorio
 /// en memoria, más los [extraPlugins] que se indiquen.
 class AppHarness {
-  AppHarness({List<FakeHomePlugin> extraPlugins = const []})
+  AppHarness({List<FakeHomePlugin> extraPlugins = const [], AppSettings savedSettings = const AppSettings()})
       : extraPlugins = extraPlugins,
-        preferences = InMemoryPluginPreferenceRepository() {
+        preferences = InMemoryPluginPreferenceRepository(),
+        settingsRepository = InMemoryAppSettingsRepository(savedSettings) {
     localization.register(
       'app',
       (code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
@@ -98,11 +103,18 @@ class AppHarness {
       localization: localization,
       registry: registry,
       plugins: PluginController(PluginLifecycleManager(registry: registry, preferences: preferences)),
+      settings: AppSettingsController(
+        repository: settingsRepository,
+        localization: localization,
+        initial: savedSettings,
+        systemLanguageCode: 'es',
+      ),
     );
   }
 
   final List<FakeHomePlugin> extraPlugins;
   final InMemoryPluginPreferenceRepository preferences;
+  final InMemoryAppSettingsRepository settingsRepository;
   final locator = ServiceLocator();
   final localization = LocalizationCoordinator();
   final items = InMemoryHouseholdItemRepository();

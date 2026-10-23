@@ -10,11 +10,13 @@ import '../home/bloc/home_bloc.dart';
 import '../home/presentation/home_dashboard_screen.dart';
 import '../i18n/strings.g.dart';
 import '../plugins/plugin_controller.dart';
+import '../settings/settings_screen.dart';
 import 'plugin_route_guard.dart';
 
 abstract final class AppRoutes {
   static const String home = '/';
   static const String catalog = '/plugins-catalog';
+  static const String settings = '/settings';
 }
 
 /// Router de la app: inicio, catálogo y las rutas de **todos** los plugins
@@ -61,6 +63,11 @@ GoRouter buildAppRouter({
           create: (_) => CatalogCubit(controller),
           child: const CatalogScreen(),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (BuildContext context, GoRouterState state) =>
+            const SettingsScreen(),
       ),
       for (final plugin in registry.allPlugins) ...plugin.routes,
     ]),

@@ -20,9 +20,9 @@ class HomeDashboardScreen extends StatelessWidget {
         title: Text(appStrings.app.title),
         actions: [
           AppIconButton(
-            icon: Icons.extension_outlined,
-            tooltip: t.openCatalog,
-            onPressed: () => context.push(AppRoutes.catalog),
+            icon: Icons.settings_outlined,
+            tooltip: t.openSettings,
+            onPressed: () => context.push(AppRoutes.settings),
           ),
         ],
       ),

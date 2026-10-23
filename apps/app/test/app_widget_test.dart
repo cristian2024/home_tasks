@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 
 import 'helpers/app_harness.dart';
@@ -9,10 +10,18 @@ void main() {
 
   tearDown(() => harness.dispose());
 
-  Future<void> openCatalog(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Módulos'));
+  Future<void> openSettings(WidgetTester tester, {String tooltip = 'Configuración'}) async {
+    await tester.tap(find.byTooltip(tooltip));
     await tester.pumpAndSettle();
   }
+
+  Future<void> openCatalog(WidgetTester tester, {String settings = 'Configuración', String modules = 'Módulos'}) async {
+    await openSettings(tester, tooltip: settings);
+    await tester.tap(find.widgetWithText(ListTile, modules));
+    await tester.pumpAndSettle();
+  }
+
+  ThemeMode themeMode(WidgetTester tester) => tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
 
   group('dashboard', () {
     testWidgets('muestra las tarjetas de los plugins activos en su orden', (tester) async {
@@ -86,6 +95,9 @@ void main() {
       expect(notes.disposeCalls, 1);
       expect(find.textContaining('Desactivado'), findsOneWidget);
 
+      // Catálogo → configuración → inicio.
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.text('Tarjeta notas'), findsNothing);
@@ -109,8 +121,7 @@ void main() {
 
       harness.localization.setLanguage('en');
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Modules'));
-      await tester.pumpAndSettle();
+      await openCatalog(tester, settings: 'Settings', modules: 'Modules');
 
       expect(find.widgetWithText(AppBar, 'Modules'), findsOneWidget);
       expect(find.text('Item Tracker'), findsOneWidget);
@@ -128,6 +139,85 @@ void main() {
       expect(find.text('Home Utilities'), findsOneWidget);
       expect(find.text('Scan'), findsOneWidget);
     });
+  });
+
+  group('configuración', () {
+    testWidgets('el engranaje abre la configuración y el tema cambia y se guarda', (WidgetTester tester) async {
+      harness = AppHarness();
+      await harness.pump(tester);
+      expect(themeMode(tester), ThemeMode.system);
+
+      await openSettings(tester);
+      expect(find.widgetWithText(AppBar, 'Configuración'), findsOneWidget);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Oscuro'));
+      await tester.pumpAndSettle();
+
+      expect(themeMode(tester), ThemeMode.dark);
+      expect(harness.settingsRepository.saved.theme, AppThemePreference.dark);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Claro'));
+      await tester.pumpAndSettle();
+      expect(themeMode(tester), ThemeMode.light);
+    });
+
+    testWidgets('arranca con el tema guardado', (WidgetTester tester) async {
+      harness = AppHarness(savedSettings: const AppSettings(theme: AppThemePreference.dark));
+      await harness.pump(tester);
+
+      expect(themeMode(tester), ThemeMode.dark);
+    });
+
+    testWidgets('un idioma fijado ignora los cambios del sistema hasta volver a "Sistema"', (WidgetTester tester) async {
+      harness = AppHarness();
+      await harness.pump(tester);
+      await openSettings(tester);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'English'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
+      expect(harness.settingsRepository.saved.languageCode, 'en');
+
+      tester.platformDispatcher.localesTestValue = const <Locale>[Locale('es', 'CO')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'System').last); // El primero es el del tema.
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Configuración'), findsOneWidget);
+      expect(harness.settingsRepository.saved.languageCode, isNull);
+    });
+
+    testWidgets('abre el catálogo y la exportación aún no está disponible', (WidgetTester tester) async {
+      harness = AppHarness();
+      await harness.pump(tester);
+      await openSettings(tester);
+
+      final ListTile export = tester.widget<ListTile>(find.widgetWithText(ListTile, 'Exportar / importar datos'));
+      expect(export.enabled, isFalse);
+      expect(find.text('Próximamente'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ListTile, 'Módulos'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Módulos'), findsOneWidget);
+    });
+
+    for (final (String name, AppThemePreference theme) in <(String, AppThemePreference)>[
+      ('claro', AppThemePreference.light),
+      ('oscuro', AppThemePreference.dark),
+    ]) {
+      testWidgets('tema $name: la configuración cumple las guías de accesibilidad', (WidgetTester tester) async {
+        final SemanticsHandle semantics = tester.ensureSemantics();
+        harness = AppHarness(savedSettings: AppSettings(theme: theme));
+        await harness.pump(tester);
+        await openSettings(tester);
+
+        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(textContrastGuideline));
+        semantics.dispose();
+      });
+    }
   });
 
   group('guard de rutas (§12.3)', () {

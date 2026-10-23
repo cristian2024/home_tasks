@@ -12,7 +12,7 @@ Future<void> main() async {
   final directory = await getApplicationDocumentsDirectory();
   final environment = await bootstrapApp(
     databaseDirectory: directory.path,
-    languageCode: LocalizationCoordinator.resolveLanguage(
+    systemLanguageCode: LocalizationCoordinator.resolveLanguage(
       PlatformDispatcher.instance.locales,
     ),
   );

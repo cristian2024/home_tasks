@@ -8,7 +8,8 @@
       "empty_message": "Turn on a module in the catalog to see it here.",
       "reorder_hint": "Long-press a card to change the order.",
       "plugin_failed": "“{name}” could not be started.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "open_settings": "Settings"
     },
     "catalog": {
       "title": "Modules",
@@ -18,9 +19,30 @@
       "enabled": "On",
       "disabled": "Off"
     },
+    "settings": {
+      "title": "Settings",
+      "appearance": "Appearance",
+      "theme": "Theme",
+      "theme_system": "System",
+      "theme_light": "Light",
+      "theme_dark": "Dark",
+      "language_section": "Language",
+      "language": "App language",
+      "language_system": "System",
+      "modules_section": "Modules",
+      "modules": "Modules",
+      "modules_description": "Turn the app modules on or off.",
+      "data_section": "Data",
+      "export_import": "Export / import data",
+      "coming_soon": "Coming soon"
+    },
     "guard": {
       "plugin_disabled": "That module is turned off. Turn it on in the catalog to use it.",
       "plugin_unavailable": "That module is not available right now."
+    },
+    "languages": {
+      "es": "Español",
+      "en": "English"
     }
   }
 }

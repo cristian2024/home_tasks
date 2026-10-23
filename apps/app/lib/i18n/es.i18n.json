@@ -8,7 +8,8 @@
       "empty_message": "Activa algún módulo en el catálogo para verlo aquí.",
       "reorder_hint": "Mantén pulsada una tarjeta para cambiar el orden.",
       "plugin_failed": "No se pudo iniciar «{name}».",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "open_settings": "Configuración"
     },
     "catalog": {
       "title": "Módulos",
@@ -18,9 +19,30 @@
       "enabled": "Activo",
       "disabled": "Desactivado"
     },
+    "settings": {
+      "title": "Configuración",
+      "appearance": "Apariencia",
+      "theme": "Tema",
+      "theme_system": "Sistema",
+      "theme_light": "Claro",
+      "theme_dark": "Oscuro",
+      "language_section": "Idioma",
+      "language": "Idioma de la app",
+      "language_system": "Sistema",
+      "modules_section": "Módulos",
+      "modules": "Módulos",
+      "modules_description": "Activa o desactiva los módulos de la app.",
+      "data_section": "Datos",
+      "export_import": "Exportar / importar datos",
+      "coming_soon": "Próximamente"
+    },
     "guard": {
       "plugin_disabled": "Ese módulo está desactivado. Actívalo en el catálogo para usarlo.",
       "plugin_unavailable": "Ese módulo no está disponible en este momento."
+    },
+    "languages": {
+      "es": "Español",
+      "en": "English"
     }
   }
 }
