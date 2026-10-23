@@ -6,9 +6,11 @@ import 'package:core_events/core_events.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:core_utils/core_utils.dart';
+import 'package:flutter/services.dart';
 
 import 'app_module_registrar.dart';
 import 'i18n/strings.g.dart' as i18n;
+import 'i18n/translation_overrides.dart';
 import 'plugins/plugin_controller.dart';
 import 'settings/app_settings.dart';
 import 'settings/app_settings_controller.dart';
@@ -49,8 +51,10 @@ class AppEnvironment {
 }
 
 /// Arranque de la app (§3.2, §10.2):
-/// 1. Preferencias de la app (tema e idioma; [systemLanguageCode] si el
-///    usuario no fijó uno) y servicios base en el scope raíz de `core_di`.
+/// 1. Textos que la app reemplaza en los paquetes (de [assetBundle], por
+///    defecto `rootBundle`), preferencias de la app (tema e idioma;
+///    [systemLanguageCode] si el usuario no fijó uno) y servicios base en el
+///    scope raíz de `core_di`.
 /// 2. Registro de plugins en tiempo de compilación ([appPluginFactories]).
 /// 3. Base de datos con los esquemas de **todos** los plugins registrados,
 ///    también los desactivados (sus datos deben seguir accesibles, AC-02).
@@ -59,6 +63,7 @@ Future<AppEnvironment> bootstrapApp({
   required String databaseDirectory,
   required String systemLanguageCode,
   AppSettingsRepository settingsRepository = const SharedPreferencesAppSettingsRepository(),
+  AssetBundle? assetBundle,
   ServiceLocator? locator,
   LocalizationCoordinator? localization,
   List<PluginFactory> pluginFactories = appPluginFactories,
@@ -74,6 +79,7 @@ Future<AppEnvironment> bootstrapApp({
       return value is String ? value : null;
     },
   );
+  await applyTranslationOverrides(l10n, bundle: assetBundle ?? rootBundle);
   final AppSettings savedSettings = await settingsRepository.load();
   final AppSettingsController settings = AppSettingsController(
     repository: settingsRepository,

@@ -15,6 +15,9 @@ import 'helpers/in_memory_app_settings_repository.dart';
 /// directorio) y comprobar que el plugin sigue desactivado y sus datos
 /// intactos.
 void main() {
+  // bootstrapApp lee de rootBundle los textos que la app reemplaza.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory directory;
   late InMemoryAppSettingsRepository settings;
 
