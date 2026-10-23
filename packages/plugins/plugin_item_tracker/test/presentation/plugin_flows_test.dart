@@ -29,6 +29,10 @@ void main() {
       expect(await plugin.isAvailable(), isTrue);
       expect(harness.locator.hasScope('item_tracker'), isTrue);
       expect(harness.locator.isRegistered<ItemTrackerDependencies>(), isTrue);
+      expect(
+        harness.locator.get<ItemTrackerDependencies>().containmentPolicy,
+        const ContainmentPolicy(maxDepth: ItemTrackerPlugin.configuredMaxDepth),
+      );
 
       await plugin.dispose();
       expect(harness.locator.hasScope('item_tracker'), isFalse);

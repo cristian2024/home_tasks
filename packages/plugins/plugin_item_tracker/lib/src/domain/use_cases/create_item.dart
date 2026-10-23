@@ -5,6 +5,8 @@ import '../entities/household_item.dart';
 import '../entities/item_event.dart';
 import '../entities/physical_identifier.dart';
 import '../errors/item_tracker_exception.dart';
+import '../hierarchy/containment_policy.dart';
+import '../hierarchy/item_tree.dart';
 import '../item_validator.dart';
 import '../repositories/household_item_repository.dart';
 import '../value_objects/item_metadata.dart';
@@ -12,22 +14,34 @@ import '../value_objects/item_metadata.dart';
 /// Identificador físico que se asocia al crear un objeto.
 typedef IdentifierInput = ({String rawValue, IdentifierType type});
 
-/// Crea un objeto, opcionalmente con su primer identificador, registra los
-/// eventos técnicos y publica [ItemCreatedCrossEvent].
+/// Crea un objeto, opcionalmente con su primer identificador y dentro de un
+/// contenedor ([parentId]), registra los eventos técnicos y publica
+/// [ItemCreatedCrossEvent].
 class CreateItem {
-  const CreateItem(this._repository, this._ids, this._clock, this._eventBus);
+  const CreateItem(this._repository, this._ids, this._clock, this._eventBus, [this._policy = const ContainmentPolicy()]);
 
   final HouseholdItemRepository _repository;
   final IdGenerator _ids;
   final Clock _clock;
   final EventBus _eventBus;
+  final ContainmentPolicy _policy;
 
   Future<HouseholdItem> call({
     required String name,
     String description = '',
     Map<String, Object?> metadata = const {},
     IdentifierInput? identifier,
+    String? parentId,
   }) async {
+    HouseholdItem? parent;
+    if (parentId != null) {
+      final tree = ItemTree(await _repository.getAll());
+      parent = tree[parentId] ?? (throw ItemNotFoundException(parentId));
+      if (!_policy.allows(parentDepth: tree.depthOf(parentId), subtreeHeight: 1)) {
+        throw ItemContainmentTooDeepException(_policy.maxDepth);
+      }
+    }
+
     final item = HouseholdItem(
       id: _ids.newId(),
       name: ItemValidator.name(name),
@@ -35,6 +49,7 @@ class CreateItem {
       metadata: ItemMetadata(metadata),
       createdAt: _clock.nowUtc(),
       updatedAt: _clock.nowUtc(),
+      parentId: parent?.id,
     );
 
     PhysicalIdentifier? bound;
@@ -76,6 +91,15 @@ class CreateItem {
             kind: ItemEventKind.identifierBound,
             title: bound.type.name,
             description: bound.rawValue,
+            timestamp: item.createdAt,
+          ),
+        if (parent != null)
+          ItemEvent(
+            id: _ids.newId(),
+            itemId: parent.id,
+            kind: ItemEventKind.childAdded,
+            title: item.name,
+            description: item.id,
             timestamp: item.createdAt,
           ),
       ],

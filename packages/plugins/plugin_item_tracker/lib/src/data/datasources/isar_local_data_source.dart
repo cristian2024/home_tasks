@@ -63,6 +63,8 @@ class IsarLocalDataSource {
 
   Future<IsarHouseholdItem?> getItem(String id) => _items.getById(id);
 
+  Future<List<IsarHouseholdItem>> getItems() => _items.where().findAll();
+
   Stream<IsarHouseholdItem?> watchItem(String id) => _items
       .where()
       .idEqualTo(id)

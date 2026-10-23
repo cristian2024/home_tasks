@@ -371,6 +371,18 @@ class ItemTrackerTranslations$itemTracker$events$es {
 
 	/// es: '{type} quitado: {value}'
 	String identifierUnbound({required Object type, required Object value}) => '${type} quitado: ${value}';
+
+	/// es: 'Movido a «{name}»'
+	String moved({required Object name}) => 'Movido a «${name}»';
+
+	/// es: 'Sacado de su contenedor'
+	String get movedOut => 'Sacado de su contenedor';
+
+	/// es: 'Entró «{name}»'
+	String childAdded({required Object name}) => 'Entró «${name}»';
+
+	/// es: 'Salió «{name}»'
+	String childRemoved({required Object name}) => 'Salió «${name}»';
 }
 
 // Path: itemTracker.form
@@ -625,6 +637,10 @@ extension on ItemTrackerTranslations {
 			'itemTracker.events.fieldDescription' => 'descripción',
 			'itemTracker.events.fieldMetadata' => 'datos adicionales',
 			'itemTracker.events.identifierUnbound' => ({required Object type, required Object value}) => '${type} quitado: ${value}',
+			'itemTracker.events.moved' => ({required Object name}) => 'Movido a «${name}»',
+			'itemTracker.events.movedOut' => 'Sacado de su contenedor',
+			'itemTracker.events.childAdded' => ({required Object name}) => 'Entró «${name}»',
+			'itemTracker.events.childRemoved' => ({required Object name}) => 'Salió «${name}»',
 			'itemTracker.form.createTitle' => 'Nuevo objeto',
 			'itemTracker.form.editTitle' => 'Editar objeto',
 			'itemTracker.form.name' => 'Nombre',

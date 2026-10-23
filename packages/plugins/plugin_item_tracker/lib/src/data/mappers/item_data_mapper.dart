@@ -19,7 +19,8 @@ abstract final class ItemDataMapper {
     ..description = item.description
     ..metadataJson = jsonEncode(item.metadata.values)
     ..createdAt = item.createdAt.toUtc()
-    ..updatedAt = item.updatedAt.toUtc();
+    ..updatedAt = item.updatedAt.toUtc()
+    ..parentId = item.parentId;
 
   static HouseholdItem fromIsarItem(IsarHouseholdItem model) => HouseholdItem(
         id: model.id,
@@ -28,6 +29,7 @@ abstract final class ItemDataMapper {
         metadata: ItemMetadata((jsonDecode(model.metadataJson) as Map<String, Object?>)),
         createdAt: model.createdAt.toUtc(),
         updatedAt: model.updatedAt.toUtc(),
+        parentId: model.parentId,
       );
 
   static IsarPhysicalIdentifier toIsarIdentifier(PhysicalIdentifier identifier) => IsarPhysicalIdentifier()

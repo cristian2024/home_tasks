@@ -41,6 +41,15 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
   }
 
   @override
+  Future<List<HouseholdItem>> getAll() async => (await _source.getItems()).map(ItemDataMapper.fromIsarItem).toList();
+
+  @override
+  Future<void> moveItem(HouseholdItem item, List<ItemEvent> events) => _source.saveItemWithIdentifier(
+        ItemDataMapper.toIsarItem(item),
+        events: [for (final event in events) ItemDataMapper.toIsarEvent(event)],
+      );
+
+  @override
   Stream<HouseholdItem?> watchById(String id) =>
       _source.watchItem(id).map((model) => model == null ? null : ItemDataMapper.fromIsarItem(model));
 

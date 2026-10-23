@@ -163,6 +163,9 @@ const _IsarItemEventkindEnumValueMap = {
   r'updated': r'updated',
   r'identifierBound': r'identifierBound',
   r'identifierUnbound': r'identifierUnbound',
+  r'moved': r'moved',
+  r'childAdded': r'childAdded',
+  r'childRemoved': r'childRemoved',
   r'note': r'note',
 };
 const _IsarItemEventkindValueEnumMap = {
@@ -170,6 +173,9 @@ const _IsarItemEventkindValueEnumMap = {
   r'updated': ItemEventKind.updated,
   r'identifierBound': ItemEventKind.identifierBound,
   r'identifierUnbound': ItemEventKind.identifierUnbound,
+  r'moved': ItemEventKind.moved,
+  r'childAdded': ItemEventKind.childAdded,
+  r'childRemoved': ItemEventKind.childRemoved,
   r'note': ItemEventKind.note,
 };
 

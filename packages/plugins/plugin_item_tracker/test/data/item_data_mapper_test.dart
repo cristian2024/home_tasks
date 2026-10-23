@@ -18,6 +18,16 @@ void main() {
     expect(ItemDataMapper.fromIsarItem(model), original);
   });
 
+  test('HouseholdItem conserva el contenedor (parentId) en ambos sentidos', () {
+    final original = item(parentId: 'organizer');
+
+    final model = ItemDataMapper.toIsarItem(original);
+
+    expect(model.parentId, 'organizer');
+    expect(ItemDataMapper.fromIsarItem(model), original);
+    expect(ItemDataMapper.fromIsarItem(ItemDataMapper.toIsarItem(item())).parentId, isNull);
+  });
+
   test('PhysicalIdentifier ida y vuelta', () {
     final original = identifier(type: IdentifierType.barcode, rawValue: '049000000443');
 

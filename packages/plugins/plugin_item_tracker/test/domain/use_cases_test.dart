@@ -30,6 +30,8 @@ void main() {
     when(() => repository.getIdentifier(any())).thenAnswer((_) async => null);
     when(() => repository.findIdentifier(any(), any())).thenAnswer((_) async => null);
     when(() => repository.getById(any())).thenAnswer((_) async => null);
+    when(() => repository.getAll()).thenAnswer((_) async => const []);
+    when(() => repository.moveItem(any(), any())).thenAnswer((_) async {});
   });
 
   tearDown(() => eventBus.dispose());
@@ -94,6 +96,142 @@ void main() {
         throwsValidation(ValidationField.identifierValue, ValidationReason.empty),
       );
       verifyNever(() => repository.createItem(any(), identifier: any(named: 'identifier'), events: any(named: 'events')));
+    });
+  });
+
+  group('CreateItem dentro de un contenedor', () {
+    late CreateItem createItem;
+
+    setUp(() => createItem = CreateItem(repository, ids, clock, eventBus, const ContainmentPolicy(maxDepth: 3)));
+
+    test('lo crea dentro y registra childAdded en el contenedor', () async {
+      when(() => repository.getAll()).thenAnswer((_) async => [item(id: 'box', name: 'Organizador')]);
+
+      final created = await createItem(name: 'Cajón 1', parentId: 'box');
+
+      expect(created.parentId, 'box');
+      final events = verify(
+        () => repository.createItem(any(), identifier: any(named: 'identifier'), events: captureAny(named: 'events')),
+      ).captured.single as List<ItemEvent>;
+      expect(
+        events.last,
+        ItemEvent(id: 'id-3', itemId: 'box', kind: ItemEventKind.childAdded, title: 'Cajón 1', description: 'id-1', timestamp: t0),
+      );
+    });
+
+    test('rechaza un contenedor que no existe', () async {
+      await expectLater(
+        createItem(name: 'Cajón 1', parentId: 'missing'),
+        throwsA(isA<ItemNotFoundException>().having((e) => e.itemId, 'itemId', 'missing')),
+      );
+    });
+
+    test('rechaza crear por debajo del nivel máximo', () async {
+      when(() => repository.getAll()).thenAnswer(
+        (_) async => [item(id: 'a'), item(id: 'b', parentId: 'a'), item(id: 'c', parentId: 'b')],
+      );
+
+      await expectLater(
+        createItem(name: 'Demasiado hondo', parentId: 'c'),
+        throwsA(isA<ItemContainmentTooDeepException>().having((e) => e.maxDepth, 'maxDepth', 3)),
+      );
+      verifyNever(() => repository.createItem(any(), identifier: any(named: 'identifier'), events: any(named: 'events')));
+    });
+  });
+
+  group('MoveItem', () {
+    late MoveItem moveItem;
+
+    // Mueble › Organizador › Cajón 1, y Tijeras y Caja sueltas.
+    final furniture = item(id: 'furniture', name: 'Mueble');
+    final organizer = item(id: 'organizer', name: 'Organizador', parentId: 'furniture');
+    final drawer = item(id: 'drawer', name: 'Cajón 1', parentId: 'organizer');
+    final scissors = item(id: 'scissors', name: 'Tijeras');
+    final box = item(id: 'box', name: 'Caja');
+
+    setUp(() {
+      moveItem = MoveItem(repository, ids, clock, const ContainmentPolicy(maxDepth: 4));
+      when(() => repository.getAll()).thenAnswer((_) async => [furniture, organizer, drawer, scissors, box]);
+    });
+
+    ItemEvent event(String id, String itemId, ItemEventKind kind, String title, String description) =>
+        ItemEvent(id: id, itemId: itemId, kind: kind, title: title, description: description, timestamp: t0);
+
+    test('mete un objeto suelto en un contenedor', () async {
+      clock.advance(const Duration(hours: 1));
+
+      final moved = await moveItem('scissors', parentId: 'drawer');
+
+      expect(moved, scissors.copyWith(parentId: () => 'drawer', updatedAt: t0.add(const Duration(hours: 1))));
+      final events = verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
+      expect(events.map((e) => (e.itemId, e.kind, e.title, e.description)), [
+        ('scissors', ItemEventKind.moved, 'Cajón 1', 'drawer'),
+        ('drawer', ItemEventKind.childAdded, 'Tijeras', 'scissors'),
+      ]);
+    });
+
+    test('al cambiar de contenedor registra la salida en el anterior', () async {
+      final moved = await moveItem('drawer', parentId: 'box');
+
+      final events = verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
+      expect(events, [
+        event('id-1', 'drawer', ItemEventKind.moved, 'Caja', 'box'),
+        event('id-2', 'organizer', ItemEventKind.childRemoved, 'Cajón 1', 'drawer'),
+        event('id-3', 'box', ItemEventKind.childAdded, 'Cajón 1', 'drawer'),
+      ]);
+    });
+
+    test('sacarlo de su contenedor deja moved sin nombre', () async {
+      final moved = await moveItem('drawer', parentId: null);
+
+      expect(moved.parentId, isNull);
+      final events = verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
+      expect(events.first, event('id-1', 'drawer', ItemEventKind.moved, '', ''));
+      expect(events, hasLength(2));
+    });
+
+    test('si el contenedor no cambia no escribe nada', () async {
+      expect(await moveItem('drawer', parentId: 'organizer'), drawer);
+      expect(await moveItem('box', parentId: null), box);
+      verifyNever(() => repository.moveItem(any(), any()));
+    });
+
+    test('impide meter un objeto en sí mismo o en algo que contiene', () async {
+      await expectLater(
+        moveItem('organizer', parentId: 'organizer'),
+        throwsA(isA<ItemContainmentCycleException>()),
+      );
+      await expectLater(
+        moveItem('furniture', parentId: 'drawer'),
+        throwsA(
+          isA<ItemContainmentCycleException>()
+              .having((e) => e.itemId, 'itemId', 'furniture')
+              .having((e) => e.parentId, 'parentId', 'drawer'),
+        ),
+      );
+      verifyNever(() => repository.moveItem(any(), any()));
+    });
+
+    test('cuenta todo lo que contiene el objeto al comprobar el nivel máximo', () async {
+      // Organizador ocupa 2 niveles (con su cajón): dentro de Caja (nivel 1)
+      // llega al nivel 3; dentro de Cajón 1 de otro mueble no cabría.
+      await moveItem('organizer', parentId: 'box');
+
+      when(() => repository.getAll()).thenAnswer(
+        (_) async => [furniture, organizer, drawer, item(id: 'shelf', parentId: 'furniture'), item(id: 'bin', parentId: 'shelf')],
+      );
+      await expectLater(
+        moveItem('organizer', parentId: 'bin'),
+        throwsA(isA<ItemContainmentTooDeepException>().having((e) => e.maxDepth, 'maxDepth', 4)),
+      );
+    });
+
+    test('lanza ItemNotFoundException si falta el objeto o el contenedor', () async {
+      await expectLater(moveItem('missing', parentId: null), throwsA(isA<ItemNotFoundException>()));
+      await expectLater(
+        moveItem('scissors', parentId: 'missing'),
+        throwsA(isA<ItemNotFoundException>().having((e) => e.itemId, 'itemId', 'missing')),
+      );
     });
   });
 
@@ -351,6 +489,16 @@ void main() {
       expect(WatchItems(repository)(), same(itemsStream));
       expect(WatchItemIdentifiers(repository)('item-1'), same(identifiersStream));
       expect(WatchItemEvents(repository)('item-1'), same(eventsStream));
+    });
+
+    test('WatchItemTree convierte el listado en un árbol', () async {
+      when(() => repository.watchAll()).thenAnswer(
+        (_) => Stream.value([item(id: 'box'), item(id: 'drawer', parentId: 'box')]),
+      );
+
+      final tree = await WatchItemTree(repository)().first;
+
+      expect(tree.depthOf('drawer'), 2);
     });
   });
 }

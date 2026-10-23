@@ -11,12 +11,14 @@ import 'package:go_router/go_router.dart';
 
 import 'src/data/item_tracker_storage.dart';
 import 'src/data/repositories/isar_household_item_repository.dart';
+import 'src/domain/hierarchy/containment_policy.dart';
 import 'src/domain/repositories/household_item_repository.dart';
 import 'src/domain/use_cases/add_item_event.dart';
 import 'src/domain/use_cases/bind_identifier.dart';
 import 'src/domain/use_cases/create_item.dart';
 import 'src/domain/use_cases/find_item_by_identifier.dart';
 import 'src/domain/use_cases/item_queries.dart';
+import 'src/domain/use_cases/move_item.dart';
 import 'src/domain/use_cases/unbind_identifier.dart';
 import 'src/domain/use_cases/update_item.dart';
 import 'src/i18n/strings.g.dart' as i18n;
@@ -46,6 +48,10 @@ import 'src/presentation/scan/scan_screen.dart';
 ///
 /// Los escáneres y los permisos se inyectan por constructor para poder usar
 /// los fakes de `package:core_hardware/testing.dart`.
+///
+/// El nivel máximo de anidamiento de objetos se configura al compilar con
+/// `--dart-define=ITEM_TRACKER_MAX_DEPTH=<n>` (por defecto
+/// [ContainmentPolicy.defaultMaxDepth]); [maxContainmentDepth] lo sustituye.
 class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   ItemTrackerPlugin({
     required ServiceLocator locator,
@@ -54,7 +60,9 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
     HardwarePermissions? permissions,
     HouseholdItemRepository Function(ServiceLocator locator)? repositoryFactory,
     LocalizationCoordinator? localization,
+    int? maxContainmentDepth,
   })  : _locator = locator,
+        _containmentPolicy = ContainmentPolicy.fromConfiguredDepth(maxContainmentDepth ?? configuredMaxDepth),
         _cameraScannerFactory = cameraScannerFactory ?? MobileScannerCameraScanner.new,
         _nfcScannerFactory = nfcScannerFactory ?? NfcManagerScanner.new,
         _permissions = permissions ?? const PermissionHandlerPermissions(),
@@ -63,12 +71,17 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
 
   static const String pluginId = 'item_tracker';
 
+  /// Valor de `--dart-define=ITEM_TRACKER_MAX_DEPTH`.
+  static const int configuredMaxDepth =
+      int.fromEnvironment('ITEM_TRACKER_MAX_DEPTH', defaultValue: ContainmentPolicy.defaultMaxDepth);
+
   final ServiceLocator _locator;
   final CameraScannerFactory _cameraScannerFactory;
   final NfcScannerFactory _nfcScannerFactory;
   final HardwarePermissions _permissions;
   final HouseholdItemRepository Function(ServiceLocator locator) _repositoryFactory;
   final LocalizationCoordinator _localization;
+  final ContainmentPolicy _containmentPolicy;
 
   ItemTrackerDependencies get _dependencies => _locator.get<ItemTrackerDependencies>();
 
@@ -127,8 +140,9 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         }
         locator.registerSingleton(
           ItemTrackerDependencies(
-            createItem: CreateItem(repository, ids, clock, eventBus),
+            createItem: CreateItem(repository, ids, clock, eventBus, _containmentPolicy),
             updateItem: UpdateItem(repository, ids, clock),
+            moveItem: MoveItem(repository, ids, clock, _containmentPolicy),
             bindIdentifier: BindIdentifier(repository, ids, clock),
             unbindIdentifier: UnbindIdentifier(repository, ids, clock),
             addItemEvent: AddItemEvent(repository, ids, clock),
@@ -136,12 +150,14 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
             getItem: GetItem(repository),
             watchItem: WatchItem(repository),
             watchItems: WatchItems(repository),
+            watchItemTree: WatchItemTree(repository),
             searchItems: SearchItems(repository),
             watchItemIdentifiers: WatchItemIdentifiers(repository),
             watchItemEvents: WatchItemEvents(repository),
             cameraScannerFactory: _cameraScannerFactory,
             nfcScannerFactory: _nfcScannerFactory,
             permissions: _permissions,
+            containmentPolicy: _containmentPolicy,
           ),
         );
       },

@@ -44,6 +44,28 @@ final class IdentifierAlreadyBoundException extends ItemTrackerException {
   String toString() => 'IdentifierAlreadyBoundException(${type.name}:$rawValue -> $boundItemId)';
 }
 
+/// [parentId] es el propio objeto [itemId] o uno de sus descendientes.
+final class ItemContainmentCycleException extends ItemTrackerException {
+  final String itemId;
+  final String parentId;
+
+  const ItemContainmentCycleException({required this.itemId, required this.parentId});
+
+  @override
+  String toString() => 'ItemContainmentCycleException($itemId -> $parentId)';
+}
+
+/// Colocar el objeto (con todo lo que contiene) dentro del contenedor
+/// superaría [maxDepth] niveles.
+final class ItemContainmentTooDeepException extends ItemTrackerException {
+  final int maxDepth;
+
+  const ItemContainmentTooDeepException(this.maxDepth);
+
+  @override
+  String toString() => 'ItemContainmentTooDeepException($maxDepth)';
+}
+
 enum ValidationField { name, description, metadata, identifierValue, eventTitle, eventDescription }
 
 enum ValidationReason {

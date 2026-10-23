@@ -34,8 +34,13 @@ const IsarHouseholdItemSchema = CollectionSchema(
       type: IsarType.string,
     ),
     r'name': PropertySchema(id: 4, name: r'name', type: IsarType.string),
-    r'updatedAt': PropertySchema(
+    r'parentId': PropertySchema(
       id: 5,
+      name: r'parentId',
+      type: IsarType.string,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 6,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
@@ -99,6 +104,19 @@ const IsarHouseholdItemSchema = CollectionSchema(
         ),
       ],
     ),
+    r'parentId': IndexSchema(
+      id: -809199838039056779,
+      name: r'parentId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'parentId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
   },
   links: {},
   embeddedSchemas: {},
@@ -119,6 +137,12 @@ int _isarHouseholdItemEstimateSize(
   bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.metadataJson.length * 3;
   bytesCount += 3 + object.name.length * 3;
+  {
+    final value = object.parentId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -133,7 +157,8 @@ void _isarHouseholdItemSerialize(
   writer.writeString(offsets[2], object.id);
   writer.writeString(offsets[3], object.metadataJson);
   writer.writeString(offsets[4], object.name);
-  writer.writeDateTime(offsets[5], object.updatedAt);
+  writer.writeString(offsets[5], object.parentId);
+  writer.writeDateTime(offsets[6], object.updatedAt);
 }
 
 IsarHouseholdItem _isarHouseholdItemDeserialize(
@@ -149,7 +174,8 @@ IsarHouseholdItem _isarHouseholdItemDeserialize(
   object.isarId = id;
   object.metadataJson = reader.readString(offsets[3]);
   object.name = reader.readString(offsets[4]);
-  object.updatedAt = reader.readDateTime(offsets[5]);
+  object.parentId = reader.readStringOrNull(offsets[5]);
+  object.updatedAt = reader.readDateTime(offsets[6]);
   return object;
 }
 
@@ -171,6 +197,8 @@ P _isarHouseholdItemDeserializeProp<P>(
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -651,6 +679,81 @@ extension IsarHouseholdItemQueryWhere
           includeUpper: includeUpper,
         ),
       );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterWhereClause>
+  parentIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'parentId', value: [null]),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterWhereClause>
+  parentIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'parentId',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterWhereClause>
+  parentIdEqualTo(String? parentId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'parentId', value: [parentId]),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterWhereClause>
+  parentIdNotEqualTo(String? parentId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'parentId',
+                lower: [],
+                upper: [parentId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'parentId',
+                lower: [parentId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'parentId',
+                lower: [parentId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'parentId',
+                lower: [],
+                upper: [parentId],
+                includeUpper: false,
+              ),
+            );
+      }
     });
   }
 }
@@ -1328,6 +1431,165 @@ extension IsarHouseholdItemQueryFilter
   }
 
   QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'parentId'),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'parentId'),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'parentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'parentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'parentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'parentId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'parentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'parentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'parentId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'parentId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'parentId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
+  parentIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'parentId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterFilterCondition>
   updatedAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -1461,6 +1723,20 @@ extension IsarHouseholdItemQuerySortBy
   }
 
   QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterSortBy>
+  sortByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterSortBy>
+  sortByParentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterSortBy>
   sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -1561,6 +1837,20 @@ extension IsarHouseholdItemQuerySortThenBy
   }
 
   QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterSortBy>
+  thenByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterSortBy>
+  thenByParentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QAfterSortBy>
   thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -1615,6 +1905,13 @@ extension IsarHouseholdItemQueryWhereDistinct
   }
 
   QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QDistinct>
+  distinctByParentId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'parentId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, IsarHouseholdItem, QDistinct>
   distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
@@ -1660,6 +1957,13 @@ extension IsarHouseholdItemQueryProperty
   QueryBuilder<IsarHouseholdItem, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<IsarHouseholdItem, String?, QQueryOperations>
+  parentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'parentId');
     });
   }
 

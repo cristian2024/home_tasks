@@ -4,7 +4,9 @@ import 'domain/use_cases/add_item_event.dart';
 import 'domain/use_cases/bind_identifier.dart';
 import 'domain/use_cases/create_item.dart';
 import 'domain/use_cases/find_item_by_identifier.dart';
+import 'domain/hierarchy/containment_policy.dart';
 import 'domain/use_cases/item_queries.dart';
+import 'domain/use_cases/move_item.dart';
 import 'domain/use_cases/unbind_identifier.dart';
 import 'domain/use_cases/update_item.dart';
 
@@ -17,6 +19,7 @@ class ItemTrackerDependencies {
   const ItemTrackerDependencies({
     required this.createItem,
     required this.updateItem,
+    required this.moveItem,
     required this.bindIdentifier,
     required this.unbindIdentifier,
     required this.addItemEvent,
@@ -24,16 +27,19 @@ class ItemTrackerDependencies {
     required this.getItem,
     required this.watchItem,
     required this.watchItems,
+    required this.watchItemTree,
     required this.searchItems,
     required this.watchItemIdentifiers,
     required this.watchItemEvents,
     required this.cameraScannerFactory,
     required this.nfcScannerFactory,
     required this.permissions,
+    required this.containmentPolicy,
   });
 
   final CreateItem createItem;
   final UpdateItem updateItem;
+  final MoveItem moveItem;
   final BindIdentifier bindIdentifier;
   final UnbindIdentifier unbindIdentifier;
   final AddItemEvent addItemEvent;
@@ -41,10 +47,12 @@ class ItemTrackerDependencies {
   final GetItem getItem;
   final WatchItem watchItem;
   final WatchItems watchItems;
+  final WatchItemTree watchItemTree;
   final SearchItems searchItems;
   final WatchItemIdentifiers watchItemIdentifiers;
   final WatchItemEvents watchItemEvents;
   final CameraScannerFactory cameraScannerFactory;
   final NfcScannerFactory nfcScannerFactory;
   final HardwarePermissions permissions;
+  final ContainmentPolicy containmentPolicy;
 }

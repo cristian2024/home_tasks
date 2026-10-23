@@ -99,7 +99,11 @@
       "field_name": "name",
       "field_description": "description",
       "field_metadata": "additional data",
-      "identifier_unbound": "{type} removed: {value}"
+      "identifier_unbound": "{type} removed: {value}",
+      "moved": "Moved to “{name}”",
+      "moved_out": "Taken out of its container",
+      "child_added": "“{name}” was put in",
+      "child_removed": "“{name}” was taken out"
     },
     "form": {
       "create_title": "New item",

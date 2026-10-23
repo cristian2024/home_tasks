@@ -209,6 +209,10 @@ class _ItemTrackerTranslations$itemTracker$events$en implements ItemTrackerTrans
 	@override String get fieldDescription => 'description';
 	@override String get fieldMetadata => 'additional data';
 	@override String identifierUnbound({required Object type, required Object value}) => '${type} removed: ${value}';
+	@override String moved({required Object name}) => 'Moved to “${name}”';
+	@override String get movedOut => 'Taken out of its container';
+	@override String childAdded({required Object name}) => '“${name}” was put in';
+	@override String childRemoved({required Object name}) => '“${name}” was taken out';
 }
 
 // Path: itemTracker.form
@@ -377,6 +381,10 @@ extension on ItemTrackerTranslationsEn {
 			'itemTracker.events.fieldDescription' => 'description',
 			'itemTracker.events.fieldMetadata' => 'additional data',
 			'itemTracker.events.identifierUnbound' => ({required Object type, required Object value}) => '${type} removed: ${value}',
+			'itemTracker.events.moved' => ({required Object name}) => 'Moved to “${name}”',
+			'itemTracker.events.movedOut' => 'Taken out of its container',
+			'itemTracker.events.childAdded' => ({required Object name}) => '“${name}” was put in',
+			'itemTracker.events.childRemoved' => ({required Object name}) => '“${name}” was taken out',
 			'itemTracker.form.createTitle' => 'New item',
 			'itemTracker.form.editTitle' => 'Edit item',
 			'itemTracker.form.name' => 'Name',
