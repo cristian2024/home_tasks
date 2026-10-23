@@ -1,5 +1,6 @@
 import 'package:core_hardware/core_hardware.dart';
 import 'package:core_hardware/testing.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
@@ -221,6 +222,11 @@ void main() {
 
     expect(find.widgetWithText(AppBar, 'Caja grande'), findsOneWidget);
     expect(find.text('Azul'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Se editó: nombre, datos adicionales'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Se editó: nombre, datos adicionales'), findsOneWidget);
 
     await tester.tap(find.text('Añadir nota'));
@@ -249,6 +255,7 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Cama'), findsOneWidget);
       expect(find.text('Identificador añadido.'), findsOneWidget);
       expect(find.text('QR-PILLOW'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('QR asociado: QR-PILLOW'), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text('QR asociado: QR-PILLOW'), findsOneWidget);
       expect(harness.hardware.camera.isDisposed, isTrue);
     });
@@ -311,6 +318,137 @@ void main() {
 
     final other = await harness.createItem('Mesa', qr: 'QR-BED');
     expect((await harness.repository.findIdentifier('QR-BED', IdentifierType.qr))?.itemId, other.id);
+  });
+
+  group('contenedores', () {
+    Finder scrollable() => find.byType(Scrollable).first;
+
+    testWidgets('"Añadir objeto aquí" crea el objeto dentro y aparece en el contenido', (tester) async {
+      final furniture = await harness.createItem('Mueble');
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(furniture.id));
+      expect(find.text('No está dentro de ningún objeto.'), findsOneWidget);
+      expect(find.text('No contiene ningún objeto.'), findsOneWidget);
+      expect(find.text('Sacar del contenedor'), findsNothing);
+
+      await tester.tap(find.text('Añadir objeto aquí'));
+      await tester.pumpAndSettle();
+      expect(find.text('Se creará dentro de: Mueble'), findsOneWidget);
+      await tester.enterText(find.widgetWithText(TextField, 'Nombre'), 'Organizador');
+      await tester.scrollUntilVisible(find.text('Guardar'), 200, scrollable: scrollable());
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(AppBar, 'Mueble'), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Organizador'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ListTile, 'Organizador'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Organizador'), findsOneWidget);
+      // La ruta lleva de vuelta al contenedor.
+      await tester.tap(find.byTooltip('Abrir «Mueble»'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Mueble'), findsOneWidget);
+    });
+
+    testWidgets('"Mover a…" excluye el contenido, marca el contenedor actual y mueve el objeto', (tester) async {
+      final furniture = await harness.createItem('Mueble');
+      final organizer = await harness.createItem('Organizador', parentId: furniture.id);
+      await harness.createItem('Cajón', parentId: organizer.id);
+      await harness.createItem('Caja');
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(organizer.id));
+
+      await tester.tap(find.text('Mover a…'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Mover «Organizador»'), findsOneWidget);
+      expect(find.text('Cajón'), findsNothing);
+      expect(find.text('Ya está aquí'), findsOneWidget);
+
+      await tester.tap(find.text('Mueble')); // Desactivado: no hace nada.
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Mover «Organizador»'), findsOneWidget);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Buscar contenedor por nombre'), 'caj');
+      await tester.pumpAndSettle();
+      expect(find.text('Mueble'), findsNothing);
+      await tester.tap(find.text('Caja'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(AppBar, 'Organizador'), findsOneWidget);
+      expect(find.text('Movido a «Caja».'), findsOneWidget);
+      expect(find.byTooltip('Abrir «Caja»'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Movido a «Caja»'), 200, scrollable: scrollable());
+      expect(find.text('Movido a «Caja»'), findsOneWidget);
+    });
+
+    testWidgets('sacar del contenedor pide confirmación', (tester) async {
+      final box = await harness.createItem('Caja');
+      final scissors = await harness.createItem('Tijeras', parentId: box.id);
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(scissors.id));
+
+      await tester.tap(find.text('Sacar del contenedor'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Sacar del contenedor?'), findsOneWidget);
+      await tester.tap(find.text('Sacar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sacado de «Caja».'), findsOneWidget);
+      expect(find.text('No está dentro de ningún objeto.'), findsOneWidget);
+      expect((await harness.repository.getById(scissors.id))!.parentId, isNull);
+    });
+
+    testWidgets('con un límite bajo bloquea los destinos y avisa del contenedor desbordado', (tester) async {
+      await harness.dispose();
+      harness = PluginHarness(maxContainmentDepth: 2);
+      final furniture = await harness.createItem('Mueble');
+      final organizer = await harness.createItem('Organizador', parentId: furniture.id);
+      final drawer = await harness.createItem('Cajón');
+      await harness.createItem('Caja');
+      // Quedó en el nivel 3 antes de bajar el límite.
+      await harness.repository.moveItem(drawer.copyWith(parentId: () => organizer.id), const []);
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(organizer.id));
+
+      expect(
+        find.text('Este objeto está en el nivel 2 y el máximo es 2: lo que contiene supera el límite. Muévelo o sácalo.'),
+        findsOneWidget,
+      );
+      expect(tester.widget<AppButton>(find.widgetWithText(AppButton, 'Añadir objeto aquí')).onPressed, isNull);
+
+      await tester.tap(find.text('Mover a…'));
+      await tester.pumpAndSettle();
+      // El organizador ocupa 2 niveles: no cabe dentro de la caja.
+      expect(find.text('Ya está aquí'), findsOneWidget);
+      expect(find.text('Superaría el máximo de 2 niveles'), findsOneWidget);
+    });
+
+    testWidgets('la lista muestra la ruta de los objetos que están dentro de otros', (tester) async {
+      final furniture = await harness.createItem('Mueble');
+      final organizer = await harness.createItem('Organizador', parentId: furniture.id);
+      await harness.createItem('Cajón', parentId: organizer.id);
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.items);
+
+      expect(find.text('Mueble › Organizador'), findsOneWidget);
+      expect(find.text('Mueble'), findsWidgets);
+      await tester.enterText(find.widgetWithText(TextField, 'Buscar por nombre'), 'caj');
+      await tester.pumpAndSettle();
+      expect(find.text('Cajón'), findsOneWidget);
+      expect(find.text('Mueble › Organizador'), findsOneWidget);
+    });
+
+    testWidgets('el detalle y "Mover a…" cumplen las guías de accesibilidad', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final box = await harness.createItem('Caja');
+      final scissors = await harness.createItem('Tijeras', parentId: box.id);
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(scissors.id));
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+
+      await tester.tap(find.text('Mover a…'));
+      await tester.pumpAndSettle();
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      semantics.dispose();
+    });
   });
 
   testWidgets('un enlace a "no encontrado" sin código redirige a escanear', (tester) async {

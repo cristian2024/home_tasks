@@ -14,10 +14,18 @@ abstract final class ItemTrackerRoutes {
   static const String editPattern = '$base/item/:id/edit';
   static const String addEventPattern = '$base/item/:id/event/add';
   static const String addIdentifierPattern = '$base/item/:id/identifier/add';
+  static const String movePattern = '$base/item/:id/move';
 
   static String detail(String itemId) => '$base/item/${Uri.encodeComponent(itemId)}';
   static String edit(String itemId) => '${detail(itemId)}/edit';
   static String addEvent(String itemId) => '${detail(itemId)}/event/add';
+
+  /// Elegir el contenedor al que se mueve [itemId]. Al terminar hace `pop` con
+  /// el ID del contenedor.
+  static String move(String itemId) => '${detail(itemId)}/move';
+
+  /// Crear un objeto dentro de [parentId]. Al guardar hace `pop` con su ID.
+  static String createInside(String parentId) => Uri(path: create, queryParameters: {'parent': parentId}).toString();
 
   /// Escaneo en modo asociar: lo leído se asocia a [itemId]. Al terminar hace
   /// `pop` con el ID del objeto.

@@ -74,6 +74,11 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                           ),
                         ),
                       ),
+                    if (state.parentPath.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: AppCard(child: Text(t.parent(path: formatItemPath(state.parentPath)))),
+                      ),
                     if (error is ItemFormGeneralError)
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),

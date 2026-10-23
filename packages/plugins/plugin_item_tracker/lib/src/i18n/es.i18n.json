@@ -90,7 +90,21 @@
       "remove_identifier_title": "¿Quitar el identificador?",
       "remove_identifier_message": "El {type} «{value}» dejará de abrir este objeto. Podrás volver a asociarlo a cualquier objeto.",
       "remove_identifier_confirm": "Quitar",
-      "identifier_removed": "Identificador quitado."
+      "identifier_removed": "Identificador quitado.",
+      "location": "Ubicación",
+      "location_root": "No está dentro de ningún objeto.",
+      "open_container": "Abrir «{name}»",
+      "move": "Mover a…",
+      "move_out": "Sacar del contenedor",
+      "move_out_title": "¿Sacar del contenedor?",
+      "move_out_message": "«{name}» dejará de estar dentro de «{container}». Lo que contiene se moverá con él.",
+      "move_out_confirm": "Sacar",
+      "moved_out": "Sacado de «{name}».",
+      "contents": "Contenido",
+      "no_contents": "No contiene ningún objeto.",
+      "add_inside": "Añadir objeto aquí",
+      "full": "No caben más niveles dentro de este objeto (máximo {max}).",
+      "overflowing": "Este objeto está en el nivel {depth} y el máximo es {max}: lo que contiene supera el límite. Muévelo o sácalo."
     },
     "events": {
       "created": "Objeto creado como «{name}»",
@@ -124,7 +138,8 @@
       "save": "Guardar",
       "identifiers": "Identificadores",
       "identifiers_help": "Se asocian al momento, sin necesidad de guardar.",
-      "add_identifier": "Añadir identificador"
+      "add_identifier": "Añadir identificador",
+      "parent": "Se creará dentro de: {path}"
     },
     "associate": {
       "title": "Asociar a un objeto",
@@ -133,6 +148,15 @@
       "empty": "Ningún objeto coincide con la búsqueda.",
       "select": "Asociar a {name}",
       "success": "Identificador asociado a {name}."
+    },
+    "move": {
+      "title": "Mover «{name}»",
+      "search": "Buscar contenedor por nombre",
+      "empty": "Ningún objeto coincide con la búsqueda.",
+      "select": "Mover a {name}",
+      "current": "Ya está aquí",
+      "too_deep": "Superaría el máximo de {max} niveles",
+      "moved": "Movido a «{name}»."
     },
     "add_event": {
       "title": "Añadir nota",
@@ -154,7 +178,9 @@
       "metadata_too_many": "Hay demasiados datos adicionales.",
       "number_invalid": "Escribe un número válido.",
       "unexpected": "Ocurrió un error inesperado.",
-      "identifier_not_found": "El identificador ya no está asociado a este objeto."
+      "identifier_not_found": "El identificador ya no está asociado a este objeto.",
+      "containment_cycle": "No puedes meter un objeto dentro de sí mismo ni de algo que contiene.",
+      "containment_too_deep": "Se superaría el máximo de {max} niveles."
     }
   }
 }

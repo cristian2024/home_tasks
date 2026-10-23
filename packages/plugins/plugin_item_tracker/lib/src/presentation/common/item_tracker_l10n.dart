@@ -1,6 +1,7 @@
 import 'package:core_hardware/core_hardware.dart';
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/household_item.dart';
 import '../../domain/entities/item_event.dart';
 import '../../domain/entities/physical_identifier.dart';
 import '../../domain/errors/item_tracker_exception.dart';
@@ -66,6 +67,9 @@ IdentifierType identifierTypeFromScan(ScanType type) => switch (type) {
   };
 }
 
+/// Ruta de contenedores para mostrar, p. ej. "Mueble › Organizador".
+String formatItemPath(Iterable<HouseholdItem> path) => path.map((item) => item.name).join(' › ');
+
 /// Mensaje de un error de validación para mostrar junto al campo.
 String validationMessage(ItemValidationException error) {
   final errors = _t.itemTracker.errors;
@@ -87,6 +91,8 @@ String errorMessage(Object error, {String? currentItemId}) {
   return switch (error) {
     ItemNotFoundException() => errors.itemNotFound,
     IdentifierNotFoundException() => errors.identifierNotFound,
+    ItemContainmentCycleException() => errors.containmentCycle,
+    ItemContainmentTooDeepException(:final maxDepth) => errors.containmentTooDeep(max: maxDepth),
     IdentifierAlreadyBoundException(:final boundItemId) =>
       boundItemId == currentItemId ? errors.alreadyBoundSame : errors.alreadyBoundOther,
     final ItemValidationException validation => validationMessage(validation),
