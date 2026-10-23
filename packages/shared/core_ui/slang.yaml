@@ -11,3 +11,4 @@ enum_name: CoreUiLocale
 class_name: CoreUiTranslations
 # Carga diferida solo aporta en web; en móvil impide cambiar de idioma de forma síncrona.
 lazy: false
+translation_overrides: true

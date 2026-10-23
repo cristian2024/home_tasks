@@ -34,5 +34,5 @@ class LanguageRebuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      KeyedSubtree(key: ValueKey(LanguageScope.of(context)), child: child);
+      KeyedSubtree(key: ValueKey<String>(LanguageScope.of(context)), child: child);
 }
