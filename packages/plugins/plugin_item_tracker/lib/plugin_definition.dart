@@ -113,6 +113,9 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   /// Registra el idioma y las traducciones del plugin. La app lo llama al
   /// registrar el plugin, aunque esté desactivado, para que el catálogo pueda
   /// mostrar su nombre ([nameKey]). Es idempotente.
+  ///
+  /// La app reemplaza textos del plugin con
+  /// `LocalizationCoordinator.overrideTranslations(pluginId, …)`.
   void registerLocalization() {
     _localization.register(
       pluginId,
@@ -121,6 +124,12 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         final value = i18n.itemTrackerStrings[key];
         return value is String ? value : null;
       },
+      override: (String code, Map<String, Object?> overrides) =>
+          i18n.LocaleSettings.instance.overrideTranslationsFromMapSync(
+            locale: i18n.AppLocaleUtils.parse(code),
+            isFlatMap: false,
+            map: overrides,
+          ),
     );
   }
 
