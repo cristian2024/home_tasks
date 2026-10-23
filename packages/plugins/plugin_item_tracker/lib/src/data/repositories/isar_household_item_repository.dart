@@ -59,6 +59,12 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
   }
 
   @override
+  Future<PhysicalIdentifier?> getIdentifier(String id) async {
+    final model = await _source.getIdentifier(id);
+    return model == null ? null : ItemDataMapper.fromIsarIdentifier(model);
+  }
+
+  @override
   Stream<List<PhysicalIdentifier>> watchIdentifiers(String itemId) => _source
       .watchIdentifiers(itemId)
       .map((models) => models.map(ItemDataMapper.fromIsarIdentifier).toList());
@@ -71,6 +77,10 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
           ItemDataMapper.toIsarEvent(event),
         ),
       );
+
+  @override
+  Future<void> unbindIdentifier(String identifierId, {required DateTime deletedAt, required ItemEvent event}) =>
+      _source.softDeleteIdentifierWithEvent(identifierId, deletedAt.toUtc(), ItemDataMapper.toIsarEvent(event));
 
   @override
   Future<void> addEvent(ItemEvent event) => _source.saveEvent(ItemDataMapper.toIsarEvent(event));

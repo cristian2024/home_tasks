@@ -85,7 +85,12 @@
       },
       "yes": "Sí",
       "no": "No",
-      "add_identifier": "Añadir identificador"
+      "add_identifier": "Añadir identificador",
+      "remove_identifier": "Quitar {type} {value}",
+      "remove_identifier_title": "¿Quitar el identificador?",
+      "remove_identifier_message": "El {type} «{value}» dejará de abrir este objeto. Podrás volver a asociarlo a cualquier objeto.",
+      "remove_identifier_confirm": "Quitar",
+      "identifier_removed": "Identificador quitado."
     },
     "events": {
       "created": "Objeto creado como «{name}»",
@@ -93,7 +98,8 @@
       "identifier_bound": "{type} asociado: {value}",
       "field_name": "nombre",
       "field_description": "descripción",
-      "field_metadata": "datos adicionales"
+      "field_metadata": "datos adicionales",
+      "identifier_unbound": "{type} quitado: {value}"
     },
     "form": {
       "create_title": "Nuevo objeto",
@@ -143,7 +149,8 @@
       "metadata_value_invalid": "El valor de «{key}» no es válido.",
       "metadata_too_many": "Hay demasiados datos adicionales.",
       "number_invalid": "Escribe un número válido.",
-      "unexpected": "Ocurrió un error inesperado."
+      "unexpected": "Ocurrió un error inesperado.",
+      "identifier_not_found": "El identificador ya no está asociado a este objeto."
     }
   }
 }

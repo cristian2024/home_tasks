@@ -12,6 +12,9 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   final Map<String, HouseholdItem> _items = {};
   final Map<String, PhysicalIdentifier> _identifiers = {};
   final Map<String, ItemEvent> _events = {};
+
+  /// Identificadores quitados (borrado lógico), con el momento en que se quitaron.
+  final List<({PhysicalIdentifier identifier, DateTime deletedAt})> deletedIdentifiers = [];
   final StreamController<void> _changes = StreamController.broadcast();
 
   String _identifierKey(String rawValue, IdentifierType type) => '${type.name}:$rawValue';
@@ -74,6 +77,10 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
       _identifiers[_identifierKey(rawValue, type)];
 
   @override
+  Future<PhysicalIdentifier?> getIdentifier(String id) async =>
+      _identifiers.values.where((identifier) => identifier.id == id).firstOrNull;
+
+  @override
   Stream<List<PhysicalIdentifier>> watchIdentifiers(String itemId) => _watch(
         () => _identifiers.values.where((i) => i.itemId == itemId).toList()
           ..sort((a, b) => a.boundAt.compareTo(b.boundAt)),
@@ -83,6 +90,18 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   Future<void> bindIdentifier(PhysicalIdentifier identifier, ItemEvent event) async {
     _checkIdentifier(identifier);
     _identifiers[_identifierKey(identifier.rawValue, identifier.type)] = identifier;
+    _events[event.id] = event;
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> unbindIdentifier(String identifierId, {required DateTime deletedAt, required ItemEvent event}) async {
+    final identifier = await getIdentifier(identifierId);
+    if (identifier == null) {
+      return;
+    }
+    _identifiers.remove(_identifierKey(identifier.rawValue, identifier.type));
+    deletedIdentifiers.add((identifier: identifier, deletedAt: deletedAt));
     _events[event.id] = event;
     _changes.add(null);
   }

@@ -23,15 +23,30 @@ const IsarPhysicalIdentifierSchema = CollectionSchema(
       name: r'boundAt',
       type: IsarType.dateTime,
     ),
-    r'id': PropertySchema(id: 1, name: r'id', type: IsarType.string),
-    r'itemId': PropertySchema(id: 2, name: r'itemId', type: IsarType.string),
+    r'deletedAt': PropertySchema(
+      id: 1,
+      name: r'deletedAt',
+      type: IsarType.dateTime,
+    ),
+    r'deletedId': PropertySchema(
+      id: 2,
+      name: r'deletedId',
+      type: IsarType.string,
+    ),
+    r'id': PropertySchema(id: 3, name: r'id', type: IsarType.string),
+    r'isDeleted': PropertySchema(
+      id: 4,
+      name: r'isDeleted',
+      type: IsarType.bool,
+    ),
+    r'itemId': PropertySchema(id: 5, name: r'itemId', type: IsarType.string),
     r'rawValue': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'rawValue',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 4,
+      id: 7,
       name: r'type',
       type: IsarType.string,
       enumMap: _IsarPhysicalIdentifiertypeEnumValueMap,
@@ -57,9 +72,9 @@ const IsarPhysicalIdentifierSchema = CollectionSchema(
         ),
       ],
     ),
-    r'rawValue_type': IndexSchema(
-      id: 9067840115156050213,
-      name: r'rawValue_type',
+    r'rawValue_type_deletedId': IndexSchema(
+      id: 7313818072187095099,
+      name: r'rawValue_type_deletedId',
       unique: true,
       replace: false,
       properties: [
@@ -70,6 +85,11 @@ const IsarPhysicalIdentifierSchema = CollectionSchema(
         ),
         IndexPropertySchema(
           name: r'type',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+        IndexPropertySchema(
+          name: r'deletedId',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -104,6 +124,12 @@ int _isarPhysicalIdentifierEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.deletedId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.itemId.length * 3;
   bytesCount += 3 + object.rawValue.length * 3;
@@ -118,10 +144,13 @@ void _isarPhysicalIdentifierSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.boundAt);
-  writer.writeString(offsets[1], object.id);
-  writer.writeString(offsets[2], object.itemId);
-  writer.writeString(offsets[3], object.rawValue);
-  writer.writeString(offsets[4], object.type.name);
+  writer.writeDateTime(offsets[1], object.deletedAt);
+  writer.writeString(offsets[2], object.deletedId);
+  writer.writeString(offsets[3], object.id);
+  writer.writeBool(offsets[4], object.isDeleted);
+  writer.writeString(offsets[5], object.itemId);
+  writer.writeString(offsets[6], object.rawValue);
+  writer.writeString(offsets[7], object.type.name);
 }
 
 IsarPhysicalIdentifier _isarPhysicalIdentifierDeserialize(
@@ -132,13 +161,15 @@ IsarPhysicalIdentifier _isarPhysicalIdentifierDeserialize(
 ) {
   final object = IsarPhysicalIdentifier();
   object.boundAt = reader.readDateTime(offsets[0]);
-  object.id = reader.readString(offsets[1]);
+  object.deletedAt = reader.readDateTimeOrNull(offsets[1]);
+  object.deletedId = reader.readStringOrNull(offsets[2]);
+  object.id = reader.readString(offsets[3]);
   object.isarId = id;
-  object.itemId = reader.readString(offsets[2]);
-  object.rawValue = reader.readString(offsets[3]);
+  object.itemId = reader.readString(offsets[5]);
+  object.rawValue = reader.readString(offsets[6]);
   object.type =
       _IsarPhysicalIdentifiertypeValueEnumMap[reader.readStringOrNull(
-        offsets[4],
+        offsets[7],
       )] ??
       IdentifierType.qr;
   return object;
@@ -154,12 +185,18 @@ P _isarPhysicalIdentifierDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
       return (_IsarPhysicalIdentifiertypeValueEnumMap[reader.readStringOrNull(
                 offset,
               )] ??
@@ -256,116 +293,152 @@ extension IsarPhysicalIdentifierByIndex
     return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
   }
 
-  Future<IsarPhysicalIdentifier?> getByRawValueType(
+  Future<IsarPhysicalIdentifier?> getByRawValueTypeDeletedId(
     String rawValue,
     IdentifierType type,
+    String? deletedId,
   ) {
-    return getByIndex(r'rawValue_type', [rawValue, type]);
+    return getByIndex(r'rawValue_type_deletedId', [rawValue, type, deletedId]);
   }
 
-  IsarPhysicalIdentifier? getByRawValueTypeSync(
+  IsarPhysicalIdentifier? getByRawValueTypeDeletedIdSync(
     String rawValue,
     IdentifierType type,
+    String? deletedId,
   ) {
-    return getByIndexSync(r'rawValue_type', [rawValue, type]);
+    return getByIndexSync(r'rawValue_type_deletedId', [
+      rawValue,
+      type,
+      deletedId,
+    ]);
   }
 
-  Future<bool> deleteByRawValueType(String rawValue, IdentifierType type) {
-    return deleteByIndex(r'rawValue_type', [rawValue, type]);
+  Future<bool> deleteByRawValueTypeDeletedId(
+    String rawValue,
+    IdentifierType type,
+    String? deletedId,
+  ) {
+    return deleteByIndex(r'rawValue_type_deletedId', [
+      rawValue,
+      type,
+      deletedId,
+    ]);
   }
 
-  bool deleteByRawValueTypeSync(String rawValue, IdentifierType type) {
-    return deleteByIndexSync(r'rawValue_type', [rawValue, type]);
+  bool deleteByRawValueTypeDeletedIdSync(
+    String rawValue,
+    IdentifierType type,
+    String? deletedId,
+  ) {
+    return deleteByIndexSync(r'rawValue_type_deletedId', [
+      rawValue,
+      type,
+      deletedId,
+    ]);
   }
 
-  Future<List<IsarPhysicalIdentifier?>> getAllByRawValueType(
+  Future<List<IsarPhysicalIdentifier?>> getAllByRawValueTypeDeletedId(
     List<String> rawValueValues,
     List<IdentifierType> typeValues,
+    List<String?> deletedIdValues,
   ) {
     final len = rawValueValues.length;
     assert(
-      typeValues.length == len,
+      typeValues.length == len && deletedIdValues.length == len,
       'All index values must have the same length',
     );
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([rawValueValues[i], typeValues[i]]);
+      values.add([rawValueValues[i], typeValues[i], deletedIdValues[i]]);
     }
 
-    return getAllByIndex(r'rawValue_type', values);
+    return getAllByIndex(r'rawValue_type_deletedId', values);
   }
 
-  List<IsarPhysicalIdentifier?> getAllByRawValueTypeSync(
+  List<IsarPhysicalIdentifier?> getAllByRawValueTypeDeletedIdSync(
     List<String> rawValueValues,
     List<IdentifierType> typeValues,
+    List<String?> deletedIdValues,
   ) {
     final len = rawValueValues.length;
     assert(
-      typeValues.length == len,
+      typeValues.length == len && deletedIdValues.length == len,
       'All index values must have the same length',
     );
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([rawValueValues[i], typeValues[i]]);
+      values.add([rawValueValues[i], typeValues[i], deletedIdValues[i]]);
     }
 
-    return getAllByIndexSync(r'rawValue_type', values);
+    return getAllByIndexSync(r'rawValue_type_deletedId', values);
   }
 
-  Future<int> deleteAllByRawValueType(
+  Future<int> deleteAllByRawValueTypeDeletedId(
     List<String> rawValueValues,
     List<IdentifierType> typeValues,
+    List<String?> deletedIdValues,
   ) {
     final len = rawValueValues.length;
     assert(
-      typeValues.length == len,
+      typeValues.length == len && deletedIdValues.length == len,
       'All index values must have the same length',
     );
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([rawValueValues[i], typeValues[i]]);
+      values.add([rawValueValues[i], typeValues[i], deletedIdValues[i]]);
     }
 
-    return deleteAllByIndex(r'rawValue_type', values);
+    return deleteAllByIndex(r'rawValue_type_deletedId', values);
   }
 
-  int deleteAllByRawValueTypeSync(
+  int deleteAllByRawValueTypeDeletedIdSync(
     List<String> rawValueValues,
     List<IdentifierType> typeValues,
+    List<String?> deletedIdValues,
   ) {
     final len = rawValueValues.length;
     assert(
-      typeValues.length == len,
+      typeValues.length == len && deletedIdValues.length == len,
       'All index values must have the same length',
     );
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
-      values.add([rawValueValues[i], typeValues[i]]);
+      values.add([rawValueValues[i], typeValues[i], deletedIdValues[i]]);
     }
 
-    return deleteAllByIndexSync(r'rawValue_type', values);
+    return deleteAllByIndexSync(r'rawValue_type_deletedId', values);
   }
 
-  Future<Id> putByRawValueType(IsarPhysicalIdentifier object) {
-    return putByIndex(r'rawValue_type', object);
+  Future<Id> putByRawValueTypeDeletedId(IsarPhysicalIdentifier object) {
+    return putByIndex(r'rawValue_type_deletedId', object);
   }
 
-  Id putByRawValueTypeSync(
+  Id putByRawValueTypeDeletedIdSync(
     IsarPhysicalIdentifier object, {
     bool saveLinks = true,
   }) {
-    return putByIndexSync(r'rawValue_type', object, saveLinks: saveLinks);
+    return putByIndexSync(
+      r'rawValue_type_deletedId',
+      object,
+      saveLinks: saveLinks,
+    );
   }
 
-  Future<List<Id>> putAllByRawValueType(List<IsarPhysicalIdentifier> objects) {
-    return putAllByIndex(r'rawValue_type', objects);
+  Future<List<Id>> putAllByRawValueTypeDeletedId(
+    List<IsarPhysicalIdentifier> objects,
+  ) {
+    return putAllByIndex(r'rawValue_type_deletedId', objects);
   }
 
-  List<Id> putAllByRawValueTypeSync(
+  List<Id> putAllByRawValueTypeDeletedIdSync(
     List<IsarPhysicalIdentifier> objects, {
     bool saveLinks = true,
   }) {
-    return putAllByIndexSync(r'rawValue_type', objects, saveLinks: saveLinks);
+    return putAllByIndexSync(
+      r'rawValue_type_deletedId',
+      objects,
+      saveLinks: saveLinks,
+    );
   }
 }
 
@@ -540,11 +613,11 @@ extension IsarPhysicalIdentifierQueryWhere
     IsarPhysicalIdentifier,
     QAfterWhereClause
   >
-  rawValueEqualToAnyType(String rawValue) {
+  rawValueEqualToAnyTypeDeletedId(String rawValue) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.equalTo(
-          indexName: r'rawValue_type',
+          indexName: r'rawValue_type_deletedId',
           value: [rawValue],
         ),
       );
@@ -556,13 +629,13 @@ extension IsarPhysicalIdentifierQueryWhere
     IsarPhysicalIdentifier,
     QAfterWhereClause
   >
-  rawValueNotEqualToAnyType(String rawValue) {
+  rawValueNotEqualToAnyTypeDeletedId(String rawValue) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [],
                 upper: [rawValue],
                 includeUpper: false,
@@ -570,7 +643,7 @@ extension IsarPhysicalIdentifierQueryWhere
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [rawValue],
                 includeLower: false,
                 upper: [],
@@ -580,7 +653,7 @@ extension IsarPhysicalIdentifierQueryWhere
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [rawValue],
                 includeLower: false,
                 upper: [],
@@ -588,7 +661,7 @@ extension IsarPhysicalIdentifierQueryWhere
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [],
                 upper: [rawValue],
                 includeUpper: false,
@@ -603,11 +676,11 @@ extension IsarPhysicalIdentifierQueryWhere
     IsarPhysicalIdentifier,
     QAfterWhereClause
   >
-  rawValueTypeEqualTo(String rawValue, IdentifierType type) {
+  rawValueTypeEqualToAnyDeletedId(String rawValue, IdentifierType type) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IndexWhereClause.equalTo(
-          indexName: r'rawValue_type',
+          indexName: r'rawValue_type_deletedId',
           value: [rawValue, type],
         ),
       );
@@ -619,13 +692,16 @@ extension IsarPhysicalIdentifierQueryWhere
     IsarPhysicalIdentifier,
     QAfterWhereClause
   >
-  rawValueEqualToTypeNotEqualTo(String rawValue, IdentifierType type) {
+  rawValueEqualToTypeNotEqualToAnyDeletedId(
+    String rawValue,
+    IdentifierType type,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [rawValue],
                 upper: [rawValue, type],
                 includeUpper: false,
@@ -633,7 +709,7 @@ extension IsarPhysicalIdentifierQueryWhere
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [rawValue, type],
                 includeLower: false,
                 upper: [rawValue],
@@ -643,7 +719,7 @@ extension IsarPhysicalIdentifierQueryWhere
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [rawValue, type],
                 includeLower: false,
                 upper: [rawValue],
@@ -651,9 +727,114 @@ extension IsarPhysicalIdentifierQueryWhere
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'rawValue_type',
+                indexName: r'rawValue_type_deletedId',
                 lower: [rawValue],
                 upper: [rawValue, type],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterWhereClause
+  >
+  rawValueTypeEqualToDeletedIdIsNull(String rawValue, IdentifierType type) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'rawValue_type_deletedId',
+          value: [rawValue, type, null],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterWhereClause
+  >
+  rawValueTypeEqualToDeletedIdIsNotNull(String rawValue, IdentifierType type) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'rawValue_type_deletedId',
+          lower: [rawValue, type, null],
+          includeLower: false,
+          upper: [rawValue, type],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterWhereClause
+  >
+  rawValueTypeDeletedIdEqualTo(
+    String rawValue,
+    IdentifierType type,
+    String? deletedId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(
+          indexName: r'rawValue_type_deletedId',
+          value: [rawValue, type, deletedId],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterWhereClause
+  >
+  rawValueTypeEqualToDeletedIdNotEqualTo(
+    String rawValue,
+    IdentifierType type,
+    String? deletedId,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'rawValue_type_deletedId',
+                lower: [rawValue, type],
+                upper: [rawValue, type, deletedId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'rawValue_type_deletedId',
+                lower: [rawValue, type, deletedId],
+                includeLower: false,
+                upper: [rawValue, type],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'rawValue_type_deletedId',
+                lower: [rawValue, type, deletedId],
+                includeLower: false,
+                upper: [rawValue, type],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'rawValue_type_deletedId',
+                lower: [rawValue, type],
+                upper: [rawValue, type, deletedId],
                 includeUpper: false,
               ),
             );
@@ -796,6 +977,310 @@ extension IsarPhysicalIdentifierQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'deletedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'deletedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedAtEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'deletedAt', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedAtGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'deletedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedAtLessThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'deletedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'deletedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'deletedId'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'deletedId'),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'deletedId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'deletedId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'deletedId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'deletedId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'deletedId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'deletedId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'deletedId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'deletedId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'deletedId', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  deletedIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'deletedId', value: ''),
       );
     });
   }
@@ -973,6 +1458,19 @@ extension IsarPhysicalIdentifierQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'id', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<
+    IsarPhysicalIdentifier,
+    IsarPhysicalIdentifier,
+    QAfterFilterCondition
+  >
+  isDeletedEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isDeleted', value: value),
       );
     });
   }
@@ -1625,6 +2123,34 @@ extension IsarPhysicalIdentifierQuerySortBy
   }
 
   QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  sortByDeletedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  sortByDeletedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  sortByDeletedId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  sortByDeletedIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
   sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1635,6 +2161,20 @@ extension IsarPhysicalIdentifierQuerySortBy
   sortByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  sortByIsDeleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  sortByIsDeletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.desc);
     });
   }
 
@@ -1703,6 +2243,34 @@ extension IsarPhysicalIdentifierQuerySortThenBy
   }
 
   QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  thenByDeletedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  thenByDeletedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  thenByDeletedId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  thenByDeletedIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deletedId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
   thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1713,6 +2281,20 @@ extension IsarPhysicalIdentifierQuerySortThenBy
   thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  thenByIsDeleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QAfterSortBy>
+  thenByIsDeletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.desc);
     });
   }
 
@@ -1783,9 +2365,30 @@ extension IsarPhysicalIdentifierQueryWhereDistinct
   }
 
   QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QDistinct>
+  distinctByDeletedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'deletedAt');
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QDistinct>
+  distinctByDeletedId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'deletedId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QDistinct>
   distinctById({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, IsarPhysicalIdentifier, QDistinct>
+  distinctByIsDeleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isDeleted');
     });
   }
 
@@ -1831,9 +2434,30 @@ extension IsarPhysicalIdentifierQueryProperty
     });
   }
 
+  QueryBuilder<IsarPhysicalIdentifier, DateTime?, QQueryOperations>
+  deletedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'deletedAt');
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, String?, QQueryOperations>
+  deletedIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'deletedId');
+    });
+  }
+
   QueryBuilder<IsarPhysicalIdentifier, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<IsarPhysicalIdentifier, bool, QQueryOperations>
+  isDeletedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isDeleted');
     });
   }
 

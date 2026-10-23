@@ -13,6 +13,9 @@ enum ItemEventKind {
   /// Técnico. `title`: `IdentifierType.name`. `description`: el `rawValue`.
   identifierBound,
 
+  /// Técnico. `title`: `IdentifierType.name`. `description`: el `rawValue`.
+  identifierUnbound,
+
   /// Funcional, escrito por el usuario. `title` y `description` son texto libre.
   note,
 }

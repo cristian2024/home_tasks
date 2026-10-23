@@ -52,6 +52,7 @@ class TestUseCases {
   CreateItem get createItem => CreateItem(repository, ids, clock, eventBus);
   UpdateItem get updateItem => UpdateItem(repository, ids, clock);
   BindIdentifier get bindIdentifier => BindIdentifier(repository, ids, clock);
+  UnbindIdentifier get unbindIdentifier => UnbindIdentifier(repository, ids, clock);
   FindItemByIdentifier get findItemByIdentifier => FindItemByIdentifier(repository);
 }
 

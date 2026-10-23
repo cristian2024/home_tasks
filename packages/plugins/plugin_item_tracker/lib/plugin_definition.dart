@@ -17,6 +17,7 @@ import 'src/domain/use_cases/bind_identifier.dart';
 import 'src/domain/use_cases/create_item.dart';
 import 'src/domain/use_cases/find_item_by_identifier.dart';
 import 'src/domain/use_cases/item_queries.dart';
+import 'src/domain/use_cases/unbind_identifier.dart';
 import 'src/domain/use_cases/update_item.dart';
 import 'src/i18n/strings.g.dart' as i18n;
 import 'src/item_tracker_dependencies.dart';
@@ -129,6 +130,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
             createItem: CreateItem(repository, ids, clock, eventBus),
             updateItem: UpdateItem(repository, ids, clock),
             bindIdentifier: BindIdentifier(repository, ids, clock),
+            unbindIdentifier: UnbindIdentifier(repository, ids, clock),
             addItemEvent: AddItemEvent(repository, ids, clock),
             findItemByIdentifier: FindItemByIdentifier(repository),
             getItem: GetItem(repository),
@@ -222,6 +224,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
                 watchItem: deps.watchItem,
                 watchItemIdentifiers: deps.watchItemIdentifiers,
                 watchItemEvents: deps.watchItemEvents,
+                unbindIdentifier: deps.unbindIdentifier,
               ),
               child: const ItemDetailScreen(),
             );

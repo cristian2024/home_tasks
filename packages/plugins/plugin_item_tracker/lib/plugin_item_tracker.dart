@@ -15,6 +15,7 @@ export 'src/domain/use_cases/bind_identifier.dart';
 export 'src/domain/use_cases/create_item.dart';
 export 'src/domain/use_cases/find_item_by_identifier.dart';
 export 'src/domain/use_cases/item_queries.dart';
+export 'src/domain/use_cases/unbind_identifier.dart';
 export 'src/domain/use_cases/update_item.dart';
 export 'src/domain/value_objects/item_metadata.dart';
 export 'src/item_tracker_dependencies.dart';

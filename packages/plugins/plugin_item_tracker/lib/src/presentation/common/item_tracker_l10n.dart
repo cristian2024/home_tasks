@@ -49,6 +49,13 @@ IdentifierType identifierTypeFromScan(ScanType type) => switch (type) {
         ),
         subtitle: null,
       ),
+    ItemEventKind.identifierUnbound => (
+        title: events.identifierUnbound(
+          type: identifierTypeLabel(IdentifierType.values.asNameMap()[event.title] ?? IdentifierType.qr),
+          value: event.description,
+        ),
+        subtitle: null,
+      ),
     ItemEventKind.note => (title: event.title, subtitle: event.description.isEmpty ? null : event.description),
   };
 }
@@ -73,6 +80,7 @@ String errorMessage(Object error, {String? currentItemId}) {
   final errors = _t.itemTracker.errors;
   return switch (error) {
     ItemNotFoundException() => errors.itemNotFound,
+    IdentifierNotFoundException() => errors.identifierNotFound,
     IdentifierAlreadyBoundException(:final boundItemId) =>
       boundItemId == currentItemId ? errors.alreadyBoundSame : errors.alreadyBoundOther,
     final ItemValidationException validation => validationMessage(validation),

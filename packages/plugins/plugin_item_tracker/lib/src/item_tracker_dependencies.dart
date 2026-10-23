@@ -5,6 +5,7 @@ import 'domain/use_cases/bind_identifier.dart';
 import 'domain/use_cases/create_item.dart';
 import 'domain/use_cases/find_item_by_identifier.dart';
 import 'domain/use_cases/item_queries.dart';
+import 'domain/use_cases/unbind_identifier.dart';
 import 'domain/use_cases/update_item.dart';
 
 typedef CameraScannerFactory = CameraIdentifierScanner Function();
@@ -17,6 +18,7 @@ class ItemTrackerDependencies {
     required this.createItem,
     required this.updateItem,
     required this.bindIdentifier,
+    required this.unbindIdentifier,
     required this.addItemEvent,
     required this.findItemByIdentifier,
     required this.getItem,
@@ -33,6 +35,7 @@ class ItemTrackerDependencies {
   final CreateItem createItem;
   final UpdateItem updateItem;
   final BindIdentifier bindIdentifier;
+  final UnbindIdentifier unbindIdentifier;
   final AddItemEvent addItemEvent;
   final FindItemByIdentifier findItemByIdentifier;
   final GetItem getItem;

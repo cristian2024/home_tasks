@@ -162,12 +162,14 @@ const _IsarItemEventkindEnumValueMap = {
   r'created': r'created',
   r'updated': r'updated',
   r'identifierBound': r'identifierBound',
+  r'identifierUnbound': r'identifierUnbound',
   r'note': r'note',
 };
 const _IsarItemEventkindValueEnumMap = {
   r'created': ItemEventKind.created,
   r'updated': ItemEventKind.updated,
   r'identifierBound': ItemEventKind.identifierBound,
+  r'identifierUnbound': ItemEventKind.identifierUnbound,
   r'note': ItemEventKind.note,
 };
 

@@ -285,6 +285,30 @@ void main() {
     });
   });
 
+  testWidgets('quitar un identificador pide confirmación y lo deja libre para otro objeto', (tester) async {
+    final item = await harness.createItem('Cama', qr: 'QR-BED');
+    await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(item.id));
+
+    await tester.tap(find.byTooltip('Quitar QR QR-BED'));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Quitar el identificador?'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(find.text('QR-BED'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Quitar QR QR-BED'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Quitar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Identificador quitado.'), findsOneWidget);
+    expect(find.text('Sin identificadores asociados.'), findsOneWidget);
+    expect(find.text('QR quitado: QR-BED'), findsOneWidget);
+
+    final other = await harness.createItem('Mesa', qr: 'QR-BED');
+    expect((await harness.repository.findIdentifier('QR-BED', IdentifierType.qr))?.itemId, other.id);
+  });
+
   testWidgets('un enlace a "no encontrado" sin código redirige a escanear', (tester) async {
     await harness.pump(tester, initialLocation: ItemTrackerRoutes.notFound);
 

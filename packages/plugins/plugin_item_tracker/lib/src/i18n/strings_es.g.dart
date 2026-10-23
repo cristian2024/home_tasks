@@ -326,6 +326,21 @@ class ItemTrackerTranslations$itemTracker$detail$es {
 
 	/// es: 'Añadir identificador'
 	String get addIdentifier => 'Añadir identificador';
+
+	/// es: 'Quitar {type} {value}'
+	String removeIdentifier({required Object type, required Object value}) => 'Quitar ${type} ${value}';
+
+	/// es: '¿Quitar el identificador?'
+	String get removeIdentifierTitle => '¿Quitar el identificador?';
+
+	/// es: 'El {type} «{value}» dejará de abrir este objeto. Podrás volver a asociarlo a cualquier objeto.'
+	String removeIdentifierMessage({required Object type, required Object value}) => 'El ${type} «${value}» dejará de abrir este objeto. Podrás volver a asociarlo a cualquier objeto.';
+
+	/// es: 'Quitar'
+	String get removeIdentifierConfirm => 'Quitar';
+
+	/// es: 'Identificador quitado.'
+	String get identifierRemoved => 'Identificador quitado.';
 }
 
 // Path: itemTracker.events
@@ -353,6 +368,9 @@ class ItemTrackerTranslations$itemTracker$events$es {
 
 	/// es: 'datos adicionales'
 	String get fieldMetadata => 'datos adicionales';
+
+	/// es: '{type} quitado: {value}'
+	String identifierUnbound({required Object type, required Object value}) => '${type} quitado: ${value}';
 }
 
 // Path: itemTracker.form
@@ -515,6 +533,9 @@ class ItemTrackerTranslations$itemTracker$errors$es {
 
 	/// es: 'Ocurrió un error inesperado.'
 	String get unexpected => 'Ocurrió un error inesperado.';
+
+	/// es: 'El identificador ya no está asociado a este objeto.'
+	String get identifierNotFound => 'El identificador ya no está asociado a este objeto.';
 }
 
 /// The flat map containing all translations for locale <es>.
@@ -592,12 +613,18 @@ extension on ItemTrackerTranslations {
 			'itemTracker.detail.yes' => 'Sí',
 			'itemTracker.detail.no' => 'No',
 			'itemTracker.detail.addIdentifier' => 'Añadir identificador',
+			'itemTracker.detail.removeIdentifier' => ({required Object type, required Object value}) => 'Quitar ${type} ${value}',
+			'itemTracker.detail.removeIdentifierTitle' => '¿Quitar el identificador?',
+			'itemTracker.detail.removeIdentifierMessage' => ({required Object type, required Object value}) => 'El ${type} «${value}» dejará de abrir este objeto. Podrás volver a asociarlo a cualquier objeto.',
+			'itemTracker.detail.removeIdentifierConfirm' => 'Quitar',
+			'itemTracker.detail.identifierRemoved' => 'Identificador quitado.',
 			'itemTracker.events.created' => ({required Object name}) => 'Objeto creado como «${name}»',
 			'itemTracker.events.updated' => ({required Object fields}) => 'Se editó: ${fields}',
 			'itemTracker.events.identifierBound' => ({required Object type, required Object value}) => '${type} asociado: ${value}',
 			'itemTracker.events.fieldName' => 'nombre',
 			'itemTracker.events.fieldDescription' => 'descripción',
 			'itemTracker.events.fieldMetadata' => 'datos adicionales',
+			'itemTracker.events.identifierUnbound' => ({required Object type, required Object value}) => '${type} quitado: ${value}',
 			'itemTracker.form.createTitle' => 'Nuevo objeto',
 			'itemTracker.form.editTitle' => 'Editar objeto',
 			'itemTracker.form.name' => 'Nombre',
@@ -640,6 +667,7 @@ extension on ItemTrackerTranslations {
 			'itemTracker.errors.metadataTooMany' => 'Hay demasiados datos adicionales.',
 			'itemTracker.errors.numberInvalid' => 'Escribe un número válido.',
 			'itemTracker.errors.unexpected' => 'Ocurrió un error inesperado.',
+			'itemTracker.errors.identifierNotFound' => 'El identificador ya no está asociado a este objeto.',
 			_ => null,
 		};
 	}

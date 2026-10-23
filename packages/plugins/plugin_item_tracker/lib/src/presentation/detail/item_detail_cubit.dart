@@ -7,6 +7,7 @@ import '../../domain/entities/household_item.dart';
 import '../../domain/entities/item_event.dart';
 import '../../domain/entities/physical_identifier.dart';
 import '../../domain/use_cases/item_queries.dart';
+import '../../domain/use_cases/unbind_identifier.dart';
 
 enum ItemDetailStatus { loading, loaded, missing }
 
@@ -27,15 +28,18 @@ class ItemDetailState extends Equatable {
   List<Object?> get props => [status, item, identifiers, events];
 }
 
-/// Detalle reactivo de un objeto: datos, identificadores e historial (Cubit:
-/// flujo de solo lectura, §11.1).
+/// Detalle reactivo de un objeto: datos, identificadores e historial (Cubit,
+/// §11.1). Las escrituras (quitar un identificador) se reflejan a través de
+/// los mismos streams.
 class ItemDetailCubit extends Cubit<ItemDetailState> {
   ItemDetailCubit(
-    String itemId, {
+    this.itemId, {
     required WatchItem watchItem,
     required WatchItemIdentifiers watchItemIdentifiers,
     required WatchItemEvents watchItemEvents,
-  }) : super(const ItemDetailState()) {
+    required UnbindIdentifier unbindIdentifier,
+  })  : _unbindIdentifier = unbindIdentifier,
+        super(const ItemDetailState()) {
     _subscriptions = [
       watchItem(itemId).listen((item) {
         _itemLoaded = true;
@@ -53,6 +57,8 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
     ];
   }
 
+  final String itemId;
+  final UnbindIdentifier _unbindIdentifier;
   late final List<StreamSubscription<Object?>> _subscriptions;
   bool _itemLoaded = false;
   HouseholdItem? _item;
@@ -70,6 +76,17 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
         events: _events,
       ),
     );
+  }
+
+  /// Quita el identificador del objeto. Devuelve el error, o `null` si se
+  /// quitó.
+  Future<Object?> removeIdentifier(PhysicalIdentifier identifier) async {
+    try {
+      await _unbindIdentifier(itemId, identifierId: identifier.id);
+      return null;
+    } catch (error) {
+      return error;
+    }
   }
 
   @override

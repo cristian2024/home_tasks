@@ -11,9 +11,11 @@ class IsarPhysicalIdentifier {
   @Index(unique: true, replace: true)
   late String id;
 
-  /// Un identificador físico (valor + tipo) solo puede estar ligado a un
-  /// objeto. Sin `replace`: un duplicado hace fallar la transacción.
-  @Index(composite: [CompositeIndex('type')], unique: true)
+  /// Un identificador físico activo (valor + tipo) solo puede estar ligado a
+  /// un objeto. Sin `replace`: un duplicado hace fallar la transacción. Los
+  /// quitados llevan su propio [deletedId], así que no chocan con el activo ni
+  /// entre sí.
+  @Index(composite: [CompositeIndex('type'), CompositeIndex('deletedId')], unique: true)
   late String rawValue;
 
   @Enumerated(EnumType.name)
@@ -23,4 +25,13 @@ class IsarPhysicalIdentifier {
   late String itemId;
 
   late DateTime boundAt;
+
+  /// Borrado lógico (spec §10.3): `null` si está activo; el propio [id] si se
+  /// quitó. Los registros anteriores a este campo se leen como activos.
+  String? deletedId;
+
+  /// Momento en que se quitó (UTC), para la futura sincronización.
+  DateTime? deletedAt;
+
+  bool get isDeleted => deletedId != null;
 }
