@@ -163,6 +163,9 @@ class ItemFormCubit extends Cubit<ItemFormState> {
 
   bool get isEditing => _itemId != null;
 
+  /// Objeto que se edita; `null` al crear.
+  String? get itemId => _itemId;
+
   Future<void> _load(GetItem getItem) async {
     try {
       final item = await getItem(_itemId!);

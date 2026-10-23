@@ -29,14 +29,23 @@ abstract interface class HouseholdItemRepository {
   /// modificado más recientemente al más antiguo.
   Future<List<HouseholdItem>> searchByName(String query);
 
+  /// Identificador activo con ese valor y tipo. Los quitados no cuentan.
   Future<PhysicalIdentifier?> findIdentifier(String rawValue, IdentifierType type);
 
-  /// Identificadores del objeto, del más antiguo al más reciente.
+  /// Identificador activo con ese [id]; `null` si no existe o se quitó.
+  Future<PhysicalIdentifier?> getIdentifier(String id);
+
+  /// Identificadores activos del objeto, del más antiguo al más reciente.
   Stream<List<PhysicalIdentifier>> watchIdentifiers(String itemId);
 
   /// Asocia [identifier] y registra [event] en una sola transacción. Lanza
   /// `IdentifierAlreadyBoundException` si el identificador ya existe.
   Future<void> bindIdentifier(PhysicalIdentifier identifier, ItemEvent event);
+
+  /// Quita el identificador con borrado lógico (spec §10.3) y registra
+  /// [event] en una sola transacción. Después el mismo valor y tipo se puede
+  /// asociar de nuevo a cualquier objeto.
+  Future<void> unbindIdentifier(String identifierId, {required DateTime deletedAt, required ItemEvent event});
 
   Future<void> addEvent(ItemEvent event);
 

@@ -13,10 +13,15 @@ abstract final class ItemTrackerRoutes {
   static const String detailPattern = '$base/item/:id';
   static const String editPattern = '$base/item/:id/edit';
   static const String addEventPattern = '$base/item/:id/event/add';
+  static const String addIdentifierPattern = '$base/item/:id/identifier/add';
 
   static String detail(String itemId) => '$base/item/${Uri.encodeComponent(itemId)}';
   static String edit(String itemId) => '${detail(itemId)}/edit';
   static String addEvent(String itemId) => '${detail(itemId)}/event/add';
+
+  /// Escaneo en modo asociar: lo leído se asocia a [itemId]. Al terminar hace
+  /// `pop` con el ID del objeto.
+  static String addIdentifier(String itemId) => '${detail(itemId)}/identifier/add';
 
   /// [path] con el identificador en los query params.
   static String withIdentifier(String path, ({String rawValue, IdentifierType type}) identifier) =>

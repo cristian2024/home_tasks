@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/physical_identifier.dart';
 import '../../domain/errors/item_tracker_exception.dart';
+import '../../domain/use_cases/bind_identifier.dart';
 import '../../domain/use_cases/find_item_by_identifier.dart';
 import '../../item_tracker_dependencies.dart';
 import '../common/item_tracker_l10n.dart';
@@ -13,7 +14,7 @@ import '../common/item_tracker_l10n.dart';
 enum ScanMode { camera, nfc, manual }
 
 /// Aviso puntual que la pantalla muestra una vez (SnackBar).
-enum ScanNotice { cameraError, readError, readCancelled, invalidValue, unexpected }
+enum ScanNotice { cameraError, readError, readCancelled, invalidValue, itemNotFound, unexpected }
 
 /// Resultado de identificar un código: la pantalla navega y después envía
 /// [ScanOutcomeHandled].
@@ -41,6 +42,36 @@ final class ScanItemFound extends ScanOutcome {
 
 final class ScanItemNotFound extends ScanOutcome {
   const ScanItemNotFound({required super.rawValue, required super.type, required super.fromScanner});
+}
+
+/// Modo asociar: el identificador quedó ligado al objeto [itemId].
+final class ScanIdentifierBound extends ScanOutcome {
+  const ScanIdentifierBound({required this.itemId, required super.rawValue, required super.type, required super.fromScanner});
+
+  final String itemId;
+
+  @override
+  List<Object?> get props => [...super.props, itemId];
+}
+
+/// Modo asociar: el identificador ya estaba ligado a [boundItemId] (que puede
+/// ser el mismo objeto) y no se asoció.
+final class ScanBindRejected extends ScanOutcome {
+  const ScanBindRejected({
+    required this.boundItemId,
+    required this.boundItemName,
+    required this.sameItem,
+    required super.rawValue,
+    required super.type,
+    required super.fromScanner,
+  });
+
+  final String boundItemId;
+  final String boundItemName;
+  final bool sameItem;
+
+  @override
+  List<Object?> get props => [...super.props, boundItemId, boundItemName, sameItem];
 }
 
 class ScanState extends Equatable {
@@ -150,6 +181,9 @@ final class _ScanErrorReceived extends ScanEvent {
 
 /// Pantalla de escaneo (BLoC por ser un flujo continuo de lecturas, §11.1).
 ///
+/// Con [bindToItemId] funciona en modo asociar: cada lectura se asocia a ese
+/// objeto en lugar de buscar a qué objeto pertenece.
+///
 /// Solo existe el escáner del modo activo: al cambiar de modo el anterior se
 /// libera (cámara apagada en modo NFC o Código, spec §16).
 class ScanBloc extends Bloc<ScanEvent, ScanState> {
@@ -159,8 +193,12 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     required NfcScannerFactory nfcScannerFactory,
     required HardwarePermissions permissions,
     ScanMode initialMode = ScanMode.camera,
+    this.bindToItemId,
+    BindIdentifier? bindIdentifier,
     DateTime Function()? now,
-  })  : _find = findItemByIdentifier,
+  })  : assert(bindToItemId == null || bindIdentifier != null, 'El modo asociar necesita BindIdentifier'),
+        _find = findItemByIdentifier,
+        _bind = bindIdentifier,
         _cameraFactory = cameraScannerFactory,
         _nfcFactory = nfcScannerFactory,
         _permissions = permissions,
@@ -183,7 +221,11 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   /// Lecturas de cámara iguales dentro de este intervalo se ignoran.
   static const duplicateWindow = Duration(seconds: 2);
 
+  /// Objeto al que se asocian las lecturas; `null` fuera del modo asociar.
+  final String? bindToItemId;
+
   final FindItemByIdentifier _find;
+  final BindIdentifier? _bind;
   final CameraScannerFactory _cameraFactory;
   final NfcScannerFactory _nfcFactory;
   final HardwarePermissions _permissions;
@@ -194,6 +236,10 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   StreamSubscription<PhysicalScanResult>? _cameraSubscription;
   StreamSubscription<PhysicalScanResult>? _nfcSubscription;
   ({String key, DateTime at})? _lastAccepted;
+
+  /// Lecturas de cámara ya rechazadas en modo asociar: no se reintentan
+  /// mientras el código siga en el encuadre.
+  final Set<String> _rejectedKeys = {};
 
   /// Escáner de cámara activo, para que la pantalla muestre su preview.
   CameraIdentifierScanner? get cameraScanner => _camera;
@@ -247,7 +293,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   }
 
   Future<void> _onManualSubmitted(ScanManualSubmitted event, Emitter<ScanState> emit) =>
-      _lookUp(event.rawValue.trim(), event.type, emit, fromScanner: false);
+      _resolve(event.rawValue.trim(), event.type, emit, fromScanner: false);
 
   Future<void> _onResult(_ScanResultReceived event, Emitter<ScanState> emit) async {
     final result = event.result;
@@ -262,7 +308,8 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     if (result.type != ScanType.nfc) {
       final now = _now();
       final last = _lastAccepted;
-      if (last != null && last.key == key && now.difference(last.at) < duplicateWindow) {
+      if (_rejectedKeys.contains(key) ||
+          (last != null && last.key == key && now.difference(last.at) < duplicateWindow)) {
         return;
       }
       _lastAccepted = (key: key, at: now);
@@ -271,22 +318,60 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
       await _nfc?.stopScanning();
       emit(state.copyWith(nfcReading: false));
     }
-    await _lookUp(result.rawValue, type, emit, fromScanner: true);
+    await _resolve(result.rawValue, type, emit, fromScanner: true, fromCamera: result.type != ScanType.nfc);
   }
 
-  Future<void> _lookUp(String rawValue, IdentifierType type, Emitter<ScanState> emit, {required bool fromScanner}) async {
+  /// Busca el objeto del identificador o, en modo asociar, lo asocia.
+  Future<void> _resolve(
+    String rawValue,
+    IdentifierType type,
+    Emitter<ScanState> emit, {
+    required bool fromScanner,
+    bool fromCamera = false,
+  }) async {
     emit(state.copyWith(lookingUp: true));
     try {
-      final item = await _find(rawValue: rawValue, type: type);
+      final outcome = await _outcomeFor(rawValue, type, fromScanner: fromScanner);
+      if (outcome is ScanBindRejected && fromCamera) {
+        _rejectedKeys.add('${type.name}:$rawValue');
+      }
       await _camera?.stopScanning();
-      final outcome = item == null
-          ? ScanItemNotFound(rawValue: rawValue, type: type, fromScanner: fromScanner)
-          : ScanItemFound(itemId: item.id, rawValue: rawValue, type: type, fromScanner: fromScanner);
       emit(state.copyWith(lookingUp: false, outcome: () => outcome));
     } on ItemValidationException {
       emit(state.copyWith(lookingUp: false, notice: () => ScanNotice.invalidValue));
+    } on ItemNotFoundException {
+      emit(state.copyWith(lookingUp: false, notice: () => ScanNotice.itemNotFound));
     } catch (_) {
       emit(state.copyWith(lookingUp: false, notice: () => ScanNotice.unexpected));
+    }
+  }
+
+  Future<ScanOutcome> _outcomeFor(String rawValue, IdentifierType type, {required bool fromScanner}) async {
+    final itemId = bindToItemId;
+    if (itemId == null) {
+      final item = await _find(rawValue: rawValue, type: type);
+      return item == null
+          ? ScanItemNotFound(rawValue: rawValue, type: type, fromScanner: fromScanner)
+          : ScanItemFound(itemId: item.id, rawValue: rawValue, type: type, fromScanner: fromScanner);
+    }
+    try {
+      final identifier = await _bind!(itemId, rawValue: rawValue, type: type);
+      return ScanIdentifierBound(
+        itemId: itemId,
+        rawValue: identifier.rawValue,
+        type: identifier.type,
+        fromScanner: fromScanner,
+      );
+    } on IdentifierAlreadyBoundException catch (error) {
+      final boundItem = await _find(rawValue: error.rawValue, type: error.type);
+      return ScanBindRejected(
+        boundItemId: error.boundItemId,
+        boundItemName: boundItem?.name ?? '',
+        sameItem: error.boundItemId == itemId,
+        rawValue: error.rawValue,
+        type: error.type,
+        fromScanner: fromScanner,
+      );
     }
   }
 

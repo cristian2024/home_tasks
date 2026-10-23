@@ -76,7 +76,15 @@ class _DetailBody extends StatelessWidget {
               }),
             ),
         ],
-        AppSectionHeader(t.identifiers),
+        AppSectionHeader(
+          t.identifiers,
+          trailing: AppButton(
+            label: t.addIdentifier,
+            icon: Icons.add_link,
+            variant: AppButtonVariant.text,
+            onPressed: () => context.push<String>(ItemTrackerRoutes.addIdentifier(item.id)),
+          ),
+        ),
         if (state.identifiers.isEmpty)
           Text(t.noIdentifiers)
         else
@@ -90,6 +98,11 @@ class _DetailBody extends StatelessWidget {
               }),
               title: Text(identifier.rawValue),
               subtitle: Text(identifierTypeLabel(identifier.type)),
+              trailing: AppIconButton(
+                icon: Icons.link_off,
+                tooltip: t.removeIdentifier(type: identifierTypeLabel(identifier.type), value: identifier.rawValue),
+                onPressed: () => _removeIdentifier(context, identifier),
+              ),
             ),
         AppSectionHeader(
           t.history,
@@ -117,5 +130,27 @@ class _DetailBody extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  Future<void> _removeIdentifier(BuildContext context, PhysicalIdentifier identifier) async {
+    final t = itemTrackerStrings.itemTracker.detail;
+    final cubit = context.read<ItemDetailCubit>();
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: t.removeIdentifierTitle,
+      message: t.removeIdentifierMessage(type: identifierTypeLabel(identifier.type), value: identifier.rawValue),
+      confirmLabel: t.removeIdentifierConfirm,
+      destructive: true,
+    );
+    if (!confirmed) {
+      return;
+    }
+    final error = await cubit.removeIdentifier(identifier);
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(error == null ? t.identifierRemoved : errorMessage(error))));
   }
 }

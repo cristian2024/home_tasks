@@ -15,9 +15,20 @@ final class ItemNotFoundException extends ItemTrackerException {
   String toString() => 'ItemNotFoundException($itemId)';
 }
 
+/// El objeto no tiene un identificador activo con [identifierId] (no existe,
+/// ya se quitó o pertenece a otro objeto).
+final class IdentifierNotFoundException extends ItemTrackerException {
+  final String identifierId;
+
+  const IdentifierNotFoundException(this.identifierId);
+
+  @override
+  String toString() => 'IdentifierNotFoundException($identifierId)';
+}
+
 /// El identificador ya está ligado a un objeto ([boundItemId], que puede ser
-/// el mismo al que se intentaba asociar). Un identificador nunca se mueve de
-/// un objeto a otro.
+/// el mismo al que se intentaba asociar). Un identificador nunca se mueve
+/// directamente de un objeto a otro: primero hay que quitarlo.
 final class IdentifierAlreadyBoundException extends ItemTrackerException {
   final String rawValue;
   final IdentifierType type;

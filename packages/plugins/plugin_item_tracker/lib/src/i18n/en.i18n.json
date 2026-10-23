@@ -47,7 +47,12 @@
       "check_again": "Check again",
       "camera_error": "The camera could not be used. Type the code instead.",
       "read_error": "The identifier could not be read. Please try again.",
-      "read_cancelled": "Reading cancelled."
+      "read_cancelled": "Reading cancelled.",
+      "bind_title": "Add identifier",
+      "binding": "Linking the identifier…",
+      "bind_submit": "Link",
+      "bound": "Identifier added.",
+      "bind_rejected_other": "This identifier is already linked to “{name}”."
     },
     "not_found": {
       "title": "Unregistered identifier",
@@ -79,7 +84,13 @@
         "other": "{n} events recorded"
       },
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "add_identifier": "Add identifier",
+      "remove_identifier": "Remove {type} {value}",
+      "remove_identifier_title": "Remove the identifier?",
+      "remove_identifier_message": "The {type} “{value}” will no longer open this item. You can link it again to any item.",
+      "remove_identifier_confirm": "Remove",
+      "identifier_removed": "Identifier removed."
     },
     "events": {
       "created": "Item created as “{name}”",
@@ -87,7 +98,8 @@
       "identifier_bound": "{type} linked: {value}",
       "field_name": "name",
       "field_description": "description",
-      "field_metadata": "additional data"
+      "field_metadata": "additional data",
+      "identifier_unbound": "{type} removed: {value}"
     },
     "form": {
       "create_title": "New item",
@@ -105,7 +117,10 @@
       "type_number": "Number",
       "type_boolean": "Yes / No",
       "initial_identifier": "The {type} will be linked: {value}",
-      "save": "Save"
+      "save": "Save",
+      "identifiers": "Identifiers",
+      "identifiers_help": "They are linked right away, no need to save.",
+      "add_identifier": "Add identifier"
     },
     "associate": {
       "title": "Link to an item",
@@ -134,7 +149,8 @@
       "metadata_value_invalid": "The value of “{key}” is not valid.",
       "metadata_too_many": "There is too much additional data.",
       "number_invalid": "Enter a valid number.",
-      "unexpected": "An unexpected error occurred."
+      "unexpected": "An unexpected error occurred.",
+      "identifier_not_found": "The identifier is no longer linked to this item."
     }
   }
 }

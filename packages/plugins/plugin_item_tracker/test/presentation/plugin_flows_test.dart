@@ -225,8 +225,88 @@ void main() {
     await tester.tap(find.text('Guardar nota'));
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(find.text('Cambio de Ubicación'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Cambio de Ubicación'), findsOneWidget);
     expect(find.text('4 eventos registrados'), findsOneWidget);
+  });
+
+  group('añadir identificador desde el objeto', () {
+    testWidgets('desde el detalle: la cámara asocia el código y vuelve al detalle', (tester) async {
+      final item = await harness.createItem('Cama', qr: 'QR-BED');
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(item.id));
+
+      await tester.tap(find.text('Añadir identificador'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Añadir identificador'), findsOneWidget);
+
+      harness.hardware.camera.emit('QR-PILLOW');
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(AppBar, 'Cama'), findsOneWidget);
+      expect(find.text('Identificador añadido.'), findsOneWidget);
+      expect(find.text('QR-PILLOW'), findsOneWidget);
+      expect(find.text('QR asociado: QR-PILLOW'), findsOneWidget);
+      expect(harness.hardware.camera.isDisposed, isTrue);
+    });
+
+    testWidgets('desde la edición: el código escrito se asocia sin guardar el formulario', (tester) async {
+      final item = await harness.createItem('Cama');
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.edit(item.id));
+
+      await tester.tap(find.text('Añadir identificador'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Código'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Código'), 'TAG-1');
+      await tester.tap(find.text('NFC').last); // El primero es el selector de modo.
+      await tester.tap(find.text('Asociar'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(AppBar, 'Editar objeto'), findsOneWidget);
+      expect(find.text('Identificador añadido.'), findsOneWidget);
+      final found = await harness.repository.findIdentifier('TAG-1', IdentifierType.nfc);
+      expect(found?.itemId, item.id);
+    });
+
+    testWidgets('un código de otro objeto se rechaza y se sigue escaneando', (tester) async {
+      await harness.createItem('Mesa', qr: 'QR-TABLE');
+      final item = await harness.createItem('Cama', qr: 'QR-BED');
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.addIdentifier(item.id));
+
+      harness.hardware.camera.emit('QR-TABLE');
+      await tester.pumpAndSettle();
+      expect(find.text('Este identificador ya está asociado a «Mesa».'), findsOneWidget);
+      expect(find.widgetWithText(AppBar, 'Añadir identificador'), findsOneWidget);
+      expect(harness.hardware.camera.isScanning, isTrue);
+
+      harness.hardware.camera.emit('QR-BED');
+      await tester.pumpAndSettle();
+      expect(find.text('Este identificador ya está asociado a este objeto.'), findsOneWidget);
+    });
+  });
+
+  testWidgets('quitar un identificador pide confirmación y lo deja libre para otro objeto', (tester) async {
+    final item = await harness.createItem('Cama', qr: 'QR-BED');
+    await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(item.id));
+
+    await tester.tap(find.byTooltip('Quitar QR QR-BED'));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Quitar el identificador?'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(find.text('QR-BED'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Quitar QR QR-BED'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Quitar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Identificador quitado.'), findsOneWidget);
+    expect(find.text('Sin identificadores asociados.'), findsOneWidget);
+    expect(find.text('QR quitado: QR-BED'), findsOneWidget);
+
+    final other = await harness.createItem('Mesa', qr: 'QR-BED');
+    expect((await harness.repository.findIdentifier('QR-BED', IdentifierType.qr))?.itemId, other.id);
   });
 
   testWidgets('un enlace a "no encontrado" sin código redirige a escanear', (tester) async {

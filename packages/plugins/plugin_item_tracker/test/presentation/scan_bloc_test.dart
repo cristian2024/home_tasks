@@ -17,12 +17,14 @@ void main() {
     now = DateTime.utc(2026);
   });
 
-  ScanBloc build({ScanMode mode = ScanMode.camera}) => ScanBloc(
+  ScanBloc build({ScanMode mode = ScanMode.camera, String? bindToItemId}) => ScanBloc(
         findItemByIdentifier: useCases.findItemByIdentifier,
         cameraScannerFactory: hardware.createCamera,
         nfcScannerFactory: hardware.createNfc,
         permissions: hardware.permissions,
         initialMode: mode,
+        bindToItemId: bindToItemId,
+        bindIdentifier: useCases.bindIdentifier,
         now: () => now,
       );
 
@@ -297,6 +299,90 @@ void main() {
       build: () => build(mode: ScanMode.manual),
       act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'A\u0007B', type: IdentifierType.qr)),
       verify: (bloc) => expect(bloc.state.notice, ScanNotice.invalidValue),
+    );
+  });
+
+  group('modo asociar', () {
+    late HouseholdItem target;
+    late HouseholdItem other;
+
+    setUp(() async {
+      target = await useCases.createItem(name: 'Cama');
+      other = await useCases.createItem(name: 'Caja A', identifier: (rawValue: 'QR-123', type: IdentifierType.qr));
+    });
+
+    blocTest<ScanBloc, ScanState>(
+      'un código libre se asocia al objeto y detiene la cámara',
+      build: () => build(bindToItemId: target.id),
+      act: (bloc) async {
+        bloc.add(const ScanStarted());
+        await Future<void>.delayed(Duration.zero);
+        hardware.camera.emit('QR-NEW');
+        await Future<void>.delayed(Duration.zero);
+        expect(hardware.camera.isScanning, isFalse);
+      },
+      skip: 2,
+      expect: () => [
+        ScanState(
+          cameraPermission: HardwarePermissionStatus.granted,
+          outcome: ScanIdentifierBound(itemId: target.id, rawValue: 'QR-NEW', type: IdentifierType.qr, fromScanner: true),
+        ),
+      ],
+      verify: (_) async {
+        final found = await useCases.findItemByIdentifier(rawValue: 'QR-NEW', type: IdentifierType.qr);
+        expect(found?.id, target.id);
+      },
+    );
+
+    blocTest<ScanBloc, ScanState>(
+      'un código de otro objeto se rechaza con su nombre y no se reintenta mientras siga en el encuadre',
+      build: () => build(bindToItemId: target.id),
+      act: (bloc) async {
+        bloc.add(const ScanStarted());
+        await Future<void>.delayed(Duration.zero);
+        hardware.camera.emit('QR-123');
+        await Future<void>.delayed(Duration.zero);
+        expect(
+          bloc.state.outcome,
+          ScanBindRejected(
+            boundItemId: other.id,
+            boundItemName: 'Caja A',
+            sameItem: false,
+            rawValue: 'QR-123',
+            type: IdentifierType.qr,
+            fromScanner: true,
+          ),
+        );
+        bloc.add(const ScanOutcomeHandled());
+        await Future<void>.delayed(Duration.zero);
+        expect(hardware.camera.isScanning, isTrue);
+        now = now.add(ScanBloc.duplicateWindow * 3);
+        hardware.camera.emit('QR-123'); // Ya rechazado: se ignora.
+        await Future<void>.delayed(Duration.zero);
+        expect(bloc.state.outcome, isNull);
+        expect(bloc.state.lookingUp, isFalse);
+      },
+    );
+
+    blocTest<ScanBloc, ScanState>(
+      'un código ya asociado al mismo objeto se marca como tal',
+      setUp: () async => useCases.bindIdentifier(target.id, rawValue: 'TAG-1', type: IdentifierType.nfc),
+      build: () => build(mode: ScanMode.manual, bindToItemId: target.id),
+      act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'TAG-1', type: IdentifierType.nfc)),
+      verify: (bloc) => expect(
+        bloc.state.outcome,
+        isA<ScanBindRejected>().having((outcome) => outcome.sameItem, 'sameItem', isTrue),
+      ),
+    );
+
+    blocTest<ScanBloc, ScanState>(
+      'si el objeto ya no existe produce un aviso',
+      build: () => build(mode: ScanMode.manual, bindToItemId: 'missing'),
+      act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'QR-NEW', type: IdentifierType.qr)),
+      expect: () => [
+        const ScanState(mode: ScanMode.manual, lookingUp: true),
+        const ScanState(mode: ScanMode.manual, notice: ScanNotice.itemNotFound),
+      ],
     );
   });
 }

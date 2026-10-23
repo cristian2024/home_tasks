@@ -24,6 +24,10 @@ void main() {
     when(() => repository.updateItem(any(), any())).thenAnswer((_) async {});
     when(() => repository.bindIdentifier(any(), any())).thenAnswer((_) async {});
     when(() => repository.addEvent(any())).thenAnswer((_) async {});
+    when(
+      () => repository.unbindIdentifier(any(), deletedAt: any(named: 'deletedAt'), event: any(named: 'event')),
+    ).thenAnswer((_) async {});
+    when(() => repository.getIdentifier(any())).thenAnswer((_) async => null);
     when(() => repository.findIdentifier(any(), any())).thenAnswer((_) async => null);
     when(() => repository.getById(any())).thenAnswer((_) async => null);
   });
@@ -204,6 +208,59 @@ void main() {
       await expectLater(
         bindIdentifier('item-1', rawValue: 'a\x00', type: IdentifierType.qr),
         throwsValidation(ValidationField.identifierValue, ValidationReason.invalidFormat),
+      );
+    });
+  });
+
+  group('UnbindIdentifier', () {
+    late UnbindIdentifier unbindIdentifier;
+
+    setUp(() => unbindIdentifier = UnbindIdentifier(repository, ids, clock));
+
+    test('quita el identificador con borrado lógico y registra su evento', () async {
+      when(() => repository.getById('item-1')).thenAnswer((_) async => item());
+      when(() => repository.getIdentifier('ident-1')).thenAnswer((_) async => identifier());
+
+      final removed = await unbindIdentifier('item-1', identifierId: 'ident-1');
+
+      expect(removed, identifier());
+      verify(
+        () => repository.unbindIdentifier(
+          'ident-1',
+          deletedAt: t0,
+          event: ItemEvent(
+            id: 'id-1',
+            itemId: 'item-1',
+            kind: ItemEventKind.identifierUnbound,
+            title: 'qr',
+            description: 'QR-123',
+            timestamp: t0,
+          ),
+        ),
+      ).called(1);
+    });
+
+    test('lanza ItemNotFoundException si el objeto no existe', () async {
+      await expectLater(
+        unbindIdentifier('missing', identifierId: 'ident-1'),
+        throwsA(isA<ItemNotFoundException>()),
+      );
+    });
+
+    test('lanza IdentifierNotFoundException si no existe, ya se quitó o es de otro objeto', () async {
+      when(() => repository.getById('item-2')).thenAnswer((_) async => item(id: 'item-2'));
+
+      await expectLater(
+        unbindIdentifier('item-2', identifierId: 'ident-1'),
+        throwsA(isA<IdentifierNotFoundException>().having((e) => e.identifierId, 'identifierId', 'ident-1')),
+      );
+      when(() => repository.getIdentifier('ident-1')).thenAnswer((_) async => identifier());
+      await expectLater(
+        unbindIdentifier('item-2', identifierId: 'ident-1'),
+        throwsA(isA<IdentifierNotFoundException>()),
+      );
+      verifyNever(
+        () => repository.unbindIdentifier(any(), deletedAt: any(named: 'deletedAt'), event: any(named: 'event')),
       );
     });
   });

@@ -36,6 +36,7 @@ void main() {
           watchItem: WatchItem(useCases.repository),
           watchItemIdentifiers: WatchItemIdentifiers(useCases.repository),
           watchItemEvents: WatchItemEvents(useCases.repository),
+          unbindIdentifier: useCases.unbindIdentifier,
         );
 
     test('combina objeto, identificadores e historial y reacciona a cambios', () async {
@@ -54,6 +55,22 @@ void main() {
 
       expect(cubit.state.identifiers, hasLength(2));
       expect(cubit.state.events, hasLength(3));
+    });
+
+    test('quita un identificador y el detalle se actualiza; un segundo intento devuelve el error', () async {
+      final item = await useCases.createItem(name: 'Cama', identifier: (rawValue: 'QR-BED', type: IdentifierType.qr));
+      final cubit = build(item.id);
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+      final identifier = cubit.state.identifiers.single;
+
+      expect(await cubit.removeIdentifier(identifier), isNull);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.identifiers, isEmpty);
+      // El reloj fijo da a todos los eventos el mismo instante: no se compara el orden.
+      expect(cubit.state.events.map((event) => event.kind), contains(ItemEventKind.identifierUnbound));
+      expect(await cubit.removeIdentifier(identifier), isA<IdentifierNotFoundException>());
     });
 
     test('informa missing si el objeto no existe', () async {

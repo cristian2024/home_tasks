@@ -5,6 +5,7 @@ import 'package:core_storage/core_storage.dart';
 import 'package:core_utils/core_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_physical_identifier.dart';
 
 import '../helpers/domain_fixtures.dart';
 
@@ -90,6 +91,45 @@ void main() {
       throwsA(isA<IdentifierAlreadyBoundException>().having((e) => e.boundItemId, 'boundItemId', 'item-1')),
     );
     expect(await repository.watchEvents('item-2').first, isEmpty, reason: 'la transacción no debe dejar el evento');
+  });
+
+  group('quitar un identificador (borrado lógico)', () {
+    setUp(() async {
+      await repository.createItem(item(), identifier: ident('i1', 'QR-123', IdentifierType.qr), events: const []);
+      await repository.createItem(item(id: 'item-2', name: 'Caja B'), events: const []);
+    });
+
+    test('deja de contar en búsquedas y listados pero se conserva marcado', () async {
+      final deletedAt = t0.add(const Duration(hours: 1));
+      await repository.unbindIdentifier('i1', deletedAt: deletedAt, event: event('e1', kind: ItemEventKind.identifierUnbound));
+
+      expect(await repository.findIdentifier('QR-123', IdentifierType.qr), isNull);
+      expect(await repository.getIdentifier('i1'), isNull);
+      expect(await repository.watchIdentifiers('item-1').first, isEmpty);
+      expect((await repository.watchEvents('item-1').first).single.kind, ItemEventKind.identifierUnbound);
+      final stored = await isar.isarPhysicalIdentifiers.getById('i1');
+      expect(stored?.isDeleted, isTrue);
+      expect(stored?.deletedAt?.toUtc(), deletedAt);
+    });
+
+    test('el mismo valor y tipo se puede asociar de nuevo, y quitar otra vez', () async {
+      await repository.unbindIdentifier('i1', deletedAt: t0, event: event('e1'));
+      await repository.bindIdentifier(ident('i2', 'QR-123', IdentifierType.qr, itemId: 'item-2'), event('e2', itemId: 'item-2'));
+
+      expect((await repository.findIdentifier('QR-123', IdentifierType.qr))?.itemId, 'item-2');
+
+      await repository.unbindIdentifier('i2', deletedAt: t0, event: event('e3', itemId: 'item-2'));
+      await repository.bindIdentifier(ident('i3', 'QR-123', IdentifierType.qr), event('e4'));
+      expect((await repository.findIdentifier('QR-123', IdentifierType.qr))?.id, 'i3');
+      expect(await isar.isarPhysicalIdentifiers.count(), 3);
+    });
+
+    test('quitar uno ya quitado no hace nada', () async {
+      await repository.unbindIdentifier('i1', deletedAt: t0, event: event('e1'));
+      await repository.unbindIdentifier('i1', deletedAt: t0, event: event('e2'));
+
+      expect(await repository.watchEvents('item-1').first, hasLength(1));
+    });
   });
 
   test('createItem es atómico: si el identificador choca no guarda el objeto', () async {
