@@ -2,7 +2,7 @@
 
 ## Comandos del Monorepo (Melos)
 - **Instalación/Bootstrap:** `melos bs`
-- **Análisis estático:** `melos run analyze`[cite: 1]
+- **Análisis estático:** `melos run analyze` (`tool/analyze.dart`: falla con cualquier problema salvo las reglas en adopción gradual, que solo cuenta por proyecto)
 - **Ejecutar pruebas:** `melos run test`[cite: 1]
 - **Generar código (Isar / Slang):** `melos run gen` (`gen:isar` + `gen:i18n`). `melos bs` lo ejecuta al terminar.
 - **Código generado:** los `*.g.dart` no se versionan (`.gitignore`). Después de cambiar de rama o tocar un modelo Isar o un JSON de traducciones, ejecutar `melos run gen`. Los paquetes que aún tengan generados versionados los sacan del índice (`git rm --cached`) en la primera rama que los toque.
@@ -38,6 +38,9 @@
 - Nombres de archivos y carpetas en **snake_case**[cite: 1].
 - Excluir archivos generados (`*.g.dart`, `*.i18n.json`) del linter según `analysis_options.yaml`[cite: 1].
 - Todo componente interactivo de UI debe incluir accesibilidad (`Semantics` o `tooltip`)[cite: 1].
+- **Tipos explícitos:** tipar siempre las variables (`final String name = …`, no `final name = …`). La regla `always_specify_types` está como warning mientras se tipa el código existente: aplicarla en todo archivo nuevo o que se modifique, sin reescribir código ajeno solo por esto. Cuando queden pocos casos se quitará de `toleratedCodes` en `tool/analyze.dart` y será obligatoria.
+- **Sin funciones que devuelven widgets:** evitar métodos como `Widget _buildX()` o `List<Widget> _section()`; extraer una clase de widget (privada si solo divide una pantalla). No hay lint de Dart para esto: se revisa a mano.
+- **Widgets reutilizables agnósticos:** un widget con una función concreta que pueda usarse en otro sitio recibe por parámetros todo lo que necesita y devuelve resultados con callbacks. No usa cubits ni blocs, navegación, diálogos ni snackbars: eso lo hace la screen, que los conecta. Las partes privadas en que se divide una screen para leerla mejor (`_DetailBody`, `_CameraView`…) son parte de la screen.
 
 ---
 
@@ -67,6 +70,7 @@
 - **Isar nativo:** una violación de índice único llega como `IsarError` con "Unique index violated", no como `IsarUniqueViolationError` (ese es solo para web).
 - **mocktail:** `captureAny` captura los argumentos con nombre en orden alfabético.
 - **Cobertura:** casos de uso y mappers deben quedar al 100 % (`flutter test --coverage`).
+- **Contenedores (item_tracker):** `HouseholdItem.parentId`; la jerarquía se calcula con `ItemTree` y los límites con `ContainmentPolicy` (máx. 5 niveles, `--dart-define=ITEM_TRACKER_MAX_DEPTH`). Detalle en el §9.4 de la spec. La cobertura del 100 % también aplica a `domain/hierarchy`.
 - **Plugin item_tracker (presentación):** `ScanBloc` para el escaneo y Cubits para el resto. Las pantallas devuelven resultados con `context.pop(itemId)` (ver §12.1). En los tests de widgets usar `PluginHarness` (`test/helpers/presentation_fixtures.dart`), que monta el plugin real con hardware falso y repositorio en memoria.
 
 ## Trampas conocidas en tests

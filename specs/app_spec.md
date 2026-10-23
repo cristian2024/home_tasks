@@ -230,17 +230,31 @@ dev_dependencies:
   test: ^1.28.0
 
 melos:
+  command:
+    bootstrap:
+      hooks:
+        post: melos run gen   # el código generado no se versiona
   scripts:
     verify:            # analyze + verify:arch + test
-    analyze:           # dart analyze --fatal-infos .
+    analyze:           # dart run tool/analyze.dart
     test:              # test:flutter (flutter test) + test:dart (dart test) + test:tool
     verify:arch:       # dart run tool/verify_architecture.dart
-    build:g:
+    gen:               # gen:isar + gen:i18n
+    gen:isar:
       packageFilters:
         dependsOn: build_runner
       exec:
-        command: dart run build_runner build --delete-conflicting-outputs
+        command: dart run build_runner build
+    gen:i18n:
+      packageFilters:
+        fileExists: slang.yaml
+      exec:
+        command: dart run slang
 ```
+
+- **Código generado**: los `*.g.dart` (Isar y slang) no se versionan. `melos bs` los genera al terminar, y `melos run gen` los regenera tras cambiar un modelo o un JSON de traducciones.
+- **`build_runner` y apps de ejemplo**: un paquete con `build_runner` y `example/` necesita un `build.yaml` que excluya `example/**`. Si no, build_runner sigue `example/ios/.symlinks` hasta `~/.pub-cache` y borra archivos generados de otros paquetes.
+- **`tool/analyze.dart`**: ejecuta `dart analyze` y falla con cualquier diagnóstico (como `--fatal-infos`) salvo los de las reglas en adopción gradual (`toleratedCodes`), que solo cuenta por proyecto. Hoy es `always_specify_types`; cuando queden pocos casos se quita de la lista y pasa a ser obligatoria.
 
 #### `analysis_options.yaml` (Raíz)
 ```yaml
@@ -254,6 +268,7 @@ analyzer:
     missing_required_param: error
     body_might_complete_normally: error # sustituye a missing_return (inexistente con null-safety)
     todo: ignore
+    always_specify_types: warning # en adopción gradual (ver tool/analyze.dart)
   exclude:
     - "**/*.g.dart"
     - "**/*.i18n.json"
@@ -261,6 +276,7 @@ analyzer:
 linter:
   rules:
     - always_declare_return_types
+    - always_specify_types
     - avoid_empty_else
     - avoid_relative_lib_imports
     - avoid_shadowing_type_parameters
@@ -525,6 +541,7 @@ class HouseholdItem extends Equatable {
   final ItemMetadata metadata; // Value object validado (§9.4)
   final DateTime createdAt; // UTC, inmutable
   final DateTime updatedAt; // UTC
+  final String? parentId; // Objeto que lo contiene (§9.4); null si está suelto
 
   const HouseholdItem({
     required this.id,
@@ -533,6 +550,7 @@ class HouseholdItem extends Equatable {
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
+    this.parentId,
   });
 }
 ```
@@ -562,9 +580,10 @@ class PhysicalIdentifier {
 
 #### `ItemEvent`
 ```dart
-/// Técnicos (los genera el sistema): created, updated, identifierBound.
+/// Técnicos (los genera el sistema): created, updated, identifierBound,
+/// identifierUnbound, moved, childAdded, childRemoved.
 /// Funcional (lo escribe el usuario): note.
-enum ItemEventKind { created, updated, identifierBound, note }
+enum ItemEventKind { created, updated, identifierBound, identifierUnbound, moved, childAdded, childRemoved, note }
 
 class ItemEvent extends Equatable {
   final String id; // UUID v4
@@ -610,6 +629,9 @@ class IsarHouseholdItem {
 
   @Index() // Listado ordenado por última modificación
   late DateTime updatedAt;
+
+  @Index() // Contenido de un objeto. Los registros anteriores se leen como null
+  String? parentId;
 }
 
 @collection
@@ -619,10 +641,11 @@ class IsarPhysicalIdentifier {
   @Index(unique: true, replace: true)
   late String id;
 
-  // Un identificador físico solo puede estar ligado a 1 objeto. Sin `replace`:
-  // un duplicado hace fallar la transacción (en nativo, IsarError con el
-  // mensaje "Unique index violated"; en web, IsarUniqueViolationError).
-  @Index(composite: [CompositeIndex('type')], unique: true)
+  // Un identificador físico activo solo puede estar ligado a 1 objeto. Sin
+  // `replace`: un duplicado hace fallar la transacción (en nativo, IsarError con
+  // el mensaje "Unique index violated"; en web, IsarUniqueViolationError). Los
+  // quitados llevan su propio deletedId, así que no chocan con el activo.
+  @Index(composite: [CompositeIndex('type'), CompositeIndex('deletedId')], unique: true)
   late String rawValue;
 
   @Enumerated(EnumType.name)
@@ -632,6 +655,11 @@ class IsarPhysicalIdentifier {
   late String itemId;
 
   late DateTime boundAt;
+
+  // Borrado lógico (§10.3): null si está activo; el propio id si se quitó.
+  // Los registros anteriores se leen como activos.
+  String? deletedId;
+  DateTime? deletedAt; // UTC
 }
 
 @collection
@@ -711,7 +739,16 @@ Isar devuelve las fechas en hora local: `ItemDataMapper` las convierte a UTC al 
 | `rawValue` | 1..2048 caracteres, sin caracteres de control. No se recorta (los espacios pueden ser parte del código). |
 | Nota (`ItemEvent`) | Título obligatorio (máx. 120); descripción opcional (máx. 2000). |
 
-**Identificadores**: un identificador (`rawValue` + `type`) ya ligado a **cualquier** objeto se **rechaza** con `IdentifierAlreadyBoundException(boundItemId)`; nunca se mueve de un objeto a otro. El mismo valor con distinto tipo (p. ej. QR y código de barras) son identificadores distintos.
+**Identificadores**: un identificador (`rawValue` + `type`) ya ligado a **cualquier** objeto se **rechaza** con `IdentifierAlreadyBoundException(boundItemId)`; nunca se mueve directamente de un objeto a otro. El mismo valor con distinto tipo (p. ej. QR y código de barras) son identificadores distintos.
+- **Añadir** desde el detalle o la edición del objeto: escaneo en modo asociar (`ScanBloc` con `bindToItemId`). Un código ya asociado se rechaza con el nombre de su objeto y la cámara no lo reintenta mientras siga en el encuadre.
+- **Quitar** (`UnbindIdentifier`): borrado lógico (§10.3) con confirmación. Si el objeto no tiene ese identificador activo, `IdentifierNotFoundException`. Un valor quitado queda libre y se puede asociar a cualquier objeto.
+
+**Contenedores**: un objeto puede estar dentro de otro (`parentId`), p. ej. Mueble › Organizador › Cajón 2. Lo que contiene un objeto se mueve con él.
+- **Niveles**: un objeto suelto está en el nivel 1. El máximo (`ContainmentPolicy.maxDepth`) es 5 y se configura con `--dart-define=ITEM_TRACKER_MAX_DEPTH=n` (un valor menor que 1 usa 5). Al mover se cuenta todo el subárbol: un organizador con cajones ocupa 2 niveles.
+- **Errores**: meter un objeto en sí mismo o en algo que contiene lanza `ItemContainmentCycleException`; superar el máximo, `ItemContainmentTooDeepException(maxDepth)`.
+- **Si se baja el límite** no se mueve nada: el contenedor que queda en el nivel máximo o por debajo y aún contiene objetos se marca como desbordado (`ContainmentPolicy.isOverflowing`) y el detalle lo avisa.
+- **`ItemTree`** (`domain/hierarchy`) calcula ruta, nivel, contenido (ordenado por nombre) y altura a partir de la lista de objetos. Tolera contenedores inexistentes y ciclos.
+- **Presentación**: el detalle muestra la ruta navegable, "Mover a…", "Sacar del contenedor", el contenido y "Añadir objeto aquí". "Mover a…" excluye el propio objeto y su contenido y muestra desactivados, con el motivo, el contenedor actual y los destinos que superarían el límite. La lista y la búsqueda muestran todos los objetos con su ruta.
 
 **Eventos técnicos automáticos**: guardan datos, no texto traducido; la presentación compone el mensaje localizado.
 
@@ -720,9 +757,15 @@ Isar devuelve las fechas en hora local: `ItemDataMapper` las convierte a UTC al 
 | `created` | Al crear el objeto | Nombre inicial | vacío |
 | `updated` | Al editar, solo si algo cambió | vacío | Campos cambiados: `name,description,metadata` |
 | `identifierBound` | Al asociar un identificador (también al crear) | `IdentifierType.name` | `rawValue` |
+| `identifierUnbound` | Al quitar un identificador | `IdentifierType.name` | `rawValue` |
+| `moved` | En el objeto, al cambiar de contenedor | Nombre del contenedor nuevo (vacío si sale de todos) | Su ID (vacío si sale de todos) |
+| `childAdded` | En el contenedor, al entrar un objeto (también al crearlo dentro) | Nombre del objeto | Su ID |
+| `childRemoved` | En el contenedor anterior, al salir un objeto | Nombre del objeto | Su ID |
 | `note` | El usuario añade una nota | Texto libre | Texto libre |
 
-**Casos de uso** (`lib/src/domain/use_cases`): `CreateItem` (publica `ItemCreatedCrossEvent`), `UpdateItem`, `BindIdentifier`, `AddItemEvent`, `FindItemByIdentifier`, `GetItem`, `WatchItem`, `WatchItems`, `SearchItems`, `WatchItemIdentifiers`, `WatchItemEvents`. Reciben `IdGenerator` y `Clock` de `core_utils` por inyección.
+**Casos de uso** (`lib/src/domain/use_cases`): `CreateItem` (publica `ItemCreatedCrossEvent`; acepta `parentId`), `UpdateItem`, `MoveItem` (con `parentId: null` saca el objeto; si el contenedor no cambia no escribe nada), `BindIdentifier`, `UnbindIdentifier`, `AddItemEvent`, `FindItemByIdentifier`, `GetItem`, `WatchItem`, `WatchItems`, `WatchItemTree`, `SearchItems`, `WatchItemIdentifiers`, `WatchItemEvents`. Reciben `IdGenerator` y `Clock` de `core_utils` por inyección, y `ContainmentPolicy` los que colocan objetos.
+
+**Errores de dominio** (`sealed ItemTrackerException`): `ItemNotFoundException`, `IdentifierNotFoundException`, `IdentifierAlreadyBoundException`, `ItemContainmentCycleException`, `ItemContainmentTooDeepException` e `ItemValidationException`.
 
 ---
 
@@ -756,7 +799,7 @@ La implementación de `PluginPreferenceRepository` es `IsarPluginPreferenceRepos
 ### 10.3. Preparación para Sincronización Remota Futura
 Para garantizar que la adición de un servidor remoto no quiebre la arquitectura:
 1. **Campos Inmutables**: `id` y `createdAt` jamás cambian tras su creación local.
-2. **Soft Deletes**: Los elementos no se borran físicamente mediante `DELETE`, sino que se marcarán en el futuro mediante un flag opcional de infraestructura `isDeleted` para propagar el borrado a la nube.
+2. **Soft Deletes**: Los elementos no se borran físicamente mediante `DELETE`, sino que se marcan como borrados para propagar el borrado a la nube. **Implementado para los identificadores**: `deletedId` (el propio `id`, para que el índice único admita varios quitados del mismo valor) y `deletedAt` en UTC; las consultas solo devuelven los activos. Los objetos aún no se pueden borrar.
 3. **Control de Modificación**: El campo `updatedAt` se actualiza localmente en cada escritura. La futura sincronización utilizará este campo para el algoritmo de resolución de conflictos *Last-Write-Wins (LWW)*.
 
 ---
@@ -814,6 +857,11 @@ graph TD
     NotFound -->|Asociar a Existente| Associate[/item-tracker/item/associate - AssociateScreen\]
     Detail --> AddEvent[/item-tracker/item/:id/event/add - AddEventScreen\]
     Detail --> Edit[/item-tracker/item/:id/edit - ItemFormScreen\]
+    Detail --> AddIdentifier[/item-tracker/item/:id/identifier/add - ScanScreen modo asociar\]
+    Edit --> AddIdentifier
+    Detail --> Move[/item-tracker/item/:id/move - MoveItemScreen\]
+    Detail -->|Añadir objeto aquí| Create
+    Detail -->|Ruta y contenido| Detail
     Home --> Items[/item-tracker/items - ItemListScreen\]
     Items --> Detail
 ```
@@ -821,7 +869,8 @@ graph TD
 - **Rutas planas y absolutas** (`ItemTrackerRoutes`), en el orden en que deben registrarse: `create` y `associate` antes de `item/:id`. `/item-tracker` redirige a `/item-tracker/scan`.
 - El identificador viaja en query params (`?value=…&type=qr`), así que las pantallas funcionan como deep link; sin ellos, `not-found` y `associate` redirigen a `scan`.
 - **Resultado por `pop`**: crear y asociar hacen `pop` con el ID del objeto, "no encontrado" lo reenvía, y `ScanScreen` abre el detalle. Al volver del detalle se pulsa atrás y se regresa a escanear, sin pantallas intermedias.
-- **Añadidos respecto a la versión inicial**: listado de objetos (consulta del §2.1 y selección al asociar) y edición de objetos (§2.1).
+- **Añadidos respecto a la versión inicial**: listado de objetos (consulta del §2.1 y selección al asociar), edición de objetos (§2.1), añadir y quitar identificadores desde el objeto, y contenedores (§9.4).
+- **Rutas de contenedores**: `create?parent=<id>` crea el objeto dentro de `<id>` y muestra su ruta; `item/:id/move` hace `pop` con el ID del contenedor elegido. `item/:id/identifier/add` hace `pop` con el ID del objeto.
 
 - **`ScanBloc`**: solo existe el escáner del modo activo, y al cambiar de modo el anterior se libera sin bloquear la UI. Las lecturas de **cámara** iguales se ignoran durante 2 s (la cámara las repite mientras el código sigue en el encuadre, también al volver de otra pantalla). Las de **NFC** no se deduplican, porque cada una es una acción explícita del usuario. Mientras se busca o se navega, se ignoran las lecturas nuevas.
 - **Entrada manual en `ScanScreen`**: un selector alterna entre **Escanear** y **Escribir código**. En modo escritura se oculta (y se libera) la cámara y se muestra un campo de texto con el selector de tipo (QR, código de barras, NFC); en modo escaneo se oculta el campo. Es la alternativa cuando se deniega la cámara o no hay NFC (§3.1, AC-06).

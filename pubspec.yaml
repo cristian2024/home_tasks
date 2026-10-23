@@ -37,8 +37,8 @@ melos:
         - test
 
     analyze:
-      description: Ejecuta el análisis estático en todo el workspace.
-      run: dart analyze --fatal-infos .
+      description: Análisis estático del workspace (falla con cualquier problema salvo las reglas en adopción de tool/analyze.dart).
+      run: dart run tool/analyze.dart
 
     test:
       description: Ejecuta las pruebas de todos los paquetes y del tooling.
