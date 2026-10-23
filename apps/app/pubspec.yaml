@@ -40,3 +40,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Textos que la app reemplaza en cada paquete (lib/i18n/translation_overrides.dart).
+  assets:
+    - assets/i18n/core_ui/
+    - assets/i18n/item_tracker/
