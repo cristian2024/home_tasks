@@ -5,7 +5,10 @@ import 'package:core_storage/core_storage.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/bootstrap.dart';
+import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+
+import 'helpers/in_memory_app_settings_repository.dart';
 
 /// AC-02 de extremo a extremo con Isar real y el arranque real de la app:
 /// desactivar, "reiniciar" (cerrar todo y volver a arrancar sobre el mismo
@@ -13,14 +16,19 @@ import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 /// intactos.
 void main() {
   late Directory directory;
+  late InMemoryAppSettingsRepository settings;
 
   setUpAll(() => Isar.initializeIsarCore(download: true));
-  setUp(() => directory = Directory.systemTemp.createTempSync('ac02'));
+  setUp(() {
+    directory = Directory.systemTemp.createTempSync('ac02');
+    settings = InMemoryAppSettingsRepository();
+  });
   tearDown(() => directory.deleteSync(recursive: true));
 
   Future<AppEnvironment> start() => bootstrapApp(
         databaseDirectory: directory.path,
-        languageCode: 'es',
+        systemLanguageCode: 'es',
+        settingsRepository: settings,
         locator: ServiceLocator(),
         localization: LocalizationCoordinator(),
       );
@@ -51,6 +59,19 @@ void main() {
           type: IdentifierType.qr,
         );
     expect(found?.id, created.id);
+    await app.dispose();
+  });
+
+  test('el tema y el idioma elegidos se aplican al arrancar de nuevo', () async {
+    AppEnvironment app = await start();
+    expect(app.localization.languageCode.value, 'es');
+    await app.settings.setTheme(AppThemePreference.dark);
+    await app.settings.setLanguage('en');
+    await app.dispose();
+
+    app = await start();
+    expect(app.settings.state, const AppSettings(theme: AppThemePreference.dark, languageCode: 'en'));
+    expect(app.localization.languageCode.value, 'en');
     await app.dispose();
   });
 }

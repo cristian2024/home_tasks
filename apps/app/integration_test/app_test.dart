@@ -30,7 +30,7 @@ void main() {
   Future<AppEnvironment> start(WidgetTester tester) async {
     final app = await bootstrapApp(
       databaseDirectory: directory.path,
-      languageCode: 'es',
+      systemLanguageCode: 'es',
       locator: ServiceLocator(),
       localization: LocalizationCoordinator(),
     );
@@ -70,7 +70,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Módulos'));
+    await tester.tap(find.byTooltip('Configuración'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'Módulos'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(SwitchListTile, 'Seguimiento de Objetos'));
     await tester.pumpAndSettle();
