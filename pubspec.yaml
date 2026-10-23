@@ -22,6 +22,12 @@ dev_dependencies:
 melos:
   repository: https://github.com/org/home_utility_monorepo
 
+  command:
+    bootstrap:
+      hooks:
+        # El código generado no se versiona: `melos bs` lo genera al terminar.
+        post: melos run gen
+
   scripts:
     verify:
       description: Verificación completa (análisis, arquitectura y pruebas).
@@ -74,9 +80,22 @@ melos:
       exec:
         command: flutter build apk --release
 
-    build:g:
-      description: Genera código (Isar, Slang, Mocktail) en todos los paquetes.
+    gen:
+      description: Genera el código que no se versiona (Isar y Slang).
+      steps:
+        - gen:isar
+        - gen:i18n
+
+    gen:isar:
+      description: Genera los esquemas de Isar con build_runner.
       packageFilters:
         dependsOn: build_runner
       exec:
-        command: dart run build_runner build --delete-conflicting-outputs
+        command: dart run build_runner build
+
+    gen:i18n:
+      description: Genera las traducciones de Slang.
+      packageFilters:
+        fileExists: slang.yaml
+      exec:
+        command: dart run slang
