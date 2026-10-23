@@ -168,6 +168,28 @@ class _GalleryPage extends StatelessWidget {
               subtitle: Text('Estante superior del armario principal'),
             ),
           ),
+          AppSettingsSection(
+            title: 'Ajustes',
+            children: <Widget>[
+              AppChoiceSelector<bool>(
+                label: 'Tema',
+                icon: Icons.palette_outlined,
+                options: const <AppChoice<bool>>[
+                  AppChoice<bool>(value: false, label: 'Claro'),
+                  AppChoice<bool>(value: true, label: 'Oscuro'),
+                ],
+                selected: isDark,
+                onChanged: onDarkChanged,
+              ),
+              AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
+              const AppSettingsTile(
+                icon: Icons.import_export,
+                title: 'Exportar / importar datos',
+                subtitle: 'Próximamente',
+                enabled: false,
+              ),
+            ],
+          ),
           const AppSectionHeader('Diálogos'),
           Builder(
             builder: (context) => AppButton(
