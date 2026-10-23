@@ -95,6 +95,7 @@
   - Envolver con `LanguageRebuilder` (`core_ui`) el contenido de las rutas. El router de la app ya lo hace con `withLanguageRebuild`.
   - Sin eso, las páginas abiertas no cambian de idioma, porque los textos de slang son globales y GoRouter conserva su `Navigator` con una `GlobalKey`.
   - Para traducir claves de otros paquetes: `LocalizationCoordinator.translate(key)`.
+- **Textos de los paquetes (§13.2):** para cambiar un texto de un paquete en la app, editar solo `apps/app/assets/i18n/<paquete>/<idioma>.json` con las claves que cambian; no tocar el JSON del paquete. Un paquete nuevo con textos activa `translation_overrides: true` en su `slang.yaml`, pasa `override:` al registrarse y se añade a `overridablePackages` (con sus archivos en `assets/i18n/` y su entrada en el test de reemplazos).
 - **Tests de la app:**
   - `AppHarness` (`test/helpers/app_harness.dart`): plugin real con hardware falso, repositorios en memoria y `FakeHomePlugin` configurable.
   - AC-02 con Isar real en `test/ac02_persistence_test.dart`.
