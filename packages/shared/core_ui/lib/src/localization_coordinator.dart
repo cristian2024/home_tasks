@@ -31,8 +31,8 @@ class LocalizationCoordinator {
   LocalizationCoordinator() {
     register(
       'core_ui',
-      (code) => core_ui_i18n.LocaleSettings.setLocaleRawSync(code),
-      translate: (key) => _asString(core_ui_i18n.commonStrings[key]),
+      (String code) => core_ui_i18n.LocaleSettings.setLocaleRawSync(code),
+      translate: (String key) => _asString(core_ui_i18n.commonStrings[key]),
       override: (String code, Map<String, Object?> overrides) =>
           core_ui_i18n.LocaleSettings.instance.overrideTranslationsFromMapSync(
             locale: core_ui_i18n.AppLocaleUtils.parse(code),
@@ -46,25 +46,25 @@ class LocalizationCoordinator {
   static final LocalizationCoordinator instance = LocalizationCoordinator();
 
   static const String defaultLanguageCode = 'es';
-  static const List<String> supportedLanguageCodes = ['es', 'en'];
+  static const List<String> supportedLanguageCodes = <String>['es', 'en'];
 
-  static List<Locale> get supportedLocales => [
-    for (final code in supportedLanguageCodes) Locale(code),
+  static List<Locale> get supportedLocales => <Locale>[
+    for (final String code in supportedLanguageCodes) Locale(code),
   ];
 
   /// Delegados de los textos propios de Flutter (Material, Cupertino y
   /// widgets) para [supportedLocales]. Se pasan a `MaterialApp`.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = [
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
   ];
 
-  final Map<String, LanguageApplier> _appliers = {};
-  final Map<String, KeyTranslator> _translators = {};
+  final Map<String, LanguageApplier> _appliers = <String, LanguageApplier>{};
+  final Map<String, KeyTranslator> _translators = <String, KeyTranslator>{};
   final Map<String, TranslationOverrider> _overriders = <String, TranslationOverrider>{};
   final Map<String, Map<String, Map<String, Object?>>> _overrides = <String, Map<String, Map<String, Object?>>>{};
-  final ValueNotifier<String> _languageCode = ValueNotifier(
+  final ValueNotifier<String> _languageCode = ValueNotifier<String>(
     defaultLanguageCode,
   );
 
@@ -117,8 +117,8 @@ class LocalizationCoordinator {
   /// Traduce [key] con el primer paquete que la conozca; si ninguno la
   /// conoce, devuelve la propia clave.
   String translate(String key) {
-    for (final translator in _translators.values) {
-      final value = translator(key);
+    for (final KeyTranslator translator in _translators.values) {
+      final String? value = translator(key);
       if (value != null) {
         return value;
       }
@@ -133,10 +133,10 @@ class LocalizationCoordinator {
   /// Cambia el idioma de todos los paquetes registrados. Un código no
   /// soportado se sustituye por [defaultLanguageCode].
   void setLanguage(String languageCode) {
-    final code = supportedLanguageCodes.contains(languageCode)
+    final String code = supportedLanguageCodes.contains(languageCode)
         ? languageCode
         : defaultLanguageCode;
-    for (final apply in _appliers.values) {
+    for (final LanguageApplier apply in _appliers.values) {
       apply(code);
     }
     _languageCode.value = code;
@@ -144,7 +144,7 @@ class LocalizationCoordinator {
 
   /// Primer idioma soportado de [deviceLocales], o [defaultLanguageCode].
   static String resolveLanguage(Iterable<Locale> deviceLocales) {
-    for (final locale in deviceLocales) {
+    for (final Locale locale in deviceLocales) {
       if (supportedLanguageCodes.contains(locale.languageCode)) {
         return locale.languageCode;
       }

@@ -14,18 +14,18 @@ void main() {
   });
 
   test('setLanguage aplica el idioma a core_ui y a los paquetes registrados', () {
-    final applied = <String>[];
+    final List<String> applied = <String>[];
     coordinator
       ..register('plugin_a', applied.add)
       ..setLanguage('en');
 
-    expect(applied, ['es', 'en']);
+    expect(applied, <String>['es', 'en']);
     expect(coordinator.languageCode.value, 'en');
     expect(commonStrings.common.cancel, 'Cancel');
   });
 
   test('un idioma no soportado cae en español', () {
-    final applied = <String>[];
+    final List<String> applied = <String>[];
     coordinator
       ..register('plugin_a', applied.add)
       ..setLanguage('fr');
@@ -35,7 +35,7 @@ void main() {
   });
 
   test('translate resuelve claves de cualquier paquete registrado', () {
-    coordinator.register('plugin_a', (_) {}, translate: (key) => key == 'pluginA.title' ? 'Plugin A' : null);
+    coordinator.register('plugin_a', (_) {}, translate: (String key) => key == 'pluginA.title' ? 'Plugin A' : null);
 
     expect(coordinator.translate('pluginA.title'), 'Plugin A');
     expect(coordinator.translate('common.cancel'), 'Cancelar');
@@ -120,9 +120,9 @@ void main() {
 
   test('resolveLanguage elige el primer idioma soportado del dispositivo', () {
     expect(
-      LocalizationCoordinator.resolveLanguage(const [Locale('fr'), Locale('en', 'US'), Locale('es')]),
+      LocalizationCoordinator.resolveLanguage(const <Locale>[Locale('fr'), Locale('en', 'US'), Locale('es')]),
       'en',
     );
-    expect(LocalizationCoordinator.resolveLanguage(const [Locale('de')]), 'es');
+    expect(LocalizationCoordinator.resolveLanguage(const <Locale>[Locale('de')]), 'es');
   });
 }
