@@ -5,10 +5,13 @@ library;
 
 export 'src/components/app_button.dart';
 export 'src/components/app_card.dart';
+export 'src/components/app_choice_selector.dart';
 export 'src/components/app_confirm_dialog.dart';
 export 'src/components/app_icon_button.dart';
 export 'src/components/app_loading_view.dart';
 export 'src/components/app_section_header.dart';
+export 'src/components/app_settings_section.dart';
+export 'src/components/app_settings_tile.dart';
 export 'src/components/app_status_view.dart';
 export 'src/components/app_text_field.dart';
 export 'src/theme/app_theme.dart';

@@ -21,6 +21,29 @@ Widget gallery() => ListView(
         AppIconButton(icon: Icons.add, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
         const AppTextField(label: 'Nombre'),
         AppCard(semanticLabel: 'Caja A', onTap: () {}, child: const Text('Caja A')),
+        AppSettingsSection(
+          title: 'Ajustes',
+          children: <Widget>[
+            AppChoiceSelector<String>(
+              label: 'Tema',
+              icon: Icons.palette_outlined,
+              options: const <AppChoice<String>>[
+                AppChoice<String>(value: 'system', label: 'Sistema'),
+                AppChoice<String>(value: 'light', label: 'Claro'),
+                AppChoice<String>(value: 'dark', label: 'Oscuro'),
+              ],
+              selected: 'system',
+              onChanged: (String _) {},
+            ),
+            AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
+            const AppSettingsTile(
+              icon: Icons.import_export,
+              title: 'Exportar / importar datos',
+              subtitle: 'Próximamente',
+              enabled: false,
+            ),
+          ],
+        ),
       ],
     );
 
@@ -80,6 +103,84 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('ajustes', () {
+    const List<AppChoice<String>> languages = <AppChoice<String>>[
+      AppChoice<String>(value: 'system', label: 'Idioma del sistema'),
+      AppChoice<String>(value: 'es', label: 'Español'),
+      AppChoice<String>(value: 'en', label: 'English'),
+    ];
+
+    testWidgets('AppChoiceSelector avisa solo al elegir una opción distinta', (WidgetTester tester) async {
+      final List<String> changes = <String>[];
+      await tester.pumpWidget(
+        host(AppChoiceSelector<String>(label: 'Idioma', options: languages, selected: 'es', onChanged: changes.add)),
+      );
+
+      await tester.tap(find.text('Español'));
+      await tester.tap(find.text('English'));
+
+      expect(changes, <String>['en']);
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Español')).selected, isTrue);
+    });
+
+    testWidgets('AppChoiceSelector sin onChanged queda desactivado', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        host(const AppChoiceSelector<String>(label: 'Idioma', options: languages, selected: 'es', onChanged: null)),
+      );
+
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'English')).onSelected, isNull);
+    });
+
+    testWidgets('AppChoiceSelector no desborda con el texto al 200 %', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        host(
+          AppChoiceSelector<String>(
+            label: 'Idioma',
+            icon: Icons.language,
+            options: languages,
+            selected: 'system',
+            onChanged: (String _) {},
+          ),
+          textScale: 2,
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AppSettingsTile responde al toque y, desactivado, no', (WidgetTester tester) async {
+      int taps = 0;
+      await tester.pumpWidget(
+        host(
+          AppSettingsSection(
+            title: 'Ajustes',
+            children: <Widget>[
+              AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () => taps++),
+              AppSettingsTile(
+                icon: Icons.import_export,
+                title: 'Exportar',
+                subtitle: 'Próximamente',
+                enabled: false,
+                onTap: () => taps++,
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Módulos'));
+      await tester.tap(find.text('Exportar'));
+
+      expect(taps, 1);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byType(Divider), findsOneWidget);
+    });
   });
 
   testWidgets('showAppConfirmDialog devuelve true al confirmar y false al cancelar', (tester) async {
