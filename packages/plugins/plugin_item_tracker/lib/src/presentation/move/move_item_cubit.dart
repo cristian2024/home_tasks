@@ -31,14 +31,14 @@ class MoveCandidate extends Equatable {
   final MoveBlock? block;
 
   @override
-  List<Object?> get props => [item, path, block];
+  List<Object?> get props => <Object?>[item, path, block];
 }
 
 class MoveItemState extends Equatable {
   const MoveItemState({
     this.status = MoveItemStatus.loading,
     this.item,
-    this.candidates = const [],
+    this.candidates = const <MoveCandidate>[],
     this.query = '',
     this.error,
     this.destination,
@@ -59,10 +59,10 @@ class MoveItemState extends Equatable {
 
   /// Candidatos cuyo nombre contiene [query], sin distinguir mayúsculas.
   List<MoveCandidate> get visible {
-    final needle = query.trim().toLowerCase();
+    final String needle = query.trim().toLowerCase();
     return needle.isEmpty
         ? candidates
-        : candidates.where((candidate) => candidate.item.name.toLowerCase().contains(needle)).toList();
+        : candidates.where((MoveCandidate candidate) => candidate.item.name.toLowerCase().contains(needle)).toList();
   }
 
   MoveItemState copyWith({
@@ -84,7 +84,7 @@ class MoveItemState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, item, candidates, query, error, destination];
+  List<Object?> get props => <Object?>[status, item, candidates, query, error, destination];
 }
 
 /// Elegir el contenedor al que se mueve un objeto (Cubit, §11.1). Los
@@ -113,20 +113,20 @@ class MoveItemCubit extends Cubit<MoveItemState> {
 
   void _onTree(ItemTree tree) {
     _tree = tree;
-    final item = tree[itemId];
+    final HouseholdItem? item = tree[itemId];
     if (item == null) {
       emit(MoveItemState(status: MoveItemStatus.missing, query: state.query));
       return;
     }
-    final height = tree.heightOf(itemId);
+    final int height = tree.heightOf(itemId);
     emit(
       state.copyWith(
         status: state.status == MoveItemStatus.loading || state.status == MoveItemStatus.missing
             ? MoveItemStatus.ready
             : null,
         item: item,
-        candidates: [
-          for (final candidate in tree.items)
+        candidates: <MoveCandidate>[
+          for (final HouseholdItem candidate in tree.items)
             if (candidate.id != itemId && !tree.isInside(candidate.id, ancestorId: itemId))
               MoveCandidate(
                 item: candidate,

@@ -17,8 +17,8 @@ class AddEventScreen extends StatefulWidget {
 }
 
 class _AddEventScreenState extends State<AddEventScreen> {
-  final _title = TextEditingController();
-  final _description = TextEditingController();
+  final TextEditingController _title = TextEditingController();
+  final TextEditingController _description = TextEditingController();
 
   @override
   void dispose() {
@@ -29,22 +29,22 @@ class _AddEventScreenState extends State<AddEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.addEvent;
+    final ItemTrackerTranslations$itemTracker$addEvent$es t = itemTrackerStrings.itemTracker.addEvent;
     return Scaffold(
       appBar: AppBar(title: Text(t.title)),
       body: BlocConsumer<AddEventCubit, AddEventState>(
-        listener: (context, state) {
+        listener: (BuildContext context, AddEventState state) {
           if (state.status == AddEventStatus.saved) {
             context.pop();
           }
         },
-        builder: (context, state) {
-          final error = state.error;
+        builder: (BuildContext context, AddEventState state) {
+          final Object? error = state.error;
           String? fieldError(ValidationField field) =>
               error is ItemValidationException && error.field == field ? validationMessage(error) : null;
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
-            children: [
+            children: <Widget>[
               if (error != null && error is! ItemValidationException)
                 Text(errorMessage(error), style: TextStyle(color: Theme.of(context).colorScheme.error)),
               AppTextField(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:core_hardware/core_hardware.dart';
 import 'package:equatable/equatable.dart';
+import 'package:plugin_item_tracker/src/domain/entities/household_item.dart';
 
 import '../../domain/entities/physical_identifier.dart';
 import '../../domain/errors/item_tracker_exception.dart';
@@ -28,7 +29,7 @@ sealed class ScanOutcome extends Equatable {
   final bool fromScanner;
 
   @override
-  List<Object?> get props => [rawValue, type, fromScanner];
+  List<Object?> get props => <Object?>[rawValue, type, fromScanner];
 }
 
 final class ScanItemFound extends ScanOutcome {
@@ -37,7 +38,7 @@ final class ScanItemFound extends ScanOutcome {
   final String itemId;
 
   @override
-  List<Object?> get props => [...super.props, itemId];
+  List<Object?> get props => <Object?>[...super.props, itemId];
 }
 
 final class ScanItemNotFound extends ScanOutcome {
@@ -51,7 +52,7 @@ final class ScanIdentifierBound extends ScanOutcome {
   final String itemId;
 
   @override
-  List<Object?> get props => [...super.props, itemId];
+  List<Object?> get props => <Object?>[...super.props, itemId];
 }
 
 /// Modo asociar: el identificador ya estaba ligado a [boundItemId] (que puede
@@ -71,7 +72,7 @@ final class ScanBindRejected extends ScanOutcome {
   final bool sameItem;
 
   @override
-  List<Object?> get props => [...super.props, boundItemId, boundItemName, sameItem];
+  List<Object?> get props => <Object?>[...super.props, boundItemId, boundItemName, sameItem];
 }
 
 class ScanState extends Equatable {
@@ -118,7 +119,7 @@ class ScanState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [mode, cameraPermission, nfcStatus, nfcReading, lookingUp, outcome, notice];
+  List<Object?> get props => <Object?>[mode, cameraPermission, nfcStatus, nfcReading, lookingUp, outcome, notice];
 }
 
 sealed class ScanEvent {
@@ -213,13 +214,13 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     on<ScanNfcReadCancelled>(_onNfcReadCancelled);
     on<ScanManualSubmitted>(_onManualSubmitted);
     on<ScanOutcomeHandled>(_onOutcomeHandled);
-    on<ScanNoticeShown>((_, emit) => emit(state.copyWith(notice: () => null)));
+    on<ScanNoticeShown>((_, Emitter<ScanState> emit) => emit(state.copyWith(notice: () => null)));
     on<_ScanResultReceived>(_onResult);
     on<_ScanErrorReceived>(_onError);
   }
 
   /// Lecturas de cámara iguales dentro de este intervalo se ignoran.
-  static const duplicateWindow = Duration(seconds: 2);
+  static const Duration duplicateWindow = Duration(seconds: 2);
 
   /// Objeto al que se asocian las lecturas; `null` fuera del modo asociar.
   final String? bindToItemId;
@@ -239,7 +240,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
 
   /// Lecturas de cámara ya rechazadas en modo asociar: no se reintentan
   /// mientras el código siga en el encuadre.
-  final Set<String> _rejectedKeys = {};
+  final Set<String> _rejectedKeys = <String>{};
 
   /// Escáner de cámara activo, para que la pantalla muestre su preview.
   CameraIdentifierScanner? get cameraScanner => _camera;
@@ -259,11 +260,11 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   Future<void> _enterMode(ScanMode mode, Emitter<ScanState> emit) async {
     switch (mode) {
       case ScanMode.camera:
-        final permission = await _permissions.cameraStatus();
+        final HardwarePermissionStatus permission = await _permissions.cameraStatus();
         emit(state.copyWith(cameraPermission: permission));
         await _startCameraIfAllowed();
       case ScanMode.nfc:
-        final nfc = _ensureNfc();
+        final NfcIdentifierScanner nfc = _ensureNfc();
         emit(state.copyWith(nfcStatus: await nfc.checkHardware()));
       case ScanMode.manual:
         break;
@@ -296,9 +297,9 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
       _resolve(event.rawValue.trim(), event.type, emit, fromScanner: false);
 
   Future<void> _onResult(_ScanResultReceived event, Emitter<ScanState> emit) async {
-    final result = event.result;
-    final type = identifierTypeFromScan(result.type);
-    final key = '${type.name}:${result.rawValue}';
+    final PhysicalScanResult result = event.result;
+    final IdentifierType type = identifierTypeFromScan(result.type);
+    final String key = '${type.name}:${result.rawValue}';
     if (state.lookingUp || state.outcome != null) {
       return;
     }
@@ -306,8 +307,8 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     // encuadre (también al volver de otra pantalla). En NFC cada lectura es
     // una acción explícita del usuario, así que no se deduplica.
     if (result.type != ScanType.nfc) {
-      final now = _now();
-      final last = _lastAccepted;
+      final DateTime now = _now();
+      final ({DateTime at, String key})? last = _lastAccepted;
       if (_rejectedKeys.contains(key) ||
           (last != null && last.key == key && now.difference(last.at) < duplicateWindow)) {
         return;
@@ -331,7 +332,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   }) async {
     emit(state.copyWith(lookingUp: true));
     try {
-      final outcome = await _outcomeFor(rawValue, type, fromScanner: fromScanner);
+      final ScanOutcome outcome = await _outcomeFor(rawValue, type, fromScanner: fromScanner);
       if (outcome is ScanBindRejected && fromCamera) {
         _rejectedKeys.add('${type.name}:$rawValue');
       }
@@ -347,15 +348,15 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   }
 
   Future<ScanOutcome> _outcomeFor(String rawValue, IdentifierType type, {required bool fromScanner}) async {
-    final itemId = bindToItemId;
+    final String? itemId = bindToItemId;
     if (itemId == null) {
-      final item = await _find(rawValue: rawValue, type: type);
+      final HouseholdItem? item = await _find(rawValue: rawValue, type: type);
       return item == null
           ? ScanItemNotFound(rawValue: rawValue, type: type, fromScanner: fromScanner)
           : ScanItemFound(itemId: item.id, rawValue: rawValue, type: type, fromScanner: fromScanner);
     }
     try {
-      final identifier = await _bind!(itemId, rawValue: rawValue, type: type);
+      final PhysicalIdentifier identifier = await _bind!(itemId, rawValue: rawValue, type: type);
       return ScanIdentifierBound(
         itemId: itemId,
         rawValue: identifier.rawValue,
@@ -363,7 +364,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
         fromScanner: fromScanner,
       );
     } on IdentifierAlreadyBoundException catch (error) {
-      final boundItem = await _find(rawValue: error.rawValue, type: error.type);
+      final HouseholdItem? boundItem = await _find(rawValue: error.rawValue, type: error.type);
       return ScanBindRejected(
         boundItemId: error.boundItemId,
         boundItemName: boundItem?.name ?? '',
@@ -383,7 +384,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   }
 
   void _onError(_ScanErrorReceived event, Emitter<ScanState> emit) {
-    final code = event.error.code;
+    final ScanErrorCode code = event.error.code;
     if (event.fromNfc) {
       emit(
         switch (code) {
@@ -408,9 +409,9 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     if (state.mode != ScanMode.camera || state.cameraPermission != HardwarePermissionStatus.granted) {
       return;
     }
-    final camera = _camera ??= _cameraFactory();
+    final CameraIdentifierScanner camera = _camera ??= _cameraFactory();
     _cameraSubscription ??= camera.scanStream.listen(
-      (result) => add(_ScanResultReceived(result)),
+      (PhysicalScanResult result) => add(_ScanResultReceived(result)),
       onError: (Object error) {
         if (error is ScanException) {
           add(_ScanErrorReceived(error, fromNfc: false));
@@ -421,9 +422,9 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
   }
 
   NfcIdentifierScanner _ensureNfc() {
-    final nfc = _nfc ??= _nfcFactory();
+    final NfcIdentifierScanner nfc = _nfc ??= _nfcFactory();
     _nfcSubscription ??= nfc.scanStream.listen(
-      (result) => add(_ScanResultReceived(result)),
+      (PhysicalScanResult result) => add(_ScanResultReceived(result)),
       onError: (Object error) {
         if (error is ScanException) {
           add(_ScanErrorReceived(error, fromNfc: true));

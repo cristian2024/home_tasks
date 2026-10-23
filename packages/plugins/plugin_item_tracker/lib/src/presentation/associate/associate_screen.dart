@@ -2,6 +2,8 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plugin_item_tracker/src/domain/entities/household_item.dart';
+import 'package:plugin_item_tracker/src/domain/entities/physical_identifier.dart';
 
 import '../../domain/errors/item_tracker_exception.dart';
 import '../../i18n/strings.g.dart';
@@ -16,24 +18,24 @@ class AssociateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.associate;
-    final cubit = context.read<AssociateCubit>();
-    final identifier = cubit.identifier;
+    final ItemTrackerTranslations$itemTracker$associate$es t = itemTrackerStrings.itemTracker.associate;
+    final AssociateCubit cubit = context.read<AssociateCubit>();
+    final ({String rawValue, IdentifierType type}) identifier = cubit.identifier;
     return Scaffold(
       appBar: AppBar(title: Text(t.title)),
       body: BlocConsumer<AssociateCubit, AssociateState>(
-        listener: (context, state) {
-          final boundItem = state.boundItem;
+        listener: (BuildContext context, AssociateState state) {
+          final HouseholdItem? boundItem = state.boundItem;
           if (state.status == AssociateStatus.bound && boundItem != null) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.success(name: boundItem.name))));
             context.pop(boundItem.id);
           }
         },
-        builder: (context, state) {
-          final error = state.error;
+        builder: (BuildContext context, AssociateState state) {
+          final Object? error = state.error;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+            children: <Widget>[
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: AppCard(
@@ -46,9 +48,9 @@ class AssociateScreen extends StatelessWidget {
                   child: Wrap(
                     crossAxisAlignment: WrapCrossAlignment.center,
                     spacing: AppSpacing.sm,
-                    children: [
+                    children: <Widget>[
                       Text(errorMessage(error), style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                      if (error case IdentifierAlreadyBoundException(:final boundItemId))
+                      if (error case IdentifierAlreadyBoundException(:final String boundItemId))
                         AppButton(
                           label: itemTrackerStrings.itemTracker.errors.openBoundItem,
                           variant: AppButtonVariant.text,
@@ -72,7 +74,7 @@ class AssociateScreen extends StatelessWidget {
                     ? AppStatusView(icon: Icons.search_off, title: t.empty)
                     : ItemCardList(
                         items: state.results,
-                        semanticLabelBuilder: (item) => t.select(name: item.name),
+                        semanticLabelBuilder: (HouseholdItem item) => t.select(name: item.name),
                         onSelected: state.status == AssociateStatus.binding ? null : cubit.bind,
                       ),
               ),

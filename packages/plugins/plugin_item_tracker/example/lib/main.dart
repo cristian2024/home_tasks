@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:core_di/core_di.dart';
@@ -17,17 +18,20 @@ import 'src/example_app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final locator = ServiceLocator.instance;
-  final plugin = ItemTrackerPlugin(locator: locator);
-  final directory = await getApplicationDocumentsDirectory();
-  final isar = await LocalDatabase.open(directory: directory.path, contributors: [plugin]);
+  final ServiceLocator locator = ServiceLocator.instance;
+  final ItemTrackerPlugin plugin = ItemTrackerPlugin(locator: locator);
+  final Directory directory = await getApplicationDocumentsDirectory();
+  final Isar isar = await LocalDatabase.open(
+    directory: directory.path,
+    contributors: <StorageSchemaContributor>[plugin],
+  );
   locator
     ..registerSingleton<Isar>(isar)
-    ..registerSingleton<EventBus>(EventBus(), dispose: (bus) => bus.dispose())
+    ..registerSingleton<EventBus>(EventBus(), dispose: (EventBus bus) => bus.dispose())
     ..registerSingleton<IdGenerator>(const UuidV4Generator())
     ..registerSingleton<Clock>(const SystemClock());
 
-  final localization = LocalizationCoordinator.instance;
+  final LocalizationCoordinator localization = LocalizationCoordinator.instance;
   localization.setLanguage(LocalizationCoordinator.resolveLanguage(PlatformDispatcher.instance.locales));
   await plugin.initialize();
 
