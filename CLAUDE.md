@@ -86,7 +86,8 @@
   - `lib/bootstrap.dart`: arranque testeable (`bootstrapApp`).
   - `lib/plugins/plugin_controller.dart`: estado de los plugins para inicio, catálogo y guard.
   - `lib/navigation/`: router y `PluginRouteGuard`.
-  - `lib/home/` y `lib/catalog/`.
+  - `lib/home/`, `lib/catalog/` y `lib/settings/` (configuración: tema, idioma, acceso al catálogo).
+- **Preferencias de la app** (tema, idioma): `shared_preferences` vía `AppSettingsRepository`, nunca en Isar (la base de datos es de los plugins). `bootstrapApp` recibe `systemLanguageCode` y aplica el idioma guardado si el usuario fijó uno. En tests, `InMemoryAppSettingsRepository` (`test/helpers/`) o `SharedPreferences.setMockInitialValues`.
 - **Añadir un plugin:**
   1. Añadir la dependencia en `apps/app/pubspec.yaml`.
   2. Añadir una `PluginFactory` en `appPluginFactories`. La factoría debe registrar las traducciones del plugin (como `registerLocalization()` de item_tracker).
