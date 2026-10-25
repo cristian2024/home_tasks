@@ -1,27 +1,33 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/src/data/mappers/item_data_mapper.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_household_item.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_item_event.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_physical_identifier.dart';
 
 import '../helpers/domain_fixtures.dart';
 
 void main() {
   test('HouseholdItem ida y vuelta, con metadatos JSON (ejemplo del §9.3)', () {
-    final original = item(
+    final HouseholdItem original = item(
       description: 'Ubicada en el estante superior.',
-      metadata: ItemMetadata({'color_etiqueta': 'Azul', 'peso_kg': 12.5, 'unidades': 3, 'fragil': false}),
+      metadata: ItemMetadata(
+        <String,
+        Object?>{'color_etiqueta': 'Azul', 'peso_kg': 12.5, 'unidades': 3, 'fragil': false},
+      ),
       updatedAt: t0.add(const Duration(minutes: 30)),
     );
 
-    final model = ItemDataMapper.toIsarItem(original);
+    final IsarHouseholdItem model = ItemDataMapper.toIsarItem(original);
 
     expect(model.metadataJson, '{"color_etiqueta":"Azul","peso_kg":12.5,"unidades":3,"fragil":false}');
     expect(ItemDataMapper.fromIsarItem(model), original);
   });
 
   test('HouseholdItem conserva el contenedor (parentId) en ambos sentidos', () {
-    final original = item(parentId: 'organizer');
+    final HouseholdItem original = item(parentId: 'organizer');
 
-    final model = ItemDataMapper.toIsarItem(original);
+    final IsarHouseholdItem model = ItemDataMapper.toIsarItem(original);
 
     expect(model.parentId, 'organizer');
     expect(ItemDataMapper.fromIsarItem(model), original);
@@ -29,13 +35,13 @@ void main() {
   });
 
   test('PhysicalIdentifier ida y vuelta', () {
-    final original = identifier(type: IdentifierType.barcode, rawValue: '049000000443');
+    final PhysicalIdentifier original = identifier(type: IdentifierType.barcode, rawValue: '049000000443');
 
     expect(ItemDataMapper.fromIsarIdentifier(ItemDataMapper.toIsarIdentifier(original)), original);
   });
 
   test('ItemEvent ida y vuelta', () {
-    final original = ItemEvent(
+    final ItemEvent original = ItemEvent(
       id: 'e1',
       itemId: 'item-1',
       kind: ItemEventKind.identifierBound,
@@ -48,16 +54,16 @@ void main() {
   });
 
   test('las fechas leídas en hora local se convierten a UTC', () {
-    final local = t0.toLocal();
-    final itemModel = ItemDataMapper.toIsarItem(item())
+    final DateTime local = t0.toLocal();
+    final IsarHouseholdItem itemModel = ItemDataMapper.toIsarItem(item())
       ..createdAt = local
       ..updatedAt = local;
-    final identifierModel = ItemDataMapper.toIsarIdentifier(identifier())..boundAt = local;
-    final eventModel = ItemDataMapper.toIsarEvent(
+    final IsarPhysicalIdentifier identifierModel = ItemDataMapper.toIsarIdentifier(identifier())..boundAt = local;
+    final IsarItemEvent eventModel = ItemDataMapper.toIsarEvent(
       ItemEvent(id: 'e', itemId: 'i', kind: ItemEventKind.note, title: 't', description: '', timestamp: t0),
     )..timestamp = local;
 
-    final mappedItem = ItemDataMapper.fromIsarItem(itemModel);
+    final HouseholdItem mappedItem = ItemDataMapper.fromIsarItem(itemModel);
     expect(mappedItem.createdAt.isUtc && mappedItem.updatedAt.isUtc, isTrue);
     expect(mappedItem.createdAt, t0);
     expect(ItemDataMapper.fromIsarIdentifier(identifierModel).boundAt.isUtc, isTrue);
@@ -65,7 +71,7 @@ void main() {
   });
 
   test('las fechas se escriben en UTC aunque lleguen en hora local', () {
-    final model = ItemDataMapper.toIsarItem(item(updatedAt: t0.toLocal()));
+    final IsarHouseholdItem model = ItemDataMapper.toIsarItem(item(updatedAt: t0.toLocal()));
 
     expect(model.updatedAt.isUtc, isTrue);
   });

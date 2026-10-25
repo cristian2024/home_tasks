@@ -29,20 +29,20 @@ class CreateItem {
   Future<HouseholdItem> call({
     required String name,
     String description = '',
-    Map<String, Object?> metadata = const {},
+    Map<String, Object?> metadata = const <String, Object?>{},
     IdentifierInput? identifier,
     String? parentId,
   }) async {
     HouseholdItem? parent;
     if (parentId != null) {
-      final tree = ItemTree(await _repository.getAll());
+      final ItemTree tree = ItemTree(await _repository.getAll());
       parent = tree[parentId] ?? (throw ItemNotFoundException(parentId));
       if (!_policy.allows(parentDepth: tree.depthOf(parentId), subtreeHeight: 1)) {
         throw ItemContainmentTooDeepException(_policy.maxDepth);
       }
     }
 
-    final item = HouseholdItem(
+    final HouseholdItem item = HouseholdItem(
       id: _ids.newId(),
       name: ItemValidator.name(name),
       description: ItemValidator.description(description),
@@ -54,8 +54,8 @@ class CreateItem {
 
     PhysicalIdentifier? bound;
     if (identifier != null) {
-      final rawValue = ItemValidator.identifierValue(identifier.rawValue);
-      final existing = await _repository.findIdentifier(rawValue, identifier.type);
+      final String rawValue = ItemValidator.identifierValue(identifier.rawValue);
+      final PhysicalIdentifier? existing = await _repository.findIdentifier(rawValue, identifier.type);
       if (existing != null) {
         throw IdentifierAlreadyBoundException(
           rawValue: rawValue,
@@ -75,7 +75,7 @@ class CreateItem {
     await _repository.createItem(
       item,
       identifier: bound,
-      events: [
+      events: <ItemEvent>[
         ItemEvent(
           id: _ids.newId(),
           itemId: item.id,

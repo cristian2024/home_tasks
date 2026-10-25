@@ -10,7 +10,7 @@ abstract final class ItemValidator {
   /// Igual que el límite del §8.2 para valores escaneados.
   static const int maxIdentifierLength = 2048;
 
-  static final _controlCharacters = RegExp(r'[\x00-\x1F\x7F]');
+  static final RegExp _controlCharacters = RegExp(r'[\x00-\x1F\x7F]');
 
   /// Nombre obligatorio, sin espacios sobrantes.
   static String name(String value) =>

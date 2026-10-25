@@ -20,7 +20,7 @@ class PhysicalIdentifier extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, rawValue, type, itemId, boundAt];
+  List<Object?> get props => <Object?>[id, rawValue, type, itemId, boundAt];
 
   @override
   bool get stringify => true;

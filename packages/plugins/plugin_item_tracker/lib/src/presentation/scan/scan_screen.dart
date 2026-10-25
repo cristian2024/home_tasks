@@ -17,17 +17,17 @@ class ScanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.scan;
-    final binding = context.read<ScanBloc>().bindToItemId != null;
+    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final bool binding = context.read<ScanBloc>().bindToItemId != null;
     return Scaffold(
       appBar: AppBar(title: Text(binding ? t.bindTitle : t.title)),
       body: BlocConsumer<ScanBloc, ScanState>(
-        listenWhen: (previous, current) =>
+        listenWhen: (ScanState previous, ScanState current) =>
             previous.outcome != current.outcome || previous.notice != current.notice,
         listener: _onStateChanged,
-        builder: (context, state) => Column(
+        builder: (BuildContext context, ScanState state) => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: _ModeSelector(mode: state.mode),
@@ -52,11 +52,11 @@ class ScanScreen extends StatelessWidget {
   }
 
   Future<void> _onStateChanged(BuildContext context, ScanState state) async {
-    final bloc = context.read<ScanBloc>();
-    final notice = state.notice;
+    final ScanBloc bloc = context.read<ScanBloc>();
+    final ScanNotice? notice = state.notice;
     if (notice != null) {
-      final t = itemTrackerStrings.itemTracker.scan;
-      final errors = itemTrackerStrings.itemTracker.errors;
+      final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+      final ItemTrackerTranslations$itemTracker$errors$es errors = itemTrackerStrings.itemTracker.errors;
       _showMessage(context, switch (notice) {
         ScanNotice.cameraError => t.cameraError,
         ScanNotice.readError => t.readError,
@@ -68,7 +68,7 @@ class ScanScreen extends StatelessWidget {
       bloc.add(const ScanNoticeShown());
     }
 
-    final outcome = state.outcome;
+    final ScanOutcome? outcome = state.outcome;
     if (outcome == null) {
       return;
     }
@@ -86,7 +86,7 @@ class ScanScreen extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
-    final identifier = (rawValue: outcome.rawValue, type: outcome.type);
+    final ({String rawValue, IdentifierType type}) identifier = (rawValue: outcome.rawValue, type: outcome.type);
     final String? itemId;
     switch (outcome) {
       case ScanItemFound():
@@ -130,19 +130,24 @@ class _ModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
     return Semantics(
       label: t.modeLabel,
       container: true,
       child: SegmentedButton<ScanMode>(
-        segments: [
-          ButtonSegment(value: ScanMode.camera, icon: const Icon(Icons.qr_code_scanner), label: Text(t.modeCamera)),
-          ButtonSegment(value: ScanMode.nfc, icon: const Icon(Icons.nfc), label: Text(t.modeNfc)),
-          ButtonSegment(value: ScanMode.manual, icon: const Icon(Icons.keyboard), label: Text(t.modeManual)),
+        segments: <ButtonSegment<ScanMode>>[
+          ButtonSegment<ScanMode>(
+            value: ScanMode.camera,
+            icon: const Icon(Icons.qr_code_scanner),
+            label: Text(t.modeCamera),
+          ),
+          ButtonSegment<ScanMode>(value: ScanMode.nfc, icon: const Icon(Icons.nfc), label: Text(t.modeNfc)),
+          ButtonSegment<ScanMode>(value: ScanMode.manual, icon: const Icon(Icons.keyboard), label: Text(t.modeManual)),
         ],
-        selected: {mode},
+        selected: <ScanMode>{mode},
         showSelectedIcon: false,
-        onSelectionChanged: (selection) => context.read<ScanBloc>().add(ScanModeChanged(selection.single)),
+        onSelectionChanged: (Set<ScanMode> selection) =>
+            context.read<ScanBloc>().add(ScanModeChanged(selection.single)),
       ),
     );
   }
@@ -155,9 +160,9 @@ class _CameraView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.scan;
-    final bloc = context.read<ScanBloc>();
-    final useManual = AppButton(
+    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ScanBloc bloc = context.read<ScanBloc>();
+    final AppButton useManual = AppButton(
       label: t.useManual,
       icon: Icons.keyboard,
       variant: AppButtonVariant.secondary,
@@ -168,12 +173,12 @@ class _CameraView extends StatelessWidget {
       null => const AppLoadingView(),
       HardwarePermissionStatus.granted => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          children: <Widget>[
             Expanded(
               child: ClipRect(
                 child: bloc.cameraScanner?.buildPreview(
                       context,
-                      errorBuilder: (context, error) => AppStatusView(
+                      errorBuilder: (BuildContext context, ScanException error) => AppStatusView(
                         icon: Icons.videocam_off,
                         title: t.cameraError,
                         action: useManual,
@@ -196,7 +201,7 @@ class _CameraView extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
-            children: [
+            children: <Widget>[
               AppButton(
                 label: t.grantPermission,
                 onPressed: () => bloc.add(const ScanCameraPermissionRequested()),
@@ -213,7 +218,7 @@ class _CameraView extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
-            children: [
+            children: <Widget>[
               AppButton(label: t.openSettings, onPressed: () => bloc.add(const ScanSettingsRequested())),
               useManual,
             ],
@@ -236,13 +241,13 @@ class _NfcView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.scan;
-    final bloc = context.read<ScanBloc>();
-    final alternatives = Wrap(
+    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ScanBloc bloc = context.read<ScanBloc>();
+    final Wrap alternatives = Wrap(
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       alignment: WrapAlignment.center,
-      children: [
+      children: <Widget>[
         AppButton(
           label: t.modeCamera,
           icon: Icons.qr_code_scanner,
@@ -300,7 +305,7 @@ class _ManualView extends StatefulWidget {
 }
 
 class _ManualViewState extends State<_ManualView> {
-  final _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
   IdentifierType _type = IdentifierType.qr;
   bool _showEmptyError = false;
 
@@ -311,7 +316,7 @@ class _ManualViewState extends State<_ManualView> {
   }
 
   void _submit() {
-    final value = _controller.text.trim();
+    final String value = _controller.text.trim();
     setState(() => _showEmptyError = value.isEmpty);
     if (value.isNotEmpty) {
       context.read<ScanBloc>().add(ScanManualSubmitted(rawValue: value, type: _type));
@@ -320,14 +325,14 @@ class _ManualViewState extends State<_ManualView> {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.scan;
-    final lookingUp = context.select<ScanBloc, bool>((bloc) => bloc.state.lookingUp);
-    final binding = context.read<ScanBloc>().bindToItemId != null;
+    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final bool lookingUp = context.select<ScanBloc, bool>((ScanBloc bloc) => bloc.state.lookingUp);
+    final bool binding = context.read<ScanBloc>().bindToItemId != null;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           AppTextField(
             label: t.manualLabel,
             hint: t.manualHint,
@@ -341,12 +346,12 @@ class _ManualViewState extends State<_ManualView> {
           const SizedBox(height: AppSpacing.md),
           AppSectionHeader(t.typeLabel),
           SegmentedButton<IdentifierType>(
-            segments: [
-              for (final type in IdentifierType.values)
-                ButtonSegment(value: type, label: Text(identifierTypeLabel(type))),
+            segments: <ButtonSegment<IdentifierType>>[
+              for (final IdentifierType type in IdentifierType.values)
+                ButtonSegment<IdentifierType>(value: type, label: Text(identifierTypeLabel(type))),
             ],
-            selected: {_type},
-            onSelectionChanged: (selection) => setState(() => _type = selection.single),
+            selected: <IdentifierType>{_type},
+            onSelectionChanged: (Set<IdentifierType> selection) => setState(() => _type = selection.single),
           ),
           const SizedBox(height: AppSpacing.lg),
           AppButton(

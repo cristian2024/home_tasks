@@ -25,7 +25,8 @@ abstract final class ItemTrackerRoutes {
   static String move(String itemId) => '${detail(itemId)}/move';
 
   /// Crear un objeto dentro de [parentId]. Al guardar hace `pop` con su ID.
-  static String createInside(String parentId) => Uri(path: create, queryParameters: {'parent': parentId}).toString();
+  static String createInside(String parentId) =>
+      Uri(path: create, queryParameters: <String, dynamic>{'parent': parentId}).toString();
 
   /// Escaneo en modo asociar: lo leído se asocia a [itemId]. Al terminar hace
   /// `pop` con el ID del objeto.
@@ -33,12 +34,15 @@ abstract final class ItemTrackerRoutes {
 
   /// [path] con el identificador en los query params.
   static String withIdentifier(String path, ({String rawValue, IdentifierType type}) identifier) =>
-      Uri(path: path, queryParameters: {'value': identifier.rawValue, 'type': identifier.type.name}).toString();
+      Uri(
+        path: path,
+        queryParameters: <String, dynamic>{'value': identifier.rawValue, 'type': identifier.type.name},
+      ).toString();
 
   /// Lee el identificador de los query params; `null` si falta o es inválido.
   static ({String rawValue, IdentifierType type})? identifierFrom(Map<String, String> query) {
-    final value = query['value'];
-    final type = IdentifierType.values.asNameMap()[query['type']];
+    final String? value = query['value'];
+    final IdentifierType? type = IdentifierType.values.asNameMap()[query['type']];
     if (value == null || value.isEmpty || type == null) {
       return null;
     }

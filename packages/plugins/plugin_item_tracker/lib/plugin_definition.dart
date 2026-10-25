@@ -68,7 +68,8 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         _cameraScannerFactory = cameraScannerFactory ?? MobileScannerCameraScanner.new,
         _nfcScannerFactory = nfcScannerFactory ?? NfcManagerScanner.new,
         _permissions = permissions ?? const PermissionHandlerPermissions(),
-        _repositoryFactory = repositoryFactory ?? ((locator) => IsarHouseholdItemRepository(locator.get<Isar>())),
+        _repositoryFactory =
+            repositoryFactory ?? ((ServiceLocator locator) => IsarHouseholdItemRepository(locator.get<Isar>())),
         _localization = localization ?? LocalizationCoordinator.instance;
 
   static const String pluginId = 'item_tracker';
@@ -100,7 +101,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '1.0.0';
+  String get version => '1.1.0';
 
   @override
   List<CollectionSchema<dynamic>> get storageSchemas => itemTrackerSchemas;
@@ -113,14 +114,23 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   /// Registra el idioma y las traducciones del plugin. La app lo llama al
   /// registrar el plugin, aunque esté desactivado, para que el catálogo pueda
   /// mostrar su nombre ([nameKey]). Es idempotente.
+  ///
+  /// La app reemplaza textos del plugin con
+  /// `LocalizationCoordinator.overrideTranslations(pluginId, …)`.
   void registerLocalization() {
     _localization.register(
       pluginId,
-      (code) => i18n.LocaleSettings.setLocaleRawSync(code),
-      translate: (key) {
-        final value = i18n.itemTrackerStrings[key];
+      (String code) => i18n.LocaleSettings.setLocaleRawSync(code),
+      translate: (String key) {
+        final Object? value = i18n.itemTrackerStrings[key];
         return value is String ? value : null;
       },
+      override: (String code, Map<String, Object?> overrides) =>
+          i18n.LocaleSettings.instance.overrideTranslationsFromMapSync(
+            locale: i18n.AppLocaleUtils.parse(code),
+            isFlatMap: false,
+            map: overrides,
+          ),
     );
   }
 
@@ -129,16 +139,17 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
     registerLocalization();
     await _locator.pushScope(
       pluginId,
-      init: (locator) {
-        final repository = _repositoryFactory(locator);
-        final ids = locator.isRegistered<IdGenerator>() ? locator.get<IdGenerator>() : const UuidV4Generator();
-        final clock = locator.isRegistered<Clock>() ? locator.get<Clock>() : const SystemClock();
+      init: (ServiceLocator locator) {
+        final HouseholdItemRepository repository = _repositoryFactory(locator);
+        final IdGenerator ids =
+            locator.isRegistered<IdGenerator>() ? locator.get<IdGenerator>() : const UuidV4Generator();
+        final Clock clock = locator.isRegistered<Clock>() ? locator.get<Clock>() : const SystemClock();
         final EventBus eventBus;
         if (locator.isRegistered<EventBus>()) {
           eventBus = locator.get<EventBus>();
         } else {
           eventBus = EventBus();
-          locator.registerSingleton(eventBus, dispose: (bus) => bus.dispose());
+          locator.registerSingleton(eventBus, dispose: (EventBus bus) => bus.dispose());
         }
         locator.registerSingleton(
           ItemTrackerDependencies(
@@ -174,16 +185,16 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
       ItemTrackerDashboardTile(watchItems: _dependencies.watchItems);
 
   @override
-  List<RouteBase> get routes => [
+  List<RouteBase> get routes => <RouteBase>[
         GoRoute(
           path: ItemTrackerRoutes.base,
           redirect: (_, _) => ItemTrackerRoutes.scan,
         ),
         GoRoute(
           path: ItemTrackerRoutes.scan,
-          builder: (context, state) {
-            final deps = _dependencies;
-            return BlocProvider(
+          builder: (BuildContext context, GoRouterState state) {
+            final ItemTrackerDependencies deps = _dependencies;
+            return BlocProvider<ScanBloc>(
               create: (_) => ScanBloc(
                 findItemByIdentifier: deps.findItemByIdentifier,
                 cameraScannerFactory: deps.cameraScannerFactory,
@@ -196,22 +207,22 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         ),
         GoRoute(
           path: ItemTrackerRoutes.items,
-          builder: (context, state) => BlocProvider(
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<ItemListCubit>(
             create: (_) => ItemListCubit(_dependencies.watchItemTree),
             child: const ItemListScreen(),
           ),
         ),
         GoRoute(
           path: ItemTrackerRoutes.notFound,
-          redirect: (_, state) =>
+          redirect: (_, GoRouterState state) =>
               ItemTrackerRoutes.identifierFrom(state.uri.queryParameters) == null ? ItemTrackerRoutes.scan : null,
-          builder: (context, state) =>
+          builder: (BuildContext context, GoRouterState state) =>
               NotFoundScreen(identifier: ItemTrackerRoutes.identifierFrom(state.uri.queryParameters)!),
         ),
         // `create` y `associate` van antes de `item/:id` para que no se tomen como un ID.
         GoRoute(
           path: ItemTrackerRoutes.create,
-          builder: (context, state) => BlocProvider(
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<ItemFormCubit>(
             create: (_) => ItemFormCubit.create(
               createItem: _dependencies.createItem,
               identifier: ItemTrackerRoutes.identifierFrom(state.uri.queryParameters),
@@ -223,9 +234,9 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         ),
         GoRoute(
           path: ItemTrackerRoutes.associate,
-          redirect: (_, state) =>
+          redirect: (_, GoRouterState state) =>
               ItemTrackerRoutes.identifierFrom(state.uri.queryParameters) == null ? ItemTrackerRoutes.scan : null,
-          builder: (context, state) => BlocProvider(
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<AssociateCubit>(
             create: (_) => AssociateCubit(
               identifier: ItemTrackerRoutes.identifierFrom(state.uri.queryParameters)!,
               searchItems: _dependencies.searchItems,
@@ -236,9 +247,9 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         ),
         GoRoute(
           path: ItemTrackerRoutes.detailPattern,
-          builder: (context, state) {
-            final deps = _dependencies;
-            return BlocProvider(
+          builder: (BuildContext context, GoRouterState state) {
+            final ItemTrackerDependencies deps = _dependencies;
+            return BlocProvider<ItemDetailCubit>(
               create: (_) => ItemDetailCubit(
                 state.pathParameters['id']!,
                 watchItem: deps.watchItem,
@@ -255,7 +266,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         ),
         GoRoute(
           path: ItemTrackerRoutes.editPattern,
-          builder: (context, state) => BlocProvider(
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<ItemFormCubit>(
             create: (_) => ItemFormCubit.edit(
               state.pathParameters['id']!,
               getItem: _dependencies.getItem,
@@ -266,14 +277,14 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         ),
         GoRoute(
           path: ItemTrackerRoutes.addEventPattern,
-          builder: (context, state) => BlocProvider(
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<AddEventCubit>(
             create: (_) => AddEventCubit(state.pathParameters['id']!, addItemEvent: _dependencies.addItemEvent),
             child: const AddEventScreen(),
           ),
         ),
         GoRoute(
           path: ItemTrackerRoutes.movePattern,
-          builder: (context, state) => BlocProvider(
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<MoveItemCubit>(
             create: (_) => MoveItemCubit(
               state.pathParameters['id']!,
               watchItemTree: _dependencies.watchItemTree,
@@ -285,9 +296,9 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         ),
         GoRoute(
           path: ItemTrackerRoutes.addIdentifierPattern,
-          builder: (context, state) {
-            final deps = _dependencies;
-            return BlocProvider(
+          builder: (BuildContext context, GoRouterState state) {
+            final ItemTrackerDependencies deps = _dependencies;
+            return BlocProvider<ScanBloc>(
               create: (_) => ScanBloc(
                 findItemByIdentifier: deps.findItemByIdentifier,
                 cameraScannerFactory: deps.cameraScannerFactory,

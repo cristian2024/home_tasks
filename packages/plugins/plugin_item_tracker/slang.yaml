@@ -11,3 +11,4 @@ enum_name: ItemTrackerLocale
 class_name: ItemTrackerTranslations
 # Carga diferida solo aporta en web; en móvil impide cambiar de idioma de forma síncrona.
 lazy: false
+translation_overrides: true

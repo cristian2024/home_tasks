@@ -6,7 +6,7 @@ import 'models/isar_physical_identifier.dart';
 
 /// Colecciones Isar del plugin. El plugin las expone como
 /// `StorageSchemaContributor` para que la app abra la base con ellas.
-const List<CollectionSchema<dynamic>> itemTrackerSchemas = [
+const List<CollectionSchema<dynamic>> itemTrackerSchemas = <CollectionSchema<dynamic>>[
   IsarHouseholdItemSchema,
   IsarPhysicalIdentifierSchema,
   IsarItemEventSchema,
