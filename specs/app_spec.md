@@ -929,6 +929,14 @@ Slang no usa la sintaxis ICU (`{count, plural, ...}`): los plurales se declaran 
 
 - **Prevención de Colisiones**: Todas las claves dentro de un plugin **DEBEN** estar encerradas bajo un espacio de nombres correspondiente al ID del plugin (ej. `item_tracker`).
 
+### 13.2. Textos reemplazados por la app
+La app que consume los paquetes decide los textos visibles; cada paquete conserva sus JSON como contrato y valor por defecto.
+- **Orden de búsqueda:** el texto que reemplaza la app y, si no lo reemplaza, el del JSON del paquete.
+- **Archivos:** `apps/app/assets/i18n/<paquete>/<idioma>.json`, donde `<paquete>` es el nombre con que se registra en `LocalizationCoordinator` (`core_ui`, `item_tracker`). Siguen la estructura de los JSON del paquete y llevan **solo las claves que cambian** (`{}` si no cambia ninguna).
+- **Mecanismo:** cada paquete activa `translation_overrides: true` en su `slang.yaml` y pasa `override:` al registrarse. La app llama a `LocalizationCoordinator.overrideTranslations(paquete, idioma, mapa)` desde `bootstrapApp` (`lib/i18n/translation_overrides.dart`); se puede llamar antes de que el paquete se registre. La app nunca usa el slang de otro paquete directamente.
+- **Límites:** solo se reemplazan idiomas soportados (`es`, `en`); una clave nueva primero debe existir en el paquete, porque su código la usa. Un archivo inválido se ignora en ejecución y el paquete muestra sus propios textos.
+- **Validación:** slang no comprueba los reemplazos al compilar. `apps/app/test/translation_overrides_test.dart` verifica que cada clave reemplazada existe en el JSON del paquete, con el mismo tipo y los mismos parámetros (`{name}`).
+
 ---
 
 ## 14. Accesibilidad (a11y)
