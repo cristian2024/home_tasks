@@ -15,13 +15,16 @@ import 'helpers/in_memory_app_settings_repository.dart';
 /// directorio) y comprobar que el plugin sigue desactivado y sus datos
 /// intactos.
 void main() {
-  // bootstrapApp lee de rootBundle los textos que la app reemplaza.
-  TestWidgetsFlutterBinding.ensureInitialized();
-
   late Directory directory;
   late InMemoryAppSettingsRepository settings;
 
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
+    // bootstrapApp lee de rootBundle los textos que la app reemplaza. El
+    // binding de test responde 400 a toda petición HTTP, así que se inicia
+    // después de descargar libisar (en CI no está en caché).
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
   setUp(() {
     directory = Directory.systemTemp.createTempSync('ac02');
     settings = InMemoryAppSettingsRepository();
