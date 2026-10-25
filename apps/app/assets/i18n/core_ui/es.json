@@ -1,1 +1,13 @@
-{}
+{
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "retry": "Reintentar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "loading": "Cargando…",
+    "unexpected_error": "Ocurrió un error inesperado.",
+    "required_field": "Este campo es obligatorio."
+  }
+}
