@@ -41,6 +41,18 @@
 - **Tipos explícitos:** tipar siempre las variables (`final String name = …`, no `final name = …`). La regla `always_specify_types` está como warning mientras se tipa el código existente: aplicarla en todo archivo nuevo o que se modifique, sin reescribir código ajeno solo por esto. Cuando queden pocos casos se quitará de `toleratedCodes` en `tool/analyze.dart` y será obligatoria.
 - **Sin funciones que devuelven widgets:** evitar métodos como `Widget _buildX()` o `List<Widget> _section()`; extraer una clase de widget (privada si solo divide una pantalla). No hay lint de Dart para esto: se revisa a mano.
 - **Widgets reutilizables agnósticos:** un widget con una función concreta que pueda usarse en otro sitio recibe por parámetros todo lo que necesita y devuelve resultados con callbacks. No usa cubits ni blocs, navegación, diálogos ni snackbars: eso lo hace la screen, que los conecta. Las partes privadas en que se divide una screen para leerla mejor (`_DetailBody`, `_CameraView`…) son parte de la screen.
+- **Versión y CHANGELOG por paquete (§5.3):** toda rama que cambie un paquete (o `apps/app`) sube su `version:` y añade una entrada a su `CHANGELOG.md`. Se adopta poco a poco: el primer cambio a un paquete que aún no tiene CHANGELOG lo crea. Las apps de `example/`, `tool/` y la raíz no llevan.
+  - **SemVer.** En `0.x.y`, un cambio incompatible sube el minor (`0.1.0` → `0.2.0`) y cualquier otro el patch (`0.1.0` → `0.1.1`). A partir de `1.0.0`, major / minor / patch. En `apps/app` se sube además el build (`+n`).
+  - **Formato:** una entrada por rama, `## <versión> - <AAAA-MM-DD>`, con los cambios agrupados por tipo, en este orden y omitiendo los vacíos:
+    - `Añadido`: funcionalidad nueva.
+    - `Cambiado`: cambios en algo que ya existía.
+    - `Obsoleto`: lo que se eliminará en una versión futura.
+    - `Eliminado`: lo que se quitó.
+    - `Corregido`: errores arreglados.
+    - `Seguridad`: vulnerabilidades corregidas.
+    - `Interno`: refactors, tests o tooling sin cambio de comportamiento (p. ej. tipos explícitos).
+  - Cada cambio es una línea que dice qué cambia para quien usa el paquete. Los incompatibles empiezan por `**Incompatible:**`.
+  - En un plugin, `HomePlugin.version` coincide con la `version:` de su `pubspec.yaml`.
 
 ---
 

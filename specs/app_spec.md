@@ -255,6 +255,27 @@ melos:
 - **Código generado**: los `*.g.dart` (Isar y slang) no se versionan. `melos bs` los genera al terminar, y `melos run gen` los regenera tras cambiar un modelo o un JSON de traducciones.
 - **`build_runner` y apps de ejemplo**: un paquete con `build_runner` y `example/` necesita un `build.yaml` que excluya `example/**`. Si no, build_runner sigue `example/ios/.symlinks` hasta `~/.pub-cache` y borra archivos generados de otros paquetes.
 - **`tool/analyze.dart`**: ejecuta `dart analyze` y falla con cualquier diagnóstico (como `--fatal-infos`) salvo los de las reglas en adopción gradual (`toleratedCodes`), que solo cuenta por proyecto. Hoy es `always_specify_types`; cuando queden pocos casos se quita de la lista y pasa a ser obligatoria.
+- **Versiones y CHANGELOG**: cada paquete y `apps/app` siguen [SemVer](https://semver.org/lang/es/) en la `version:` de su `pubspec.yaml` y llevan un `CHANGELOG.md` en su raíz (las apps de `example/`, `tool/` y la raíz no). Toda rama que cambie un paquete sube su versión y añade una entrada; el primer cambio a un paquete sin CHANGELOG lo crea. En `0.x.y`, un cambio incompatible sube el minor y cualquier otro el patch; en `apps/app` también sube el build (`+n`). En un plugin, `HomePlugin.version` coincide con la versión del `pubspec.yaml`. Formato, basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), con los tipos en este orden y omitiendo los vacíos:
+
+```markdown
+# Changelog
+
+## 0.2.0 - 2026-10-24
+
+### Añadido        <!-- funcionalidad nueva -->
+- Reemplazo de traducciones con `LocalizationCoordinator.overrideTranslations`.
+
+### Cambiado       <!-- cambios en algo que ya existía -->
+- **Incompatible:** <qué cambia y cómo adaptarse>.
+
+### Obsoleto       <!-- se eliminará en una versión futura -->
+### Eliminado      <!-- lo que se quitó -->
+### Corregido      <!-- errores arreglados -->
+### Seguridad      <!-- vulnerabilidades corregidas -->
+
+### Interno        <!-- refactors, tests o tooling sin cambio de comportamiento -->
+- Tipos explícitos en todo el paquete.
+```
 
 #### `analysis_options.yaml` (Raíz)
 ```yaml
