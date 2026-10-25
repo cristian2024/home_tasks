@@ -69,13 +69,13 @@ Future<AppEnvironment> bootstrapApp({
   List<PluginFactory> pluginFactories = appPluginFactories,
   String databaseName = Isar.defaultName,
 }) async {
-  final services = locator ?? ServiceLocator.instance;
-  final l10n = localization ?? LocalizationCoordinator.instance;
+  final ServiceLocator services = locator ?? ServiceLocator.instance;
+  final LocalizationCoordinator l10n = localization ?? LocalizationCoordinator.instance;
   l10n.register(
     'app',
-    (code) => i18n.LocaleSettings.setLocaleRawSync(code),
-    translate: (key) {
-      final value = i18n.appStrings[key];
+    (String code) => i18n.LocaleSettings.setLocaleRawSync(code),
+    translate: (String key) {
+      final Object? value = i18n.appStrings[key];
       return value is String ? value : null;
     },
   );
@@ -89,28 +89,28 @@ Future<AppEnvironment> bootstrapApp({
   );
 
   services
-    ..registerSingleton<EventBus>(EventBus(), dispose: (bus) => bus.dispose())
+    ..registerSingleton<EventBus>(EventBus(), dispose: (EventBus bus) => bus.dispose())
     ..registerSingleton<IdGenerator>(const UuidV4Generator())
     ..registerSingleton<Clock>(const SystemClock());
 
-  final registry = createPluginRegistry(
+  final PluginRegistry registry = createPluginRegistry(
     locator: services,
     localization: l10n,
     factories: pluginFactories,
   );
 
-  final isar = await LocalDatabase.open(
+  final Isar isar = await LocalDatabase.open(
     directory: databaseDirectory,
     name: databaseName,
     contributors: registry.allPlugins.whereType<StorageSchemaContributor>(),
   );
   services.registerSingleton<Isar>(isar);
 
-  final plugins = PluginController(
+  final PluginController plugins = PluginController(
     PluginLifecycleManager(
       registry: registry,
       preferences: IsarPluginPreferenceRepository(isar),
-      onError: (pluginId, error, stackTrace) => developer.log(
+      onError: (String pluginId, Object error, StackTrace stackTrace) => developer.log(
         'El plugin $pluginId falló',
         name: 'home_utility_app',
         error: error,

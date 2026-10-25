@@ -8,7 +8,7 @@ class DemoData {
 
   /// Códigos sugeridos y qué deberían producir (genera un QR con el texto o
   /// escríbelo en el modo Código).
-  static const codes = [
+  static const List<(String, String)> codes = <(String, String)>[
     ('QR-123', 'QR de «Caja A»: abre su detalle (AC-03).'),
     ('UNKNOWN-99', 'QR sin registrar: ofrece crear o asociar (AC-04).'),
     ('QR-BED', 'QR de «Cama». Asocia después una etiqueta NFC a «Cama» (AC-05).'),
@@ -17,11 +17,11 @@ class DemoData {
 
   /// Crea los objetos que falten. Devuelve cuántos creó.
   Future<int> load() async {
-    var created = 0;
+    int created = 0;
     Future<void> create(
       String name, {
       String description = '',
-      Map<String, Object?> metadata = const {},
+      Map<String, Object?> metadata = const <String, Object?>{},
       required ({String rawValue, IdentifierType type}) identifier,
     }) async {
       try {
@@ -42,7 +42,7 @@ class DemoData {
     await create(
       'Caja de Almacenamiento Ropa Invierno',
       description: 'Ubicada en el estante superior del armario principal.',
-      metadata: {'color_etiqueta': 'Azul', 'peso_kg': 12.5, 'fragil': false},
+      metadata: <String, Object?>{'color_etiqueta': 'Azul', 'peso_kg': 12.5, 'fragil': false},
       identifier: (rawValue: '049000000443', type: IdentifierType.barcode),
     );
     return created;

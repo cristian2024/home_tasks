@@ -13,11 +13,11 @@ class ItemMetadata extends Equatable {
   static const int maxKeyLength = 64;
   static const int maxStringLength = 500;
 
-  static final _keyPattern = RegExp(r'^[a-z][a-z0-9_]*$');
+  static final RegExp _keyPattern = RegExp(r'^[a-z][a-z0-9_]*$');
 
   final Map<String, Object> values;
 
-  const ItemMetadata.empty() : values = const {};
+  const ItemMetadata.empty() : values = const <String, Object>{};
 
   const ItemMetadata._(this.values);
 
@@ -31,8 +31,8 @@ class ItemMetadata extends Equatable {
         detail: '${values.length} > $maxEntries',
       );
     }
-    final validated = <String, Object>{};
-    for (final MapEntry(:key, :value) in values.entries) {
+    final Map<String, Object> validated = <String, Object>{};
+    for (final MapEntry<String, Object?>(:String key, :Object? value) in values.entries) {
       if (key.length > maxKeyLength) {
         throw ItemValidationException(ValidationField.metadata, ValidationReason.tooLong, detail: key);
       }
@@ -55,13 +55,13 @@ class ItemMetadata extends Equatable {
           ),
       };
     }
-    return ItemMetadata._(Map.unmodifiable(validated));
+    return ItemMetadata._(Map<String, Object>.unmodifiable(validated));
   }
 
   bool get isEmpty => values.isEmpty;
 
   @override
-  List<Object?> get props => [values];
+  List<Object?> get props => <Object?>[values];
 
   @override
   bool get stringify => true;

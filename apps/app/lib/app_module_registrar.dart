@@ -14,7 +14,7 @@ typedef PluginFactory =
 
 /// Registro en tiempo de compilación de todos los plugins conocidos (§3.2).
 /// Para añadir un plugin: dependencia en `pubspec.yaml` y una entrada aquí.
-const List<PluginFactory> appPluginFactories = [_itemTracker];
+const List<PluginFactory> appPluginFactories = <PluginFactory>[_itemTracker];
 
 HomePlugin _itemTracker(
   ServiceLocator locator,
@@ -29,8 +29,8 @@ PluginRegistry createPluginRegistry({
   required LocalizationCoordinator localization,
   List<PluginFactory> factories = appPluginFactories,
 }) {
-  final registry = PluginRegistry();
-  for (final factory in factories) {
+  final PluginRegistry registry = PluginRegistry();
+  for (final PluginFactory factory in factories) {
     registry.register(factory(locator, localization));
   }
   return registry;

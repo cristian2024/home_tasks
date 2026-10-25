@@ -2,6 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plugin_item_tracker/src/domain/entities/household_item.dart';
 
 import '../../i18n/strings.g.dart';
 import '../common/item_tracker_l10n.dart';
@@ -15,11 +16,11 @@ class MoveItemScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.move;
-    final cubit = context.read<MoveItemCubit>();
+    final ItemTrackerTranslations$itemTracker$move$es t = itemTrackerStrings.itemTracker.move;
+    final MoveItemCubit cubit = context.read<MoveItemCubit>();
     return BlocConsumer<MoveItemCubit, MoveItemState>(
-      listener: (context, state) {
-        final destination = state.destination;
+      listener: (BuildContext context, MoveItemState state) {
+        final HouseholdItem? destination = state.destination;
         if (state.status == MoveItemStatus.moved && destination != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -27,10 +28,12 @@ class MoveItemScreen extends StatelessWidget {
           context.pop(destination.id);
         }
       },
-      builder: (context, state) {
-        final item = state.item;
-        final error = state.error;
-        final candidates = {for (final candidate in state.visible) candidate.item.id: candidate};
+      builder: (BuildContext context, MoveItemState state) {
+        final HouseholdItem? item = state.item;
+        final Object? error = state.error;
+        final Map<String, MoveCandidate> candidates = <String, MoveCandidate>{
+          for (final MoveCandidate candidate in state.visible) candidate.item.id: candidate,
+        };
         return Scaffold(
           appBar: AppBar(title: Text(item == null ? itemTrackerStrings.itemTracker.detail.move : t.title(name: item.name))),
           body: switch (state.status) {
@@ -42,7 +45,7 @@ class MoveItemScreen extends StatelessWidget {
               ),
             _ => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+                children: <Widget>[
                   if (error != null)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 0),
@@ -61,20 +64,22 @@ class MoveItemScreen extends StatelessWidget {
                     child: candidates.isEmpty
                         ? AppStatusView(icon: Icons.search_off, title: t.empty)
                         : ItemCardList(
-                            items: [for (final candidate in candidates.values) candidate.item],
-                            semanticLabelBuilder: (container) => t.select(name: container.name),
-                            subtitleBuilder: (container) {
-                              final candidate = candidates[container.id]!;
-                              return [
+                            items: <HouseholdItem>[
+                              for (final MoveCandidate candidate in candidates.values) candidate.item,
+                            ],
+                            semanticLabelBuilder: (HouseholdItem container) => t.select(name: container.name),
+                            subtitleBuilder: (HouseholdItem container) {
+                              final MoveCandidate candidate = candidates[container.id]!;
+                              return <String>[
                                 formatItemPath(candidate.path),
                                 switch (candidate.block) {
                                   MoveBlock.current => t.current,
                                   MoveBlock.tooDeep => t.tooDeep(max: cubit.maxDepth),
                                   null => '',
                                 },
-                              ].where((line) => line.isNotEmpty).join('\n');
+                              ].where((String line) => line.isNotEmpty).join('\n');
                             },
-                            enabledBuilder: (container) => candidates[container.id]!.block == null,
+                            enabledBuilder: (HouseholdItem container) => candidates[container.id]!.block == null,
                             onSelected: state.status == MoveItemStatus.moving ? null : cubit.moveTo,
                           ),
                   ),

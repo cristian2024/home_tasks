@@ -1,4 +1,7 @@
 import 'package:core_storage/core_storage.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_household_item.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_item_event.dart';
+import 'package:plugin_item_tracker/src/data/models/isar_physical_identifier.dart';
 
 import '../../domain/entities/household_item.dart';
 import '../../domain/entities/item_event.dart';
@@ -24,19 +27,19 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
         () => _source.saveItemWithIdentifier(
           ItemDataMapper.toIsarItem(item),
           identifier: identifier == null ? null : ItemDataMapper.toIsarIdentifier(identifier),
-          events: [for (final event in events) ItemDataMapper.toIsarEvent(event)],
+          events: <IsarItemEvent>[for (final ItemEvent event in events) ItemDataMapper.toIsarEvent(event)],
         ),
       );
 
   @override
   Future<void> updateItem(HouseholdItem item, ItemEvent event) => _source.saveItemWithIdentifier(
         ItemDataMapper.toIsarItem(item),
-        events: [ItemDataMapper.toIsarEvent(event)],
+        events: <IsarItemEvent>[ItemDataMapper.toIsarEvent(event)],
       );
 
   @override
   Future<HouseholdItem?> getById(String id) async {
-    final model = await _source.getItem(id);
+    final IsarHouseholdItem? model = await _source.getItem(id);
     return model == null ? null : ItemDataMapper.fromIsarItem(model);
   }
 
@@ -46,16 +49,18 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
   @override
   Future<void> moveItem(HouseholdItem item, List<ItemEvent> events) => _source.saveItemWithIdentifier(
         ItemDataMapper.toIsarItem(item),
-        events: [for (final event in events) ItemDataMapper.toIsarEvent(event)],
+        events: <IsarItemEvent>[for (final ItemEvent event in events) ItemDataMapper.toIsarEvent(event)],
       );
 
   @override
   Stream<HouseholdItem?> watchById(String id) =>
-      _source.watchItem(id).map((model) => model == null ? null : ItemDataMapper.fromIsarItem(model));
+      _source
+          .watchItem(id)
+          .map((IsarHouseholdItem? model) => model == null ? null : ItemDataMapper.fromIsarItem(model));
 
   @override
   Stream<List<HouseholdItem>> watchAll() =>
-      _source.watchItems().map((models) => models.map(ItemDataMapper.fromIsarItem).toList());
+      _source.watchItems().map((List<IsarHouseholdItem> models) => models.map(ItemDataMapper.fromIsarItem).toList());
 
   @override
   Future<List<HouseholdItem>> searchByName(String query) async =>
@@ -63,20 +68,20 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
 
   @override
   Future<PhysicalIdentifier?> findIdentifier(String rawValue, IdentifierType type) async {
-    final model = await _source.findIdentifier(rawValue, type);
+    final IsarPhysicalIdentifier? model = await _source.findIdentifier(rawValue, type);
     return model == null ? null : ItemDataMapper.fromIsarIdentifier(model);
   }
 
   @override
   Future<PhysicalIdentifier?> getIdentifier(String id) async {
-    final model = await _source.getIdentifier(id);
+    final IsarPhysicalIdentifier? model = await _source.getIdentifier(id);
     return model == null ? null : ItemDataMapper.fromIsarIdentifier(model);
   }
 
   @override
   Stream<List<PhysicalIdentifier>> watchIdentifiers(String itemId) => _source
       .watchIdentifiers(itemId)
-      .map((models) => models.map(ItemDataMapper.fromIsarIdentifier).toList());
+      .map((List<IsarPhysicalIdentifier> models) => models.map(ItemDataMapper.fromIsarIdentifier).toList());
 
   @override
   Future<void> bindIdentifier(PhysicalIdentifier identifier, ItemEvent event) => _guardIdentifier(
@@ -96,7 +101,9 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
 
   @override
   Stream<List<ItemEvent>> watchEvents(String itemId) =>
-      _source.watchEvents(itemId).map((models) => models.map(ItemDataMapper.fromIsarEvent).toList());
+      _source
+          .watchEvents(itemId)
+          .map((List<IsarItemEvent> models) => models.map(ItemDataMapper.fromIsarEvent).toList());
 
   /// Traduce la violación del índice único (otra escritura asoció el mismo
   /// identificador entre la comprobación y la transacción) al error de dominio.
@@ -107,7 +114,7 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
       if (identifier == null || !_isUniqueViolation(error)) {
         rethrow;
       }
-      final existing = await _source.findIdentifier(identifier.rawValue, identifier.type);
+      final IsarPhysicalIdentifier? existing = await _source.findIdentifier(identifier.rawValue, identifier.type);
       throw IdentifierAlreadyBoundException(
         rawValue: identifier.rawValue,
         type: identifier.type,

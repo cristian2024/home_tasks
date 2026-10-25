@@ -21,20 +21,20 @@ class FakeHardware {
 
   final FakeHardwarePermissions permissions;
   HardwareStatus nfcStatus;
-  final List<FakeCameraScanner> cameras = [];
-  final List<FakeNfcScanner> nfcs = [];
+  final List<FakeCameraScanner> cameras = <FakeCameraScanner>[];
+  final List<FakeNfcScanner> nfcs = <FakeNfcScanner>[];
 
   FakeCameraScanner get camera => cameras.last;
   FakeNfcScanner get nfc => nfcs.last;
 
   CameraIdentifierScanner createCamera() {
-    final camera = FakeCameraScanner();
+    final FakeCameraScanner camera = FakeCameraScanner();
     cameras.add(camera);
     return camera;
   }
 
   NfcIdentifierScanner createNfc() {
-    final nfc = FakeNfcScanner(hardwareStatus: nfcStatus);
+    final FakeNfcScanner nfc = FakeNfcScanner(hardwareStatus: nfcStatus);
     nfcs.add(nfc);
     return nfc;
   }
@@ -46,9 +46,9 @@ class TestUseCases {
 
   final InMemoryHouseholdItemRepository repository;
   final ContainmentPolicy policy;
-  final ids = _Ids();
-  final clock = FixedClock(DateTime.utc(2026, 10, 21, 14, 30));
-  final eventBus = EventBus();
+  final IdGenerator ids = _Ids();
+  final FixedClock clock = FixedClock(DateTime.utc(2026, 10, 21, 14, 30));
+  final EventBus eventBus = EventBus();
 
   CreateItem get createItem => CreateItem(repository, ids, clock, eventBus, policy);
   MoveItem get moveItem => MoveItem(repository, ids, clock, policy);
@@ -85,9 +85,9 @@ class PluginHarness {
   }
 
   final FakeHardware hardware;
-  final repository = InMemoryHouseholdItemRepository();
-  final locator = ServiceLocator();
-  final localization = LocalizationCoordinator();
+  final InMemoryHouseholdItemRepository repository = InMemoryHouseholdItemRepository();
+  final ServiceLocator locator = ServiceLocator();
+  final LocalizationCoordinator localization = LocalizationCoordinator();
   late final ItemTrackerPlugin plugin;
   late GoRouter router;
   bool _initialized = false;
@@ -103,8 +103,8 @@ class PluginHarness {
     await _ensureInitialized();
     router = GoRouter(
       initialLocation: initialLocation,
-      routes: [
-        GoRoute(path: '/', builder: (context, _) => Scaffold(body: plugin.buildDashboardTile(context))),
+      routes: <RouteBase>[
+        GoRoute(path: '/', builder: (BuildContext context, _) => Scaffold(body: plugin.buildDashboardTile(context))),
         ...plugin.routes,
       ],
     );
@@ -122,8 +122,8 @@ class PluginHarness {
 
   Future<HouseholdItem> createItem(String name, {String? qr, String? nfc, String? parentId}) async {
     await _ensureInitialized();
-    final deps = locator.get<ItemTrackerDependencies>();
-    final item = await deps.createItem(
+    final ItemTrackerDependencies deps = locator.get<ItemTrackerDependencies>();
+    final HouseholdItem item = await deps.createItem(
       name: name,
       identifier: qr == null ? null : (rawValue: qr, type: IdentifierType.qr),
       parentId: parentId,

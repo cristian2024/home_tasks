@@ -15,7 +15,7 @@ class NotFoundScreen extends StatelessWidget {
   final ({String rawValue, IdentifierType type}) identifier;
 
   Future<void> _open(BuildContext context, String path) async {
-    final itemId = await context.push<String>(ItemTrackerRoutes.withIdentifier(path, identifier));
+    final String? itemId = await context.push<String>(ItemTrackerRoutes.withIdentifier(path, identifier));
     if (itemId != null && context.mounted) {
       context.pop(itemId);
     }
@@ -23,8 +23,8 @@ class NotFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.notFound;
-    final type = identifierTypeLabel(identifier.type);
+    final ItemTrackerTranslations$itemTracker$notFound$es t = itemTrackerStrings.itemTracker.notFound;
+    final String type = identifierTypeLabel(identifier.type);
     return Scaffold(
       appBar: AppBar(title: Text(t.title)),
       body: AppStatusView(
@@ -33,7 +33,7 @@ class NotFoundScreen extends StatelessWidget {
         message: '${t.message(type: type)}\n\n${identifier.rawValue}',
         action: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          children: <Widget>[
             AppButton(
               label: t.create,
               icon: Icons.add,

@@ -14,7 +14,7 @@ void main() {
 
   setUp(() {
     failing = FakeHomePlugin('b', failOnInitialize: true);
-    final registry = PluginRegistry()
+    final PluginRegistry registry = PluginRegistry()
       ..register(FakeHomePlugin('a'))
       ..register(failing)
       ..register(FakeHomePlugin('c'));
@@ -24,28 +24,32 @@ void main() {
 
   tearDown(() => preferences.close());
 
-  List<(String, PluginStatus)> tiles(HomeState state) => [for (final t in state.tiles) (t.plugin.id, t.status)];
+  List<(String, PluginStatus)> tiles(HomeState state) =>
+      <(String, PluginStatus)>[for (final PluginState t in state.tiles) (t.plugin.id, t.status)];
 
   blocTest<HomeBloc, HomeState>(
     'al iniciar carga los plugins; el que falla aparece con estado failed',
     build: () => HomeBloc(controller),
-    act: (bloc) => bloc.add(const HomeStarted()),
-    verify: (bloc) {
+    act: (HomeBloc bloc) => bloc.add(const HomeStarted()),
+    verify: (HomeBloc bloc) {
       expect(bloc.state.loading, isFalse);
-      expect(tiles(bloc.state), [('a', PluginStatus.ready), ('b', PluginStatus.failed), ('c', PluginStatus.ready)]);
+      expect(
+        tiles(bloc.state),
+        <(String, PluginStatus)>[('a', PluginStatus.ready), ('b', PluginStatus.failed), ('c', PluginStatus.ready)],
+      );
     },
   );
 
   blocTest<HomeBloc, HomeState>(
     'reintentar vuelve a inicializar el plugin que falló',
     build: () => HomeBloc(controller),
-    act: (bloc) async {
+    act: (HomeBloc bloc) async {
       bloc.add(const HomeStarted());
       await Future<void>.delayed(Duration.zero);
       failing.failOnInitialize = false;
       bloc.add(const HomeRetryRequested());
     },
-    verify: (bloc) {
+    verify: (HomeBloc bloc) {
       expect(bloc.state.retrying, isFalse);
       expect(tiles(bloc.state)[1], ('b', PluginStatus.ready));
       expect(failing.initializeCalls, 2);
@@ -55,26 +59,28 @@ void main() {
   blocTest<HomeBloc, HomeState>(
     'mover una tarjeta persiste el orden y refleja el cambio',
     build: () => HomeBloc(controller),
-    act: (bloc) async {
+    act: (HomeBloc bloc) async {
       bloc.add(const HomeStarted());
       await Future<void>.delayed(Duration.zero);
       bloc.add(const HomeTileMoved(2, 0));
     },
-    verify: (bloc) async {
-      expect(tiles(bloc.state).map((t) => t.$1), ['c', 'a', 'b']);
-      final saved = {for (final p in await preferences.getAll()) p.pluginId: p.sortOrder};
-      expect(saved, {'c': 0, 'a': 1, 'b': 2});
+    verify: (HomeBloc bloc) async {
+      expect(tiles(bloc.state).map(((String, PluginStatus) t) => t.$1), <String>['c', 'a', 'b']);
+      final Map<String, int> saved = <String, int>{
+        for (final UserPluginPreference p in await preferences.getAll()) p.pluginId: p.sortOrder,
+      };
+      expect(saved, <String, int>{'c': 0, 'a': 1, 'b': 2});
     },
   );
 
   blocTest<HomeBloc, HomeState>(
     'refleja los cambios hechos desde el catálogo',
     build: () => HomeBloc(controller),
-    act: (bloc) async {
+    act: (HomeBloc bloc) async {
       bloc.add(const HomeStarted());
       await Future<void>.delayed(Duration.zero);
       await controller.setEnabled('a', enabled: false);
     },
-    verify: (bloc) => expect(tiles(bloc.state).map((t) => t.$1), ['b', 'c']),
+    verify: (HomeBloc bloc) => expect(tiles(bloc.state).map(((String, PluginStatus) t) => t.$1), <String>['b', 'c']),
   );
 }

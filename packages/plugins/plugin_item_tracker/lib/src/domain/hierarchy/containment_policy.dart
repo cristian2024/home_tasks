@@ -27,5 +27,5 @@ class ContainmentPolicy extends Equatable {
       tree.depthOf(itemId) >= maxDepth && tree.childrenOf(itemId).isNotEmpty;
 
   @override
-  List<Object?> get props => [maxDepth];
+  List<Object?> get props => <Object?>[maxDepth];
 }

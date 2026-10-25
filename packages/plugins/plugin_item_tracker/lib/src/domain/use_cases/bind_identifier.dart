@@ -16,17 +16,17 @@ class BindIdentifier {
   final Clock _clock;
 
   Future<PhysicalIdentifier> call(String itemId, {required String rawValue, required IdentifierType type}) async {
-    final value = ItemValidator.identifierValue(rawValue);
+    final String value = ItemValidator.identifierValue(rawValue);
     if (await _repository.getById(itemId) == null) {
       throw ItemNotFoundException(itemId);
     }
-    final existing = await _repository.findIdentifier(value, type);
+    final PhysicalIdentifier? existing = await _repository.findIdentifier(value, type);
     if (existing != null) {
       throw IdentifierAlreadyBoundException(rawValue: value, type: type, boundItemId: existing.itemId);
     }
 
-    final now = _clock.nowUtc();
-    final identifier = PhysicalIdentifier(
+    final DateTime now = _clock.nowUtc();
+    final PhysicalIdentifier identifier = PhysicalIdentifier(
       id: _ids.newId(),
       rawValue: value,
       type: type,

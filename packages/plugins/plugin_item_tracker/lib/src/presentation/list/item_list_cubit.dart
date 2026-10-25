@@ -8,7 +8,8 @@ import '../../domain/hierarchy/item_tree.dart';
 import '../../domain/use_cases/item_queries.dart';
 
 class ItemListState extends Equatable {
-  ItemListState({this.loading = true, ItemTree? tree, this.query = ''}) : tree = tree ?? ItemTree(const []);
+  ItemListState({this.loading = true, ItemTree? tree, this.query = ''})
+      : tree = tree ?? ItemTree(const <HouseholdItem>[]);
 
   final bool loading;
 
@@ -20,12 +21,12 @@ class ItemListState extends Equatable {
 
   /// Objetos cuyo nombre contiene [query], sin distinguir mayúsculas.
   List<HouseholdItem> get visible {
-    final needle = query.trim().toLowerCase();
-    return needle.isEmpty ? all : all.where((item) => item.name.toLowerCase().contains(needle)).toList();
+    final String needle = query.trim().toLowerCase();
+    return needle.isEmpty ? all : all.where((HouseholdItem item) => item.name.toLowerCase().contains(needle)).toList();
   }
 
   @override
-  List<Object?> get props => [loading, tree, query];
+  List<Object?> get props => <Object?>[loading, tree, query];
 }
 
 /// Listado reactivo de objetos con filtro por nombre. Incluye los que están
@@ -33,7 +34,7 @@ class ItemListState extends Equatable {
 class ItemListCubit extends Cubit<ItemListState> {
   ItemListCubit(WatchItemTree watchItemTree) : super(ItemListState()) {
     _subscription = watchItemTree().listen(
-      (tree) => emit(ItemListState(loading: false, tree: tree, query: state.query)),
+      (ItemTree tree) => emit(ItemListState(loading: false, tree: tree, query: state.query)),
     );
   }
 
