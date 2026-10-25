@@ -12,8 +12,8 @@ typedef LanguageApplier = void Function(String languageCode);
 typedef KeyTranslator = String? Function(String key);
 
 /// Reemplaza textos del paquete en un idioma. [overrides] tiene la misma
-/// estructura que sus JSON de slang y solo las claves que cambian; un mapa
-/// vacío quita los reemplazos de ese idioma.
+/// estructura que sus JSON de slang; un mapa vacío quita los reemplazos de
+/// ese idioma.
 typedef TranslationOverrider = void Function(String languageCode, Map<String, Object?> overrides);
 
 /// Mantiene sincronizado el idioma de todos los paquetes.
@@ -24,9 +24,10 @@ typedef TranslationOverrider = void Function(String languageCode, Map<String, Ob
 /// [setLanguage] y resuelve claves de otros paquetes con [translate] (p. ej.
 /// `HomePlugin.nameKey` en el catálogo).
 ///
-/// La app puede reemplazar textos de cualquier paquete con
-/// [overrideTranslations]; las claves que no reemplaza salen del propio
-/// paquete.
+/// Quien consume los paquetes inyecta todos sus textos con
+/// [overrideTranslations] (normalmente desde assets, con
+/// `injectTranslations`). Los JSON de cada paquete son el contrato de claves
+/// y el respaldo de las que no se inyecten.
 class LocalizationCoordinator {
   LocalizationCoordinator() {
     register(
@@ -100,9 +101,9 @@ class LocalizationCoordinator {
   }
 
   /// Reemplaza textos de [packageName] en [languageCode]: tienen prioridad
-  /// sobre los JSON del paquete. [overrides] sigue la estructura de esos JSON
-  /// y solo lleva las claves que cambian. Sustituye los reemplazos anteriores
-  /// de ese paquete e idioma; con un mapa vacío se quitan.
+  /// sobre los JSON del paquete. [overrides] sigue la estructura de esos JSON;
+  /// las claves que no lleva salen del paquete. Sustituye los reemplazos
+  /// anteriores de ese paquete e idioma; con un mapa vacío se quitan.
   ///
   /// Se puede llamar antes de que el paquete se registre: se aplican al
   /// registrarlo. Solo admite idiomas de [supportedLanguageCodes].
