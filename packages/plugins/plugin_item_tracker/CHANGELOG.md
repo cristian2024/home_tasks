@@ -9,7 +9,6 @@
 ### Interno
 
 - Tipos explícitos en todo el paquete y en su app de ejemplo.
-- Las dependencias de otros paquetes del workspace se declaran con `any`.
 
 ## 1.0.0 - 2026-10-22
 
