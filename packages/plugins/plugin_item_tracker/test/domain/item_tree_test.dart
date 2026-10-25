@@ -5,7 +5,7 @@ import '../helpers/domain_fixtures.dart';
 
 void main() {
   // Mueble › Organizador › (Cajón 2, cajón 1) y Tijeras suelta.
-  final tree = ItemTree([
+  final ItemTree tree = ItemTree(<HouseholdItem>[
     item(id: 'furniture', name: 'Mueble'),
     item(id: 'organizer', name: 'Organizador', parentId: 'furniture'),
     item(id: 'drawer2', name: 'Cajón 2', parentId: 'organizer'),
@@ -15,15 +15,18 @@ void main() {
 
   group('ItemTree', () {
     test('ruta, nivel y contenido ordenado por nombre', () {
-      expect(tree.pathOf('drawer1').map((i) => i.id), ['furniture', 'organizer']);
+      expect(tree.pathOf('drawer1').map((HouseholdItem i) => i.id), <String>['furniture', 'organizer']);
       expect(tree.pathOf('furniture'), isEmpty);
       expect(tree.depthOf('drawer1'), 3);
       expect(tree.depthOf('scissors'), 1);
-      expect(tree.childrenOf('organizer').map((i) => i.id), ['drawer1', 'drawer2']);
+      expect(tree.childrenOf('organizer').map((HouseholdItem i) => i.id), <String>['drawer1', 'drawer2']);
       expect(tree.childrenOf('scissors'), isEmpty);
       expect(tree['organizer']?.name, 'Organizador');
       expect(tree['missing'], isNull);
-      expect(tree.items.map((i) => i.id), ['furniture', 'organizer', 'drawer2', 'drawer1', 'scissors']);
+      expect(
+        tree.items.map((HouseholdItem i) => i.id),
+        <String>['furniture', 'organizer', 'drawer2', 'drawer1', 'scissors'],
+      );
     });
 
     test('altura del subárbol y pertenencia', () {
@@ -35,21 +38,21 @@ void main() {
     });
 
     test('tolera contenedores inexistentes y ciclos sin colgarse', () {
-      final broken = ItemTree([
+      final ItemTree broken = ItemTree(<HouseholdItem>[
         item(id: 'orphan', parentId: 'deleted'),
         item(id: 'a', parentId: 'b'),
         item(id: 'b', parentId: 'a'),
       ]);
 
       expect(broken.depthOf('orphan'), 1);
-      expect(broken.pathOf('a').map((i) => i.id), ['b']);
+      expect(broken.pathOf('a').map((HouseholdItem i) => i.id), <String>['b']);
       expect(broken.heightOf('a'), 2);
     });
   });
 
   group('ContainmentPolicy', () {
     test('admite un subárbol solo si cabe completo', () {
-      const policy = ContainmentPolicy(maxDepth: 5);
+      const ContainmentPolicy policy = ContainmentPolicy(maxDepth: 5);
 
       expect(policy.allows(parentDepth: 1, subtreeHeight: 4), isTrue);
       expect(policy.allows(parentDepth: 2, subtreeHeight: 4), isFalse);
@@ -62,7 +65,7 @@ void main() {
     });
 
     test('si se baja el máximo señala los contenedores que contienen de más', () {
-      const policy = ContainmentPolicy(maxDepth: 2);
+      const ContainmentPolicy policy = ContainmentPolicy(maxDepth: 2);
 
       expect(policy.isOverflowing(tree, 'organizer'), isTrue); // Nivel 2 con cajones dentro.
       expect(policy.isOverflowing(tree, 'furniture'), isFalse);

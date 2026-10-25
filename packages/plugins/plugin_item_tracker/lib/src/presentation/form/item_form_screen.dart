@@ -2,6 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plugin_item_tracker/src/domain/entities/physical_identifier.dart';
 
 import '../../domain/errors/item_tracker_exception.dart';
 import '../../domain/item_validator.dart';
@@ -19,8 +20,8 @@ class ItemFormScreen extends StatefulWidget {
 }
 
 class _ItemFormScreenState extends State<ItemFormScreen> {
-  final _name = TextEditingController();
-  final _description = TextEditingController();
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _description = TextEditingController();
   bool _initialized = false;
 
   @override
@@ -40,18 +41,18 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.form;
-    final cubit = context.read<ItemFormCubit>();
+    final ItemTrackerTranslations$itemTracker$form$es t = itemTrackerStrings.itemTracker.form;
+    final ItemFormCubit cubit = context.read<ItemFormCubit>();
     return BlocConsumer<ItemFormCubit, ItemFormState>(
-      listener: (context, state) {
+      listener: (BuildContext context, ItemFormState state) {
         _syncInitialValues(state);
         if (state.status == ItemFormStatus.saved) {
           context.pop(state.savedItemId);
         }
       },
-      builder: (context, state) {
+      builder: (BuildContext context, ItemFormState state) {
         _syncInitialValues(state);
-        final error = state.error;
+        final ItemFormError? error = state.error;
         String? fieldError(ValidationField field) =>
             error is ItemFormValidationError && error.error.field == field ? validationMessage(error.error) : null;
 
@@ -61,8 +62,8 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
               ? const AppLoadingView()
               : ListView(
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  children: [
-                    if (state.initialIdentifier case final identifier?)
+                  children: <Widget>[
+                    if (state.initialIdentifier case final ({String rawValue, IdentifierType type}) identifier?)
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: AppCard(
@@ -102,7 +103,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                       maxLength: ItemValidator.maxDescriptionLength,
                       errorText: fieldError(ValidationField.description),
                     ),
-                    if (cubit.itemId case final itemId?) ...[
+                    if (cubit.itemId case final String itemId?) ...<Widget>[
                       AppSectionHeader(
                         t.identifiers,
                         trailing: AppButton(
@@ -126,8 +127,8 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                         validationMessage(error.error),
                         style: TextStyle(color: Theme.of(context).colorScheme.error),
                       ),
-                    for (final entry in state.entries)
-                      _MetadataRow(key: ValueKey(entry.id), entry: entry, error: _entryError(error, entry)),
+                    for (final MetadataEntry entry in state.entries)
+                      _MetadataRow(key: ValueKey<int>(entry.id), entry: entry, error: _entryError(error, entry)),
                     const SizedBox(height: AppSpacing.lg),
                     AppButton(
                       label: t.save,
@@ -144,12 +145,13 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
   }
 
   String? _entryError(ItemFormError? error, MetadataEntry entry) {
-    final errors = itemTrackerStrings.itemTracker.errors;
+    final ItemTrackerTranslations$itemTracker$errors$es errors = itemTrackerStrings.itemTracker.errors;
     return switch (error) {
-      ItemFormDuplicatedKey(:final key, :final entryId) when entryId == entry.id =>
+      ItemFormDuplicatedKey(:final String key, :final int entryId) when entryId == entry.id =>
         errors.metadataKeyDuplicated(key: key),
-      ItemFormInvalidNumber(:final entryId) when entryId == entry.id => errors.numberInvalid,
-      ItemFormValidationError(:final error, :final entryId) when entryId == entry.id => validationMessage(error),
+      ItemFormInvalidNumber(:final int entryId) when entryId == entry.id => errors.numberInvalid,
+      ItemFormValidationError(:final ItemValidationException error, :final int? entryId) when entryId == entry.id =>
+        validationMessage(error),
       _ => null,
     };
   }
@@ -166,8 +168,8 @@ class _MetadataRow extends StatefulWidget {
 }
 
 class _MetadataRowState extends State<_MetadataRow> {
-  late final _key = TextEditingController(text: widget.entry.key);
-  late final _value = TextEditingController(text: widget.entry.text);
+  late final TextEditingController _key = TextEditingController(text: widget.entry.key);
+  late final TextEditingController _value = TextEditingController(text: widget.entry.text);
 
   @override
   void dispose() {
@@ -178,24 +180,24 @@ class _MetadataRowState extends State<_MetadataRow> {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.form;
-    final cubit = context.read<ItemFormCubit>();
-    final entry = widget.entry;
+    final ItemTrackerTranslations$itemTracker$form$es t = itemTrackerStrings.itemTracker.form;
+    final ItemFormCubit cubit = context.read<ItemFormCubit>();
+    final MetadataEntry entry = widget.entry;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: AppCard(
         padding: const EdgeInsets.all(AppSpacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          children: <Widget>[
             Row(
-              children: [
+              children: <Widget>[
                 Expanded(
                   child: AppTextField(
                     label: t.key,
                     controller: _key,
                     errorText: widget.error,
-                    onChanged: (key) => cubit.updateEntry(entry.copyWith(key: key)),
+                    onChanged: (String key) => cubit.updateEntry(entry.copyWith(key: key)),
                   ),
                 ),
                 AppIconButton(
@@ -210,12 +212,12 @@ class _MetadataRowState extends State<_MetadataRow> {
               label: Text(t.valueType),
               initialSelection: entry.type,
               expandedInsets: EdgeInsets.zero,
-              dropdownMenuEntries: [
-                DropdownMenuEntry(value: MetadataValueType.text, label: t.typeText),
-                DropdownMenuEntry(value: MetadataValueType.number, label: t.typeNumber),
-                DropdownMenuEntry(value: MetadataValueType.boolean, label: t.typeBoolean),
+              dropdownMenuEntries: <DropdownMenuEntry<MetadataValueType>>[
+                DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.text, label: t.typeText),
+                DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.number, label: t.typeNumber),
+                DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.boolean, label: t.typeBoolean),
               ],
-              onSelected: (type) => cubit.updateEntry(entry.copyWith(type: type)),
+              onSelected: (MetadataValueType? type) => cubit.updateEntry(entry.copyWith(type: type)),
             ),
             const SizedBox(height: AppSpacing.sm),
             if (entry.type == MetadataValueType.boolean)
@@ -223,7 +225,7 @@ class _MetadataRowState extends State<_MetadataRow> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(t.value),
                 value: entry.flag,
-                onChanged: (flag) => cubit.updateEntry(entry.copyWith(flag: flag)),
+                onChanged: (bool flag) => cubit.updateEntry(entry.copyWith(flag: flag)),
               )
             else
               AppTextField(
@@ -232,7 +234,7 @@ class _MetadataRowState extends State<_MetadataRow> {
                 keyboardType: entry.type == MetadataValueType.number
                     ? const TextInputType.numberWithOptions(decimal: true, signed: true)
                     : TextInputType.text,
-                onChanged: (text) => cubit.updateEntry(entry.copyWith(text: text)),
+                onChanged: (String text) => cubit.updateEntry(entry.copyWith(text: text)),
               ),
           ],
         ),

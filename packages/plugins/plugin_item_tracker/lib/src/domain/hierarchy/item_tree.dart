@@ -6,36 +6,38 @@ import '../entities/household_item.dart';
 /// como si el objeto no tuviera contenedor, y un ciclo se corta en cuanto se
 /// detecta (los casos de uso impiden crearlos).
 class ItemTree {
-  ItemTree(Iterable<HouseholdItem> items) : _items = {for (final item in items) item.id: item} {
-    for (final item in _items.values) {
-      final parentId = item.parentId;
+  ItemTree(Iterable<HouseholdItem> items)
+      : _items = <String, HouseholdItem>{for (final HouseholdItem item in items) item.id: item} {
+    for (final HouseholdItem item in _items.values) {
+      final String? parentId = item.parentId;
       if (parentId != null && _items.containsKey(parentId)) {
-        (_children[parentId] ??= []).add(item);
+        (_children[parentId] ??= <HouseholdItem>[]).add(item);
       }
     }
-    for (final children in _children.values) {
-      children.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    for (final List<HouseholdItem> children in _children.values) {
+      children.sort((HouseholdItem a, HouseholdItem b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     }
   }
 
   final Map<String, HouseholdItem> _items;
-  final Map<String, List<HouseholdItem>> _children = {};
+  final Map<String, List<HouseholdItem>> _children = <String, List<HouseholdItem>>{};
 
   HouseholdItem? operator [](String id) => _items[id];
 
   /// Todos los objetos, en el orden en que se recibieron.
-  List<HouseholdItem> get items => List.unmodifiable(_items.values);
+  List<HouseholdItem> get items => List<HouseholdItem>.unmodifiable(_items.values);
 
   /// Contenido directo de [id], ordenado por nombre.
-  List<HouseholdItem> childrenOf(String id) => List.unmodifiable(_children[id] ?? const <HouseholdItem>[]);
+  List<HouseholdItem> childrenOf(String id) =>
+      List<HouseholdItem>.unmodifiable(_children[id] ?? const <HouseholdItem>[]);
 
   /// Contenedores de [id], del más externo al más interno (sin incluirlo).
   List<HouseholdItem> pathOf(String id) {
-    final path = <HouseholdItem>[];
-    final visited = {id};
-    var parentId = _items[id]?.parentId;
+    final List<HouseholdItem> path = <HouseholdItem>[];
+    final Set<String> visited = <String>{id};
+    String? parentId = _items[id]?.parentId;
     while (parentId != null && visited.add(parentId)) {
-      final parent = _items[parentId];
+      final HouseholdItem? parent = _items[parentId];
       if (parent == null) {
         break;
       }
@@ -49,15 +51,15 @@ class ItemTree {
   int depthOf(String id) => pathOf(id).length + 1;
 
   /// Niveles que ocupa [id] con todo su contenido: 1 si no contiene nada.
-  int heightOf(String id) => _height(id, {});
+  int heightOf(String id) => _height(id, <String>{});
 
   int _height(String id, Set<String> visited) {
     if (!visited.add(id)) {
       return 0;
     }
-    var tallest = 0;
-    for (final child in _children[id] ?? const <HouseholdItem>[]) {
-      final height = _height(child.id, visited);
+    int tallest = 0;
+    for (final HouseholdItem child in _children[id] ?? const <HouseholdItem>[]) {
+      final int height = _height(child.id, visited);
       if (height > tallest) {
         tallest = height;
       }
@@ -66,5 +68,6 @@ class ItemTree {
   }
 
   /// Si [id] está dentro de [ancestorId], directa o indirectamente.
-  bool isInside(String id, {required String ancestorId}) => pathOf(id).any((item) => item.id == ancestorId);
+  bool isInside(String id, {required String ancestorId}) =>
+      pathOf(id).any((HouseholdItem item) => item.id == ancestorId);
 }

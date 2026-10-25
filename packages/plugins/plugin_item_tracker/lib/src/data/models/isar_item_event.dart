@@ -11,7 +11,7 @@ class IsarItemEvent {
   @Index(unique: true, replace: true)
   late String id;
 
-  @Index(composite: [CompositeIndex('timestamp')])
+  @Index(composite: <CompositeIndex>[CompositeIndex('timestamp')])
   late String itemId;
 
   @Enumerated(EnumType.name)

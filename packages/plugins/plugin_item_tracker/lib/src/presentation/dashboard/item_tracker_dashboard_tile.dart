@@ -15,24 +15,24 @@ class ItemTrackerDashboardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker;
-    final textTheme = Theme.of(context).textTheme;
+    final ItemTrackerTranslations$itemTracker$es t = itemTrackerStrings.itemTracker;
+    final TextTheme textTheme = Theme.of(context).textTheme;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: <Widget>[
           Row(
-            children: [
+            children: <Widget>[
               const ExcludeSemantics(child: Icon(Icons.qr_code_scanner, size: AppSizes.iconLarge)),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: <Widget>[
                     Semantics(header: true, child: Text(t.title, style: textTheme.titleMedium)),
                     StreamBuilder<List<HouseholdItem>>(
                       stream: watchItems(),
-                      builder: (context, snapshot) => Text(
+                      builder: (BuildContext context, AsyncSnapshot<List<HouseholdItem>> snapshot) => Text(
                         snapshot.hasData ? t.dashboard.itemsCount(n: snapshot.data!.length) : t.description,
                         style: textTheme.bodyMedium,
                       ),
@@ -46,7 +46,7 @@ class ItemTrackerDashboardTile extends StatelessWidget {
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: [
+            children: <Widget>[
               AppButton(
                 label: t.dashboard.scan,
                 icon: Icons.qr_code_scanner,

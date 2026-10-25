@@ -27,28 +27,28 @@ class ItemTrackerExampleApp extends StatefulWidget {
 
 class _ItemTrackerExampleAppState extends State<ItemTrackerExampleApp> {
   late final GoRouter _router = GoRouter(
-    routes: [
+    routes: <RouteBase>[
       GoRoute(
         path: '/',
-        builder: (context, _) => LanguageRebuilder(
+        builder: (BuildContext context, _) => LanguageRebuilder(
           child: _HomePage(
             plugin: widget.plugin,
             localization: widget.localization,
             demoData: DemoData(widget.locator.get<ItemTrackerDependencies>()),
             isDark: _themeMode == ThemeMode.dark,
-            onDarkChanged: (dark) => setState(
+            onDarkChanged: (bool dark) => setState(
               () => _themeMode = dark ? ThemeMode.dark : ThemeMode.light,
             ),
           ),
         ),
       ),
       // Mismo envoltorio que `withLanguageRebuild` de apps/app.
-      for (final route in widget.plugin.routes)
+      for (final RouteBase route in widget.plugin.routes)
         if (route is GoRoute && route.builder != null)
           GoRoute(
             path: route.path,
             redirect: route.redirect,
-            builder: (context, state) =>
+            builder: (BuildContext context, GoRouterState state) =>
                 LanguageRebuilder(child: route.builder!(context, state)),
           )
         else
@@ -69,7 +69,7 @@ class _ItemTrackerExampleAppState extends State<ItemTrackerExampleApp> {
       languageCode: widget.localization.languageCode,
       child: ValueListenableBuilder<String>(
         valueListenable: widget.localization.languageCode,
-        builder: (context, languageCode, _) => MaterialApp.router(
+        builder: (BuildContext context, String languageCode, _) => MaterialApp.router(
           title: 'item_tracker',
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
@@ -101,7 +101,7 @@ class _HomePage extends StatelessWidget {
   final ValueChanged<bool> onDarkChanged;
 
   Future<void> _loadDemoData(BuildContext context) async {
-    final created = await demoData.load();
+    final int created = await demoData.load();
     if (context.mounted) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -123,7 +123,7 @@ class _HomePage extends StatelessWidget {
       appBar: AppBar(title: const Text('item_tracker · ejemplo')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
+        children: <Widget>[
           plugin.buildDashboardTile(context),
           const AppSectionHeader('Ajustes del ejemplo'),
           ListTile(
@@ -131,13 +131,13 @@ class _HomePage extends StatelessWidget {
             title: const Text('Idioma'),
             trailing: ValueListenableBuilder<String>(
               valueListenable: localization.languageCode,
-              builder: (context, languageCode, _) => SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'es', label: Text('ES')),
-                  ButtonSegment(value: 'en', label: Text('EN')),
+              builder: (BuildContext context, String languageCode, _) => SegmentedButton<String>(
+                segments: const <ButtonSegment<String>>[
+                  ButtonSegment<String>(value: 'es', label: Text('ES')),
+                  ButtonSegment<String>(value: 'en', label: Text('EN')),
                 ],
-                selected: {languageCode},
-                onSelectionChanged: (selection) =>
+                selected: <String>{languageCode},
+                onSelectionChanged: (Set<String> selection) =>
                     localization.setLanguage(selection.single),
               ),
             ),
@@ -156,7 +156,7 @@ class _HomePage extends StatelessWidget {
             onPressed: () => _loadDemoData(context),
           ),
           const AppSectionHeader('Códigos para probar'),
-          for (final (code, description) in DemoData.codes)
+          for (final (String code, String description) in DemoData.codes)
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: SelectableText(code),

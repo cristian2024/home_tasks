@@ -5,10 +5,10 @@ import '../helpers/domain_fixtures.dart';
 
 void main() {
   test('HouseholdItem.copyWith conserva id y createdAt', () {
-    final updated = item().copyWith(
+    final HouseholdItem updated = item().copyWith(
       name: 'Caja B',
       description: 'd',
-      metadata: ItemMetadata({'a': 1}),
+      metadata: ItemMetadata(<String, Object?>{'a': 1}),
       updatedAt: t0.add(const Duration(days: 1)),
     );
 
@@ -16,14 +16,14 @@ void main() {
     expect(updated.createdAt, t0);
     expect(updated.name, 'Caja B');
     expect(updated.description, 'd');
-    expect(updated.metadata, ItemMetadata({'a': 1}));
+    expect(updated.metadata, ItemMetadata(<String, Object?>{'a': 1}));
     expect(updated.updatedAt, t0.add(const Duration(days: 1)));
     expect(item().copyWith(), item());
     expect(item().toString(), contains('Caja A'));
   });
 
   test('HouseholdItem.copyWith asigna, conserva y quita el contenedor', () {
-    final inside = item().copyWith(parentId: () => 'box');
+    final HouseholdItem inside = item().copyWith(parentId: () => 'box');
 
     expect(inside.parentId, 'box');
     expect(inside.copyWith(name: 'Caja B').parentId, 'box');
@@ -42,7 +42,11 @@ void main() {
         ItemEvent(id: 'e', itemId: 'i', kind: kind, title: '', description: '', timestamp: t0);
 
     expect(event(ItemEventKind.note).isTechnical, isFalse);
-    for (final kind in [ItemEventKind.created, ItemEventKind.updated, ItemEventKind.identifierBound]) {
+    for (final ItemEventKind kind in <ItemEventKind>[
+      ItemEventKind.created,
+      ItemEventKind.updated,
+      ItemEventKind.identifierBound,
+    ]) {
       expect(event(kind).isTechnical, isTrue);
     }
     expect(event(ItemEventKind.note), event(ItemEventKind.note));

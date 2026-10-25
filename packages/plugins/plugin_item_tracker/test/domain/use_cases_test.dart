@@ -30,7 +30,7 @@ void main() {
     when(() => repository.getIdentifier(any())).thenAnswer((_) async => null);
     when(() => repository.findIdentifier(any(), any())).thenAnswer((_) async => null);
     when(() => repository.getById(any())).thenAnswer((_) async => null);
-    when(() => repository.getAll()).thenAnswer((_) async => const []);
+    when(() => repository.getAll()).thenAnswer((_) async => const <HouseholdItem>[]);
     when(() => repository.moveItem(any(), any())).thenAnswer((_) async {});
   });
 
@@ -42,18 +42,22 @@ void main() {
     setUp(() => createItem = CreateItem(repository, ids, clock, eventBus));
 
     test('crea el objeto con evento técnico y publica ItemCreatedCrossEvent', () async {
-      final published = eventBus.on<ItemCreatedCrossEvent>().first;
+      final Future<ItemCreatedCrossEvent> published = eventBus.on<ItemCreatedCrossEvent>().first;
 
-      final created = await createItem(name: '  Caja A ', description: 'Garaje', metadata: {'fragil': true});
+      final HouseholdItem created =
+          await createItem(name: '  Caja A ', description: 'Garaje', metadata: <String, Object?>{'fragil': true});
 
-      expect(created, item(id: 'id-1', description: 'Garaje', metadata: ItemMetadata({'fragil': true})));
-      final captured = verify(
+      expect(
+        created,
+        item(id: 'id-1', description: 'Garaje', metadata: ItemMetadata(<String, Object?>{'fragil': true})),
+      );
+      final List<dynamic> captured = verify(
         () => repository.createItem(captureAny(), identifier: captureAny(named: 'identifier'), events: captureAny(named: 'events')),
       ).captured;
       // mocktail captura los argumentos con nombre en orden alfabético.
       expect(captured[0], created);
       expect(captured[2], isNull);
-      expect(captured[1], [
+      expect(captured[1], <ItemEvent>[
         ItemEvent(id: 'id-2', itemId: 'id-1', kind: ItemEventKind.created, title: 'Caja A', description: '', timestamp: t0),
       ]);
       expect((await published).itemId, 'id-1');
@@ -62,15 +66,18 @@ void main() {
     test('asocia el identificador inicial y registra su evento', () async {
       await createItem(name: 'Caja A', identifier: (rawValue: 'QR-123', type: IdentifierType.qr));
 
-      final captured = verify(
+      final List<dynamic> captured = verify(
         () => repository.createItem(any(), identifier: captureAny(named: 'identifier'), events: captureAny(named: 'events')),
       ).captured;
-      final events = captured[0] as List<ItemEvent>;
+      final List<ItemEvent> events = captured[0] as List<ItemEvent>;
       expect(
         captured[1],
         PhysicalIdentifier(id: 'id-2', rawValue: 'QR-123', type: IdentifierType.qr, itemId: 'id-1', boundAt: t0),
       );
-      expect(events.map((e) => e.kind), [ItemEventKind.created, ItemEventKind.identifierBound]);
+      expect(
+        events.map((ItemEvent e) => e.kind),
+        <ItemEventKind>[ItemEventKind.created, ItemEventKind.identifierBound],
+      );
       expect(events.last.description, 'QR-123');
     });
 
@@ -80,7 +87,10 @@ void main() {
 
       await expectLater(
         createItem(name: 'Caja A', identifier: (rawValue: 'QR-123', type: IdentifierType.qr)),
-        throwsA(isA<IdentifierAlreadyBoundException>().having((e) => e.boundItemId, 'boundItemId', 'other')),
+        throwsA(
+          isA<IdentifierAlreadyBoundException>()
+              .having((IdentifierAlreadyBoundException e) => e.boundItemId, 'boundItemId', 'other'),
+        ),
       );
       verifyNever(() => repository.createItem(any(), identifier: any(named: 'identifier'), events: any(named: 'events')));
     });
@@ -88,7 +98,7 @@ void main() {
     test('valida nombre, metadatos e identificador antes de escribir', () async {
       await expectLater(createItem(name: ' '), throwsValidation(ValidationField.name, ValidationReason.empty));
       await expectLater(
-        createItem(name: 'A', metadata: {'Mal': 1}),
+        createItem(name: 'A', metadata: <String, Object?>{'Mal': 1}),
         throwsValidation(ValidationField.metadata, ValidationReason.invalidFormat),
       );
       await expectLater(
@@ -105,12 +115,12 @@ void main() {
     setUp(() => createItem = CreateItem(repository, ids, clock, eventBus, const ContainmentPolicy(maxDepth: 3)));
 
     test('lo crea dentro y registra childAdded en el contenedor', () async {
-      when(() => repository.getAll()).thenAnswer((_) async => [item(id: 'box', name: 'Organizador')]);
+      when(() => repository.getAll()).thenAnswer((_) async => <HouseholdItem>[item(id: 'box', name: 'Organizador')]);
 
-      final created = await createItem(name: 'Cajón 1', parentId: 'box');
+      final HouseholdItem created = await createItem(name: 'Cajón 1', parentId: 'box');
 
       expect(created.parentId, 'box');
-      final events = verify(
+      final List<ItemEvent> events = verify(
         () => repository.createItem(any(), identifier: any(named: 'identifier'), events: captureAny(named: 'events')),
       ).captured.single as List<ItemEvent>;
       expect(
@@ -122,18 +132,21 @@ void main() {
     test('rechaza un contenedor que no existe', () async {
       await expectLater(
         createItem(name: 'Cajón 1', parentId: 'missing'),
-        throwsA(isA<ItemNotFoundException>().having((e) => e.itemId, 'itemId', 'missing')),
+        throwsA(isA<ItemNotFoundException>().having((ItemNotFoundException e) => e.itemId, 'itemId', 'missing')),
       );
     });
 
     test('rechaza crear por debajo del nivel máximo', () async {
       when(() => repository.getAll()).thenAnswer(
-        (_) async => [item(id: 'a'), item(id: 'b', parentId: 'a'), item(id: 'c', parentId: 'b')],
+        (_) async => <HouseholdItem>[item(id: 'a'), item(id: 'b', parentId: 'a'), item(id: 'c', parentId: 'b')],
       );
 
       await expectLater(
         createItem(name: 'Demasiado hondo', parentId: 'c'),
-        throwsA(isA<ItemContainmentTooDeepException>().having((e) => e.maxDepth, 'maxDepth', 3)),
+        throwsA(
+          isA<ItemContainmentTooDeepException>()
+              .having((ItemContainmentTooDeepException e) => e.maxDepth, 'maxDepth', 3),
+        ),
       );
       verifyNever(() => repository.createItem(any(), identifier: any(named: 'identifier'), events: any(named: 'events')));
     });
@@ -143,15 +156,16 @@ void main() {
     late MoveItem moveItem;
 
     // Mueble › Organizador › Cajón 1, y Tijeras y Caja sueltas.
-    final furniture = item(id: 'furniture', name: 'Mueble');
-    final organizer = item(id: 'organizer', name: 'Organizador', parentId: 'furniture');
-    final drawer = item(id: 'drawer', name: 'Cajón 1', parentId: 'organizer');
-    final scissors = item(id: 'scissors', name: 'Tijeras');
-    final box = item(id: 'box', name: 'Caja');
+    final HouseholdItem furniture = item(id: 'furniture', name: 'Mueble');
+    final HouseholdItem organizer = item(id: 'organizer', name: 'Organizador', parentId: 'furniture');
+    final HouseholdItem drawer = item(id: 'drawer', name: 'Cajón 1', parentId: 'organizer');
+    final HouseholdItem scissors = item(id: 'scissors', name: 'Tijeras');
+    final HouseholdItem box = item(id: 'box', name: 'Caja');
 
     setUp(() {
       moveItem = MoveItem(repository, ids, clock, const ContainmentPolicy(maxDepth: 4));
-      when(() => repository.getAll()).thenAnswer((_) async => [furniture, organizer, drawer, scissors, box]);
+      when(() => repository.getAll())
+          .thenAnswer((_) async => <HouseholdItem>[furniture, organizer, drawer, scissors, box]);
     });
 
     ItemEvent event(String id, String itemId, ItemEventKind kind, String title, String description) =>
@@ -160,21 +174,26 @@ void main() {
     test('mete un objeto suelto en un contenedor', () async {
       clock.advance(const Duration(hours: 1));
 
-      final moved = await moveItem('scissors', parentId: 'drawer');
+      final HouseholdItem moved = await moveItem('scissors', parentId: 'drawer');
 
       expect(moved, scissors.copyWith(parentId: () => 'drawer', updatedAt: t0.add(const Duration(hours: 1))));
-      final events = verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
-      expect(events.map((e) => (e.itemId, e.kind, e.title, e.description)), [
-        ('scissors', ItemEventKind.moved, 'Cajón 1', 'drawer'),
-        ('drawer', ItemEventKind.childAdded, 'Tijeras', 'scissors'),
-      ]);
+      final List<ItemEvent> events =
+          verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
+      expect(
+        events.map((ItemEvent e) => (e.itemId, e.kind, e.title, e.description)),
+        <(String, ItemEventKind, String, String)>[
+          ('scissors', ItemEventKind.moved, 'Cajón 1', 'drawer'),
+          ('drawer', ItemEventKind.childAdded, 'Tijeras', 'scissors'),
+        ],
+      );
     });
 
     test('al cambiar de contenedor registra la salida en el anterior', () async {
-      final moved = await moveItem('drawer', parentId: 'box');
+      final HouseholdItem moved = await moveItem('drawer', parentId: 'box');
 
-      final events = verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
-      expect(events, [
+      final List<ItemEvent> events =
+          verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
+      expect(events, <ItemEvent>[
         event('id-1', 'drawer', ItemEventKind.moved, 'Caja', 'box'),
         event('id-2', 'organizer', ItemEventKind.childRemoved, 'Cajón 1', 'drawer'),
         event('id-3', 'box', ItemEventKind.childAdded, 'Cajón 1', 'drawer'),
@@ -182,10 +201,11 @@ void main() {
     });
 
     test('sacarlo de su contenedor deja moved sin nombre', () async {
-      final moved = await moveItem('drawer', parentId: null);
+      final HouseholdItem moved = await moveItem('drawer', parentId: null);
 
       expect(moved.parentId, isNull);
-      final events = verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
+      final List<ItemEvent> events =
+          verify(() => repository.moveItem(moved, captureAny())).captured.single as List<ItemEvent>;
       expect(events.first, event('id-1', 'drawer', ItemEventKind.moved, '', ''));
       expect(events, hasLength(2));
     });
@@ -205,8 +225,8 @@ void main() {
         moveItem('furniture', parentId: 'drawer'),
         throwsA(
           isA<ItemContainmentCycleException>()
-              .having((e) => e.itemId, 'itemId', 'furniture')
-              .having((e) => e.parentId, 'parentId', 'drawer'),
+              .having((ItemContainmentCycleException e) => e.itemId, 'itemId', 'furniture')
+              .having((ItemContainmentCycleException e) => e.parentId, 'parentId', 'drawer'),
         ),
       );
       verifyNever(() => repository.moveItem(any(), any()));
@@ -218,11 +238,20 @@ void main() {
       await moveItem('organizer', parentId: 'box');
 
       when(() => repository.getAll()).thenAnswer(
-        (_) async => [furniture, organizer, drawer, item(id: 'shelf', parentId: 'furniture'), item(id: 'bin', parentId: 'shelf')],
+        (_) async => <HouseholdItem>[
+          furniture,
+          organizer,
+          drawer,
+          item(id: 'shelf', parentId: 'furniture'),
+          item(id: 'bin', parentId: 'shelf'),
+        ],
       );
       await expectLater(
         moveItem('organizer', parentId: 'bin'),
-        throwsA(isA<ItemContainmentTooDeepException>().having((e) => e.maxDepth, 'maxDepth', 4)),
+        throwsA(
+          isA<ItemContainmentTooDeepException>()
+              .having((ItemContainmentTooDeepException e) => e.maxDepth, 'maxDepth', 4),
+        ),
       );
     });
 
@@ -230,7 +259,7 @@ void main() {
       await expectLater(moveItem('missing', parentId: null), throwsA(isA<ItemNotFoundException>()));
       await expectLater(
         moveItem('scissors', parentId: 'missing'),
-        throwsA(isA<ItemNotFoundException>().having((e) => e.itemId, 'itemId', 'missing')),
+        throwsA(isA<ItemNotFoundException>().having((ItemNotFoundException e) => e.itemId, 'itemId', 'missing')),
       );
     });
   });
@@ -247,7 +276,8 @@ void main() {
     test('sin cambios no escribe nada', () async {
       when(() => repository.getById('item-1')).thenAnswer((_) async => item());
 
-      final result = await updateItem('item-1', name: ' Caja A ', description: '', metadata: {});
+      final HouseholdItem result =
+          await updateItem('item-1', name: ' Caja A ', description: '', metadata: <String, Object?>{});
 
       expect(result, item());
       verifyNever(() => repository.updateItem(any(), any()));
@@ -257,10 +287,11 @@ void main() {
       when(() => repository.getById('item-1')).thenAnswer((_) async => item());
       clock.advance(const Duration(hours: 1));
 
-      final result = await updateItem('item-1', name: 'Caja B', metadata: {'peso_kg': 2});
+      final HouseholdItem result =
+          await updateItem('item-1', name: 'Caja B', metadata: <String, Object?>{'peso_kg': 2});
 
-      final later = t0.add(const Duration(hours: 1));
-      expect(result, item(name: 'Caja B', metadata: ItemMetadata({'peso_kg': 2}), updatedAt: later));
+      final DateTime later = t0.add(const Duration(hours: 1));
+      expect(result, item(name: 'Caja B', metadata: ItemMetadata(<String, Object?>{'peso_kg': 2}), updatedAt: later));
       verify(
         () => repository.updateItem(
           result,
@@ -281,7 +312,7 @@ void main() {
 
       await updateItem('item-1', description: 'Nueva');
 
-      final event = verify(() => repository.updateItem(any(), captureAny())).captured.single as ItemEvent;
+      final ItemEvent event = verify(() => repository.updateItem(any(), captureAny())).captured.single as ItemEvent;
       expect(event.description, 'description');
     });
 
@@ -303,7 +334,7 @@ void main() {
     test('AC-05: asocia un segundo identificador al mismo objeto', () async {
       when(() => repository.getById('item-1')).thenAnswer((_) async => item());
 
-      final bound = await bindIdentifier('item-1', rawValue: 'NFC-BED', type: IdentifierType.nfc);
+      final PhysicalIdentifier bound = await bindIdentifier('item-1', rawValue: 'NFC-BED', type: IdentifierType.nfc);
 
       expect(
         bound,
@@ -337,7 +368,10 @@ void main() {
 
       await expectLater(
         bindIdentifier('item-1', rawValue: 'QR-123', type: IdentifierType.qr),
-        throwsA(isA<IdentifierAlreadyBoundException>().having((e) => e.boundItemId, 'boundItemId', 'item-1')),
+        throwsA(
+          isA<IdentifierAlreadyBoundException>()
+              .having((IdentifierAlreadyBoundException e) => e.boundItemId, 'boundItemId', 'item-1'),
+        ),
       );
       verifyNever(() => repository.bindIdentifier(any(), any()));
     });
@@ -359,7 +393,7 @@ void main() {
       when(() => repository.getById('item-1')).thenAnswer((_) async => item());
       when(() => repository.getIdentifier('ident-1')).thenAnswer((_) async => identifier());
 
-      final removed = await unbindIdentifier('item-1', identifierId: 'ident-1');
+      final PhysicalIdentifier removed = await unbindIdentifier('item-1', identifierId: 'ident-1');
 
       expect(removed, identifier());
       verify(
@@ -390,7 +424,10 @@ void main() {
 
       await expectLater(
         unbindIdentifier('item-2', identifierId: 'ident-1'),
-        throwsA(isA<IdentifierNotFoundException>().having((e) => e.identifierId, 'identifierId', 'ident-1')),
+        throwsA(
+          isA<IdentifierNotFoundException>()
+              .having((IdentifierNotFoundException e) => e.identifierId, 'identifierId', 'ident-1'),
+        ),
       );
       when(() => repository.getIdentifier('ident-1')).thenAnswer((_) async => identifier());
       await expectLater(
@@ -411,7 +448,7 @@ void main() {
     test('añade una nota del usuario', () async {
       when(() => repository.getById('item-1')).thenAnswer((_) async => item());
 
-      final event = await addItemEvent('item-1', title: ' Cambio de Ubicación ', description: 'Al altillo.');
+      final ItemEvent event = await addItemEvent('item-1', title: ' Cambio de Ubicación ', description: 'Al altillo.');
 
       expect(
         event,
@@ -469,17 +506,18 @@ void main() {
     });
 
     test('SearchItems recorta la consulta', () async {
-      when(() => repository.searchByName(any())).thenAnswer((_) async => [item()]);
+      when(() => repository.searchByName(any())).thenAnswer((_) async => <HouseholdItem>[item()]);
 
-      expect(await SearchItems(repository)('  caja '), [item()]);
+      expect(await SearchItems(repository)('  caja '), <HouseholdItem>[item()]);
       verify(() => repository.searchByName('caja')).called(1);
     });
 
     test('los casos de observación delegan en el repositorio', () {
-      final itemStream = Stream<HouseholdItem?>.value(item());
-      final itemsStream = Stream<List<HouseholdItem>>.value([item()]);
-      final identifiersStream = Stream<List<PhysicalIdentifier>>.value([identifier()]);
-      final eventsStream = Stream<List<ItemEvent>>.value(const []);
+      final Stream<HouseholdItem?> itemStream = Stream<HouseholdItem?>.value(item());
+      final Stream<List<HouseholdItem>> itemsStream = Stream<List<HouseholdItem>>.value(<HouseholdItem>[item()]);
+      final Stream<List<PhysicalIdentifier>> identifiersStream =
+          Stream<List<PhysicalIdentifier>>.value(<PhysicalIdentifier>[identifier()]);
+      final Stream<List<ItemEvent>> eventsStream = Stream<List<ItemEvent>>.value(const <ItemEvent>[]);
       when(() => repository.watchById('item-1')).thenAnswer((_) => itemStream);
       when(() => repository.watchAll()).thenAnswer((_) => itemsStream);
       when(() => repository.watchIdentifiers('item-1')).thenAnswer((_) => identifiersStream);
@@ -493,10 +531,10 @@ void main() {
 
     test('WatchItemTree convierte el listado en un árbol', () async {
       when(() => repository.watchAll()).thenAnswer(
-        (_) => Stream.value([item(id: 'box'), item(id: 'drawer', parentId: 'box')]),
+        (_) => Stream<List<HouseholdItem>>.value(<HouseholdItem>[item(id: 'box'), item(id: 'drawer', parentId: 'box')]),
       );
 
-      final tree = await WatchItemTree(repository)().first;
+      final ItemTree tree = await WatchItemTree(repository)().first;
 
       expect(tree.depthOf('drawer'), 2);
     });

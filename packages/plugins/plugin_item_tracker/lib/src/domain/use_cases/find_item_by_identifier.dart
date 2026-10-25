@@ -11,7 +11,8 @@ class FindItemByIdentifier {
   final HouseholdItemRepository _repository;
 
   Future<HouseholdItem?> call({required String rawValue, required IdentifierType type}) async {
-    final identifier = await _repository.findIdentifier(ItemValidator.identifierValue(rawValue), type);
+    final PhysicalIdentifier? identifier =
+        await _repository.findIdentifier(ItemValidator.identifierValue(rawValue), type);
     if (identifier == null) {
       return null;
     }

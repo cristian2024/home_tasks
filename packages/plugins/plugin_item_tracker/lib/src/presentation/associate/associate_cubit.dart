@@ -11,7 +11,7 @@ enum AssociateStatus { searching, ready, binding, bound }
 class AssociateState extends Equatable {
   const AssociateState({
     this.status = AssociateStatus.searching,
-    this.results = const [],
+    this.results = const <HouseholdItem>[],
     this.boundItem,
     this.error,
   });
@@ -22,7 +22,7 @@ class AssociateState extends Equatable {
   final Object? error;
 
   @override
-  List<Object?> get props => [status, results, boundItem, error];
+  List<Object?> get props => <Object?>[status, results, boundItem, error];
 }
 
 /// Asocia un identificador desconocido a un objeto existente (AC-05).
@@ -43,9 +43,9 @@ class AssociateCubit extends Cubit<AssociateState> {
   int _searchGeneration = 0;
 
   Future<void> search(String query) async {
-    final generation = ++_searchGeneration;
+    final int generation = ++_searchGeneration;
     emit(AssociateState(status: AssociateStatus.searching, results: state.results));
-    final results = await _search(query);
+    final List<HouseholdItem> results = await _search(query);
     // Descarta respuestas de búsquedas anteriores que lleguen tarde.
     if (generation == _searchGeneration && !isClosed) {
       emit(AssociateState(status: AssociateStatus.ready, results: results));

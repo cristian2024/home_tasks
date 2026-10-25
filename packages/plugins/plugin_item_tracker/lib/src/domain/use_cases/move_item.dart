@@ -21,8 +21,8 @@ class MoveItem {
   final ContainmentPolicy _policy;
 
   Future<HouseholdItem> call(String itemId, {required String? parentId}) async {
-    final tree = ItemTree(await _repository.getAll());
-    final item = tree[itemId] ?? (throw ItemNotFoundException(itemId));
+    final ItemTree tree = ItemTree(await _repository.getAll());
+    final HouseholdItem item = tree[itemId] ?? (throw ItemNotFoundException(itemId));
     if (item.parentId == parentId) {
       return item;
     }
@@ -37,11 +37,11 @@ class MoveItem {
         throw ItemContainmentTooDeepException(_policy.maxDepth);
       }
     }
-    final oldParent = item.parentId == null ? null : tree[item.parentId!];
+    final HouseholdItem? oldParent = item.parentId == null ? null : tree[item.parentId!];
 
-    final now = _clock.nowUtc();
-    final moved = item.copyWith(parentId: () => parentId, updatedAt: now);
-    await _repository.moveItem(moved, [
+    final DateTime now = _clock.nowUtc();
+    final HouseholdItem moved = item.copyWith(parentId: () => parentId, updatedAt: now);
+    await _repository.moveItem(moved, <ItemEvent>[
       ItemEvent(
         id: _ids.newId(),
         itemId: itemId,

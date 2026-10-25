@@ -32,14 +32,14 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'con permiso inicia la cámara',
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         // blocTest cierra el bloc (y libera la cámara) antes de `verify`.
         expect(hardware.camera.isScanning, isTrue);
         expect(bloc.cameraScanner, same(hardware.camera));
       },
-      expect: () => [const ScanState(cameraPermission: HardwarePermissionStatus.granted)],
+      expect: () => <ScanState>[const ScanState(cameraPermission: HardwarePermissionStatus.granted)],
     );
 
     blocTest<ScanBloc, ScanState>(
@@ -48,7 +48,7 @@ void main() {
         ..status = HardwarePermissionStatus.denied
         ..statusAfterRequest = HardwarePermissionStatus.granted,
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         expect(hardware.cameras, isEmpty);
@@ -56,7 +56,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         expect(hardware.camera.isScanning, isTrue);
       },
-      expect: () => [
+      expect: () => <ScanState>[
         const ScanState(cameraPermission: HardwarePermissionStatus.denied),
         const ScanState(cameraPermission: HardwarePermissionStatus.granted),
       ],
@@ -65,7 +65,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'abrir Ajustes delega en los permisos',
       build: build,
-      act: (bloc) => bloc.add(const ScanSettingsRequested()),
+      act: (ScanBloc bloc) => bloc.add(const ScanSettingsRequested()),
       verify: (_) => expect(hardware.permissions.openSettingsCalls, 1),
     );
 
@@ -73,13 +73,13 @@ void main() {
       'AC-03: un QR conocido produce ScanItemFound y detiene la cámara',
       setUp: () async => useCases.createItem(name: 'Caja A', identifier: (rawValue: 'QR-123', type: IdentifierType.qr)),
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.camera.emit('QR-123');
       },
       skip: 1,
-      expect: () => [
+      expect: () => <ScanState>[
         const ScanState(cameraPermission: HardwarePermissionStatus.granted, lookingUp: true),
         const ScanState(
           cameraPermission: HardwarePermissionStatus.granted,
@@ -92,7 +92,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'AC-04: un QR desconocido produce ScanItemNotFound; al volver se reanuda la cámara',
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.camera.emit('UNKNOWN-99');
@@ -108,7 +108,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'ignora lecturas repetidas dentro de 2 s y las acepta después',
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.camera.emit('A');
@@ -121,13 +121,13 @@ void main() {
         now = now.add(ScanBloc.duplicateWindow);
         hardware.camera.emit('A');
       },
-      verify: (bloc) => expect(bloc.state.outcome, isA<ScanItemNotFound>()),
+      verify: (ScanBloc bloc) => expect(bloc.state.outcome, isA<ScanItemNotFound>()),
     );
 
     blocTest<ScanBloc, ScanState>(
       'los errores de cámara se convierten en avisos o en falta de permiso',
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.camera.emitError(const ScanException(ScanErrorCode.unknown));
@@ -139,7 +139,7 @@ void main() {
         expect(bloc.state.notice, ScanNotice.readError);
         hardware.camera.emitError(const ScanException(ScanErrorCode.permissionDenied));
       },
-      verify: (bloc) => expect(bloc.state.cameraPermission, HardwarePermissionStatus.denied),
+      verify: (ScanBloc bloc) => expect(bloc.state.cameraPermission, HardwarePermissionStatus.denied),
     );
   });
 
@@ -147,7 +147,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'cambiar a modo Código libera la cámara (y viceversa)',
       build: build,
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         bloc.add(const ScanModeChanged(ScanMode.manual));
@@ -164,7 +164,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'cerrar el bloc libera los escáneres',
       build: build,
-      act: (bloc) => bloc.add(const ScanStarted()),
+      act: (ScanBloc bloc) => bloc.add(const ScanStarted()),
       verify: (_) => expect(hardware.camera.isDisposed, isTrue),
     );
   });
@@ -174,12 +174,12 @@ void main() {
       'AC-06: sin NFC informa unsupported y no permite leer',
       setUp: () => hardware.nfcStatus = HardwareStatus.unsupported,
       build: () => build(mode: ScanMode.nfc),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         bloc.add(const ScanNfcReadRequested());
       },
-      expect: () => [const ScanState(mode: ScanMode.nfc, nfcStatus: HardwareStatus.unsupported)],
+      expect: () => <ScanState>[const ScanState(mode: ScanMode.nfc, nfcStatus: HardwareStatus.unsupported)],
       verify: (_) => expect(hardware.nfc.isScanning, isFalse),
     );
 
@@ -187,13 +187,13 @@ void main() {
       'NFC desactivado: al comprobar de nuevo detecta que se activó',
       setUp: () => hardware.nfcStatus = HardwareStatus.disabled,
       build: () => build(mode: ScanMode.nfc),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.nfc.hardwareStatus = HardwareStatus.available;
         bloc.add(const ScanNfcStatusRefreshed());
       },
-      expect: () => [
+      expect: () => <ScanState>[
         const ScanState(mode: ScanMode.nfc, nfcStatus: HardwareStatus.disabled),
         const ScanState(mode: ScanMode.nfc, nfcStatus: HardwareStatus.available),
       ],
@@ -203,7 +203,7 @@ void main() {
       'lee una etiqueta, detiene la sesión y busca el objeto',
       setUp: () async => useCases.createItem(name: 'Cama'),
       build: () => build(mode: ScanMode.nfc),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         bloc.add(const ScanNfcReadRequested());
@@ -212,7 +212,7 @@ void main() {
         expect(hardware.nfc.isScanning, isTrue);
         hardware.nfc.emit('NFC-BED');
       },
-      verify: (bloc) {
+      verify: (ScanBloc bloc) {
         expect(bloc.state.nfcReading, isFalse);
         expect(hardware.nfc.isScanning, isFalse);
         expect(bloc.state.outcome, const ScanItemNotFound(rawValue: 'NFC-BED', type: IdentifierType.nfc, fromScanner: true));
@@ -222,10 +222,10 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'no deduplica lecturas NFC: cada una es una acción del usuario',
       build: () => build(mode: ScanMode.nfc),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
-        for (var i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
           bloc.add(const ScanNfcReadRequested());
           await Future<void>.delayed(Duration.zero);
           hardware.nfc.emit('NFC-1');
@@ -240,14 +240,14 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'cancelar la lectura detiene la sesión',
       build: () => build(mode: ScanMode.nfc),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         bloc.add(const ScanNfcReadRequested());
         await Future<void>.delayed(Duration.zero);
         bloc.add(const ScanNfcReadCancelled());
       },
-      verify: (bloc) {
+      verify: (ScanBloc bloc) {
         expect(bloc.state.nfcReading, isFalse);
         expect(hardware.nfc.isScanning, isFalse);
       },
@@ -256,7 +256,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'los errores de NFC actualizan el estado o muestran un aviso',
       build: () => build(mode: ScanMode.nfc),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.nfc.emitError(const ScanException(ScanErrorCode.cancelled));
@@ -270,7 +270,7 @@ void main() {
         expect(bloc.state.nfcStatus, HardwareStatus.disabled);
         hardware.nfc.emitError(const ScanException(ScanErrorCode.hardwareUnsupported));
       },
-      verify: (bloc) => expect(bloc.state.nfcStatus, HardwareStatus.unsupported),
+      verify: (ScanBloc bloc) => expect(bloc.state.nfcStatus, HardwareStatus.unsupported),
     );
   });
 
@@ -279,8 +279,9 @@ void main() {
       'busca el código escrito (sin espacios sobrantes) y no lo anuncia',
       setUp: () async => useCases.createItem(name: 'Caja', identifier: (rawValue: '049000000443', type: IdentifierType.barcode)),
       build: () => build(mode: ScanMode.manual),
-      act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: ' 049000000443 ', type: IdentifierType.barcode)),
-      expect: () => [
+      act: (ScanBloc bloc) =>
+          bloc.add(const ScanManualSubmitted(rawValue: ' 049000000443 ', type: IdentifierType.barcode)),
+      expect: () => <ScanState>[
         const ScanState(mode: ScanMode.manual, lookingUp: true),
         const ScanState(
           mode: ScanMode.manual,
@@ -297,8 +298,8 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'un código con caracteres de control produce un aviso',
       build: () => build(mode: ScanMode.manual),
-      act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'A\u0007B', type: IdentifierType.qr)),
-      verify: (bloc) => expect(bloc.state.notice, ScanNotice.invalidValue),
+      act: (ScanBloc bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'A\u0007B', type: IdentifierType.qr)),
+      verify: (ScanBloc bloc) => expect(bloc.state.notice, ScanNotice.invalidValue),
     );
   });
 
@@ -314,7 +315,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'un código libre se asocia al objeto y detiene la cámara',
       build: () => build(bindToItemId: target.id),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.camera.emit('QR-NEW');
@@ -322,14 +323,14 @@ void main() {
         expect(hardware.camera.isScanning, isFalse);
       },
       skip: 2,
-      expect: () => [
+      expect: () => <ScanState>[
         ScanState(
           cameraPermission: HardwarePermissionStatus.granted,
           outcome: ScanIdentifierBound(itemId: target.id, rawValue: 'QR-NEW', type: IdentifierType.qr, fromScanner: true),
         ),
       ],
       verify: (_) async {
-        final found = await useCases.findItemByIdentifier(rawValue: 'QR-NEW', type: IdentifierType.qr);
+        final HouseholdItem? found = await useCases.findItemByIdentifier(rawValue: 'QR-NEW', type: IdentifierType.qr);
         expect(found?.id, target.id);
       },
     );
@@ -337,7 +338,7 @@ void main() {
     blocTest<ScanBloc, ScanState>(
       'un código de otro objeto se rechaza con su nombre y no se reintenta mientras siga en el encuadre',
       build: () => build(bindToItemId: target.id),
-      act: (bloc) async {
+      act: (ScanBloc bloc) async {
         bloc.add(const ScanStarted());
         await Future<void>.delayed(Duration.zero);
         hardware.camera.emit('QR-123');
@@ -368,18 +369,18 @@ void main() {
       'un código ya asociado al mismo objeto se marca como tal',
       setUp: () async => useCases.bindIdentifier(target.id, rawValue: 'TAG-1', type: IdentifierType.nfc),
       build: () => build(mode: ScanMode.manual, bindToItemId: target.id),
-      act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'TAG-1', type: IdentifierType.nfc)),
-      verify: (bloc) => expect(
+      act: (ScanBloc bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'TAG-1', type: IdentifierType.nfc)),
+      verify: (ScanBloc bloc) => expect(
         bloc.state.outcome,
-        isA<ScanBindRejected>().having((outcome) => outcome.sameItem, 'sameItem', isTrue),
+        isA<ScanBindRejected>().having((ScanBindRejected outcome) => outcome.sameItem, 'sameItem', isTrue),
       ),
     );
 
     blocTest<ScanBloc, ScanState>(
       'si el objeto ya no existe produce un aviso',
       build: () => build(mode: ScanMode.manual, bindToItemId: 'missing'),
-      act: (bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'QR-NEW', type: IdentifierType.qr)),
-      expect: () => [
+      act: (ScanBloc bloc) => bloc.add(const ScanManualSubmitted(rawValue: 'QR-NEW', type: IdentifierType.qr)),
+      expect: () => <ScanState>[
         const ScanState(mode: ScanMode.manual, lookingUp: true),
         const ScanState(mode: ScanMode.manual, notice: ScanNotice.itemNotFound),
       ],
