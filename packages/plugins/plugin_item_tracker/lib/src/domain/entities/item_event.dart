@@ -56,7 +56,7 @@ class ItemEvent extends Equatable {
   bool get isTechnical => kind != ItemEventKind.note;
 
   @override
-  List<Object?> get props => [id, itemId, kind, title, description, timestamp];
+  List<Object?> get props => <Object?>[id, itemId, kind, title, description, timestamp];
 
   @override
   bool get stringify => true;

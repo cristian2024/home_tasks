@@ -9,13 +9,14 @@ import 'plugin_item_tracker.dart';
 /// implementación Isar: unicidad de identificadores, orden de los listados y
 /// streams que emiten al suscribirse y en cada cambio.
 class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
-  final Map<String, HouseholdItem> _items = {};
-  final Map<String, PhysicalIdentifier> _identifiers = {};
-  final Map<String, ItemEvent> _events = {};
+  final Map<String, HouseholdItem> _items = <String, HouseholdItem>{};
+  final Map<String, PhysicalIdentifier> _identifiers = <String, PhysicalIdentifier>{};
+  final Map<String, ItemEvent> _events = <String, ItemEvent>{};
 
   /// Identificadores quitados (borrado lógico), con el momento en que se quitaron.
-  final List<({PhysicalIdentifier identifier, DateTime deletedAt})> deletedIdentifiers = [];
-  final StreamController<void> _changes = StreamController.broadcast();
+  final List<({PhysicalIdentifier identifier, DateTime deletedAt})> deletedIdentifiers =
+      <({PhysicalIdentifier identifier, DateTime deletedAt})>[];
+  final StreamController<void> _changes = StreamController<void>.broadcast();
 
   String _identifierKey(String rawValue, IdentifierType type) => '${type.name}:$rawValue';
 
@@ -25,7 +26,7 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   }
 
   void _checkIdentifier(PhysicalIdentifier identifier) {
-    final existing = _identifiers[_identifierKey(identifier.rawValue, identifier.type)];
+    final PhysicalIdentifier? existing = _identifiers[_identifierKey(identifier.rawValue, identifier.type)];
     if (existing != null) {
       throw IdentifierAlreadyBoundException(
         rawValue: identifier.rawValue,
@@ -42,7 +43,7 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
       _identifiers[_identifierKey(identifier.rawValue, identifier.type)] = identifier;
     }
     _items[item.id] = item;
-    for (final event in events) {
+    for (final ItemEvent event in events) {
       _events[event.id] = event;
     }
     _changes.add(null);
@@ -64,7 +65,7 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   @override
   Future<void> moveItem(HouseholdItem item, List<ItemEvent> events) async {
     _items[item.id] = item;
-    for (final event in events) {
+    for (final ItemEvent event in events) {
       _events[event.id] = event;
     }
     _changes.add(null);
@@ -73,15 +74,16 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   @override
   Stream<HouseholdItem?> watchById(String id) => _watch(() => _items[id]);
 
-  List<HouseholdItem> _sortedItems() => _items.values.toList()..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  List<HouseholdItem> _sortedItems() =>
+      _items.values.toList()..sort((HouseholdItem a, HouseholdItem b) => b.updatedAt.compareTo(a.updatedAt));
 
   @override
   Stream<List<HouseholdItem>> watchAll() => _watch(_sortedItems);
 
   @override
   Future<List<HouseholdItem>> searchByName(String query) async {
-    final needle = query.toLowerCase();
-    return _sortedItems().where((item) => item.name.toLowerCase().contains(needle)).toList();
+    final String needle = query.toLowerCase();
+    return _sortedItems().where((HouseholdItem item) => item.name.toLowerCase().contains(needle)).toList();
   }
 
   @override
@@ -90,12 +92,12 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
 
   @override
   Future<PhysicalIdentifier?> getIdentifier(String id) async =>
-      _identifiers.values.where((identifier) => identifier.id == id).firstOrNull;
+      _identifiers.values.where((PhysicalIdentifier identifier) => identifier.id == id).firstOrNull;
 
   @override
   Stream<List<PhysicalIdentifier>> watchIdentifiers(String itemId) => _watch(
-        () => _identifiers.values.where((i) => i.itemId == itemId).toList()
-          ..sort((a, b) => a.boundAt.compareTo(b.boundAt)),
+        () => _identifiers.values.where((PhysicalIdentifier i) => i.itemId == itemId).toList()
+          ..sort((PhysicalIdentifier a, PhysicalIdentifier b) => a.boundAt.compareTo(b.boundAt)),
       );
 
   @override
@@ -108,7 +110,7 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
 
   @override
   Future<void> unbindIdentifier(String identifierId, {required DateTime deletedAt, required ItemEvent event}) async {
-    final identifier = await getIdentifier(identifierId);
+    final PhysicalIdentifier? identifier = await getIdentifier(identifierId);
     if (identifier == null) {
       return;
     }
@@ -126,7 +128,7 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
 
   @override
   Stream<List<ItemEvent>> watchEvents(String itemId) => _watch(
-        () => _events.values.where((e) => e.itemId == itemId).toList()
-          ..sort((a, b) => b.timestamp.compareTo(a.timestamp)),
+        () => _events.values.where((ItemEvent e) => e.itemId == itemId).toList()
+          ..sort((ItemEvent a, ItemEvent b) => b.timestamp.compareTo(a.timestamp)),
       );
 }

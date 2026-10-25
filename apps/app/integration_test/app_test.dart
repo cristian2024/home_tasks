@@ -21,14 +21,14 @@ void main() {
   late Directory directory;
 
   setUp(() async {
-    final temp = await getTemporaryDirectory();
+    final Directory temp = await getTemporaryDirectory();
     directory = Directory('${temp.path}/ac_${DateTime.now().microsecondsSinceEpoch}')..createSync();
   });
 
   tearDown(() => directory.deleteSync(recursive: true));
 
   Future<AppEnvironment> start(WidgetTester tester) async {
-    final app = await bootstrapApp(
+    final AppEnvironment app = await bootstrapApp(
       databaseDirectory: directory.path,
       systemLanguageCode: 'es',
       locator: ServiceLocator(),
@@ -40,8 +40,10 @@ void main() {
     return app;
   }
 
-  testWidgets('AC-01, AC-04 y AC-02: registro, código desconocido y desactivación persistente', (tester) async {
-    var app = await start(tester);
+  testWidgets('AC-01, AC-04 y AC-02: registro, código desconocido y desactivación persistente', (
+    WidgetTester tester,
+  ) async {
+    AppEnvironment app = await start(tester);
 
     // AC-01: el plugin está registrado y su tarjeta aparece en inicio.
     expect(app.registry.getPlugin('item_tracker'), isNotNull);

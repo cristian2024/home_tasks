@@ -19,9 +19,9 @@ void main() {
   }
 
   group('ItemTrackerPlugin', () {
-    testWidgets('expone su contrato y registra/libera sus dependencias en su scope', (tester) async {
+    testWidgets('expone su contrato y registra/libera sus dependencias en su scope', (WidgetTester tester) async {
       await harness.pump(tester);
-      final plugin = harness.plugin;
+      final ItemTrackerPlugin plugin = harness.plugin;
 
       expect(plugin.id, 'item_tracker');
       expect(harness.localization.translate(plugin.nameKey), 'Seguimiento de Objetos');
@@ -41,7 +41,7 @@ void main() {
       await plugin.initialize(); // Para el tearDown.
     });
 
-    testWidgets('el dashboard muestra el número de objetos y abre el listado', (tester) async {
+    testWidgets('el dashboard muestra el número de objetos y abre el listado', (WidgetTester tester) async {
       await harness.createItem('Caja A');
       await harness.pump(tester);
 
@@ -52,7 +52,7 @@ void main() {
       expect(find.text('Caja A'), findsOneWidget);
     });
 
-    testWidgets('cambia de idioma a través del coordinador', (tester) async {
+    testWidgets('cambia de idioma a través del coordinador', (WidgetTester tester) async {
       await harness.pump(tester);
 
       harness.localization.setLanguage('en');
@@ -64,7 +64,7 @@ void main() {
     });
   });
 
-  testWidgets('AC-03: escanear un QR conocido abre el detalle del objeto', (tester) async {
+  testWidgets('AC-03: escanear un QR conocido abre el detalle del objeto', (WidgetTester tester) async {
     await harness.createItem('Caja A', qr: 'QR-123');
     await harness.pump(tester);
     await openScan(tester);
@@ -77,7 +77,7 @@ void main() {
     expect(find.text('QR-123'), findsOneWidget);
   });
 
-  testWidgets('AC-04: un QR desconocido muestra Crear nuevo y Asociar a existente', (tester) async {
+  testWidgets('AC-04: un QR desconocido muestra Crear nuevo y Asociar a existente', (WidgetTester tester) async {
     await harness.pump(tester);
     await openScan(tester);
 
@@ -90,7 +90,7 @@ void main() {
     expect(find.text('Asociar a un objeto existente'), findsOneWidget);
   });
 
-  testWidgets('crear desde un código desconocido asocia el código y abre el detalle', (tester) async {
+  testWidgets('crear desde un código desconocido asocia el código y abre el detalle', (WidgetTester tester) async {
     await harness.pump(tester);
     await openScan(tester);
     harness.hardware.camera.emit('NEW-1');
@@ -114,7 +114,7 @@ void main() {
     expect(harness.hardware.camera.isScanning, isTrue);
   });
 
-  testWidgets('AC-05: QR y NFC asociados a "Cama" llevan al mismo objeto', (tester) async {
+  testWidgets('AC-05: QR y NFC asociados a "Cama" llevan al mismo objeto', (WidgetTester tester) async {
     await harness.createItem('Cama', qr: 'QR-BED');
     await harness.createItem('Mesa');
     await harness.pump(tester);
@@ -146,7 +146,7 @@ void main() {
     expect(find.widgetWithText(AppBar, 'Cama'), findsOneWidget);
   });
 
-  testWidgets('AC-06: sin NFC la opción muestra un mensaje accesible sin errores', (tester) async {
+  testWidgets('AC-06: sin NFC la opción muestra un mensaje accesible sin errores', (WidgetTester tester) async {
     harness = PluginHarness(hardware: FakeHardware(nfcStatus: HardwareStatus.unsupported));
     await harness.pump(tester);
     await openScan(tester);
@@ -163,7 +163,7 @@ void main() {
     expect(find.widgetWithText(TextField, 'Código'), findsOneWidget);
   });
 
-  testWidgets('el selector Código oculta la cámara y Cámara oculta el campo', (tester) async {
+  testWidgets('el selector Código oculta la cámara y Cámara oculta el campo', (WidgetTester tester) async {
     await harness.createItem('Caja A', qr: 'QR-123');
     await harness.pump(tester);
     await openScan(tester);
@@ -191,7 +191,7 @@ void main() {
     expect(find.widgetWithText(AppBar, 'Caja A'), findsOneWidget);
   });
 
-  testWidgets('sin permiso de cámara ofrece concederlo o escribir el código', (tester) async {
+  testWidgets('sin permiso de cámara ofrece concederlo o escribir el código', (WidgetTester tester) async {
     harness = PluginHarness(hardware: FakeHardware(cameraPermission: HardwarePermissionStatus.denied));
     harness.hardware.permissions.statusAfterRequest = HardwarePermissionStatus.granted;
     await harness.pump(tester);
@@ -204,8 +204,8 @@ void main() {
     expect(find.byKey(FakeCameraScanner.previewKey), findsOneWidget);
   });
 
-  testWidgets('desde el detalle se edita el objeto y se añade una nota', (tester) async {
-    final item = await harness.createItem('Caja A', qr: 'QR-123');
+  testWidgets('desde el detalle se edita el objeto y se añade una nota', (WidgetTester tester) async {
+    final HouseholdItem item = await harness.createItem('Caja A', qr: 'QR-123');
     await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(item.id));
 
     await tester.tap(find.byTooltip('Editar objeto'));
@@ -241,8 +241,8 @@ void main() {
   });
 
   group('añadir identificador desde el objeto', () {
-    testWidgets('desde el detalle: la cámara asocia el código y vuelve al detalle', (tester) async {
-      final item = await harness.createItem('Cama', qr: 'QR-BED');
+    testWidgets('desde el detalle: la cámara asocia el código y vuelve al detalle', (WidgetTester tester) async {
+      final HouseholdItem item = await harness.createItem('Cama', qr: 'QR-BED');
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(item.id));
 
       await tester.tap(find.text('Añadir identificador'));
@@ -260,8 +260,10 @@ void main() {
       expect(harness.hardware.camera.isDisposed, isTrue);
     });
 
-    testWidgets('desde la edición: el código escrito se asocia sin guardar el formulario', (tester) async {
-      final item = await harness.createItem('Cama');
+    testWidgets('desde la edición: el código escrito se asocia sin guardar el formulario', (
+      WidgetTester tester,
+    ) async {
+      final HouseholdItem item = await harness.createItem('Cama');
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.edit(item.id));
 
       await tester.tap(find.text('Añadir identificador'));
@@ -275,13 +277,13 @@ void main() {
 
       expect(find.widgetWithText(AppBar, 'Editar objeto'), findsOneWidget);
       expect(find.text('Identificador añadido.'), findsOneWidget);
-      final found = await harness.repository.findIdentifier('TAG-1', IdentifierType.nfc);
+      final PhysicalIdentifier? found = await harness.repository.findIdentifier('TAG-1', IdentifierType.nfc);
       expect(found?.itemId, item.id);
     });
 
-    testWidgets('un código de otro objeto se rechaza y se sigue escaneando', (tester) async {
+    testWidgets('un código de otro objeto se rechaza y se sigue escaneando', (WidgetTester tester) async {
       await harness.createItem('Mesa', qr: 'QR-TABLE');
-      final item = await harness.createItem('Cama', qr: 'QR-BED');
+      final HouseholdItem item = await harness.createItem('Cama', qr: 'QR-BED');
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.addIdentifier(item.id));
 
       harness.hardware.camera.emit('QR-TABLE');
@@ -296,8 +298,10 @@ void main() {
     });
   });
 
-  testWidgets('quitar un identificador pide confirmación y lo deja libre para otro objeto', (tester) async {
-    final item = await harness.createItem('Cama', qr: 'QR-BED');
+  testWidgets('quitar un identificador pide confirmación y lo deja libre para otro objeto', (
+    WidgetTester tester,
+  ) async {
+    final HouseholdItem item = await harness.createItem('Cama', qr: 'QR-BED');
     await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(item.id));
 
     await tester.tap(find.byTooltip('Quitar QR QR-BED'));
@@ -316,15 +320,15 @@ void main() {
     expect(find.text('Sin identificadores asociados.'), findsOneWidget);
     expect(find.text('QR quitado: QR-BED'), findsOneWidget);
 
-    final other = await harness.createItem('Mesa', qr: 'QR-BED');
+    final HouseholdItem other = await harness.createItem('Mesa', qr: 'QR-BED');
     expect((await harness.repository.findIdentifier('QR-BED', IdentifierType.qr))?.itemId, other.id);
   });
 
   group('contenedores', () {
     Finder scrollable() => find.byType(Scrollable).first;
 
-    testWidgets('"Añadir objeto aquí" crea el objeto dentro y aparece en el contenido', (tester) async {
-      final furniture = await harness.createItem('Mueble');
+    testWidgets('"Añadir objeto aquí" crea el objeto dentro y aparece en el contenido', (WidgetTester tester) async {
+      final HouseholdItem furniture = await harness.createItem('Mueble');
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(furniture.id));
       expect(find.text('No está dentro de ningún objeto.'), findsOneWidget);
       expect(find.text('No contiene ningún objeto.'), findsOneWidget);
@@ -350,9 +354,11 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Mueble'), findsOneWidget);
     });
 
-    testWidgets('"Mover a…" excluye el contenido, marca el contenedor actual y mueve el objeto', (tester) async {
-      final furniture = await harness.createItem('Mueble');
-      final organizer = await harness.createItem('Organizador', parentId: furniture.id);
+    testWidgets('"Mover a…" excluye el contenido, marca el contenedor actual y mueve el objeto', (
+      WidgetTester tester,
+    ) async {
+      final HouseholdItem furniture = await harness.createItem('Mueble');
+      final HouseholdItem organizer = await harness.createItem('Organizador', parentId: furniture.id);
       await harness.createItem('Cajón', parentId: organizer.id);
       await harness.createItem('Caja');
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(organizer.id));
@@ -380,9 +386,9 @@ void main() {
       expect(find.text('Movido a «Caja»'), findsOneWidget);
     });
 
-    testWidgets('sacar del contenedor pide confirmación', (tester) async {
-      final box = await harness.createItem('Caja');
-      final scissors = await harness.createItem('Tijeras', parentId: box.id);
+    testWidgets('sacar del contenedor pide confirmación', (WidgetTester tester) async {
+      final HouseholdItem box = await harness.createItem('Caja');
+      final HouseholdItem scissors = await harness.createItem('Tijeras', parentId: box.id);
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(scissors.id));
 
       await tester.tap(find.text('Sacar del contenedor'));
@@ -396,15 +402,17 @@ void main() {
       expect((await harness.repository.getById(scissors.id))!.parentId, isNull);
     });
 
-    testWidgets('con un límite bajo bloquea los destinos y avisa del contenedor desbordado', (tester) async {
+    testWidgets('con un límite bajo bloquea los destinos y avisa del contenedor desbordado', (
+      WidgetTester tester,
+    ) async {
       await harness.dispose();
       harness = PluginHarness(maxContainmentDepth: 2);
-      final furniture = await harness.createItem('Mueble');
-      final organizer = await harness.createItem('Organizador', parentId: furniture.id);
-      final drawer = await harness.createItem('Cajón');
+      final HouseholdItem furniture = await harness.createItem('Mueble');
+      final HouseholdItem organizer = await harness.createItem('Organizador', parentId: furniture.id);
+      final HouseholdItem drawer = await harness.createItem('Cajón');
       await harness.createItem('Caja');
       // Quedó en el nivel 3 antes de bajar el límite.
-      await harness.repository.moveItem(drawer.copyWith(parentId: () => organizer.id), const []);
+      await harness.repository.moveItem(drawer.copyWith(parentId: () => organizer.id), const <ItemEvent>[]);
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(organizer.id));
 
       expect(
@@ -420,9 +428,9 @@ void main() {
       expect(find.text('Superaría el máximo de 2 niveles'), findsOneWidget);
     });
 
-    testWidgets('la lista muestra la ruta de los objetos que están dentro de otros', (tester) async {
-      final furniture = await harness.createItem('Mueble');
-      final organizer = await harness.createItem('Organizador', parentId: furniture.id);
+    testWidgets('la lista muestra la ruta de los objetos que están dentro de otros', (WidgetTester tester) async {
+      final HouseholdItem furniture = await harness.createItem('Mueble');
+      final HouseholdItem organizer = await harness.createItem('Organizador', parentId: furniture.id);
       await harness.createItem('Cajón', parentId: organizer.id);
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.items);
 
@@ -434,10 +442,10 @@ void main() {
       expect(find.text('Mueble › Organizador'), findsOneWidget);
     });
 
-    testWidgets('el detalle y "Mover a…" cumplen las guías de accesibilidad', (tester) async {
-      final semantics = tester.ensureSemantics();
-      final box = await harness.createItem('Caja');
-      final scissors = await harness.createItem('Tijeras', parentId: box.id);
+    testWidgets('el detalle y "Mover a…" cumplen las guías de accesibilidad', (WidgetTester tester) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      final HouseholdItem box = await harness.createItem('Caja');
+      final HouseholdItem scissors = await harness.createItem('Tijeras', parentId: box.id);
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(scissors.id));
 
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
@@ -451,14 +459,14 @@ void main() {
     });
   });
 
-  testWidgets('un enlace a "no encontrado" sin código redirige a escanear', (tester) async {
+  testWidgets('un enlace a "no encontrado" sin código redirige a escanear', (WidgetTester tester) async {
     await harness.pump(tester, initialLocation: ItemTrackerRoutes.notFound);
 
     expect(find.widgetWithText(AppBar, 'Escanear'), findsOneWidget);
   });
 
-  testWidgets('la pantalla de escaneo cumple las guías de accesibilidad', (tester) async {
-    final semantics = tester.ensureSemantics();
+  testWidgets('la pantalla de escaneo cumple las guías de accesibilidad', (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
     await harness.pump(tester);
     await openScan(tester);
     await tester.tap(find.text('Código'));

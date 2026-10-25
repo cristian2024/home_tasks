@@ -24,7 +24,7 @@ IdentifierType identifierTypeFromScan(ScanType type) => switch (type) {
 /// Texto localizado de un evento. Los técnicos se componen a partir de sus
 /// datos (§9.4); las notas se muestran tal cual.
 ({String title, String? subtitle}) describeEvent(ItemEvent event) {
-  final events = _t.itemTracker.events;
+  final ItemTrackerTranslations$itemTracker$events$es events = _t.itemTracker.events;
   return switch (event.kind) {
     ItemEventKind.created => (title: events.created(name: event.title), subtitle: null),
     ItemEventKind.updated => (
@@ -32,7 +32,7 @@ IdentifierType identifierTypeFromScan(ScanType type) => switch (type) {
           fields: event.description
               .split(',')
               .map(
-                (field) => switch (field) {
+                (String field) => switch (field) {
                   'name' => events.fieldName,
                   'description' => events.fieldDescription,
                   'metadata' => events.fieldMetadata,
@@ -68,12 +68,12 @@ IdentifierType identifierTypeFromScan(ScanType type) => switch (type) {
 }
 
 /// Ruta de contenedores para mostrar, p. ej. "Mueble › Organizador".
-String formatItemPath(Iterable<HouseholdItem> path) => path.map((item) => item.name).join(' › ');
+String formatItemPath(Iterable<HouseholdItem> path) => path.map((HouseholdItem item) => item.name).join(' › ');
 
 /// Mensaje de un error de validación para mostrar junto al campo.
 String validationMessage(ItemValidationException error) {
-  final errors = _t.itemTracker.errors;
-  final key = error.detail ?? '';
+  final ItemTrackerTranslations$itemTracker$errors$es errors = _t.itemTracker.errors;
+  final String key = error.detail ?? '';
   return switch ((error.field, error.reason)) {
     (_, ValidationReason.empty) => errors.required,
     (_, ValidationReason.tooManyEntries) => errors.metadataTooMany,
@@ -87,13 +87,13 @@ String validationMessage(ItemValidationException error) {
 
 /// Mensaje general de cualquier error del plugin.
 String errorMessage(Object error, {String? currentItemId}) {
-  final errors = _t.itemTracker.errors;
+  final ItemTrackerTranslations$itemTracker$errors$es errors = _t.itemTracker.errors;
   return switch (error) {
     ItemNotFoundException() => errors.itemNotFound,
     IdentifierNotFoundException() => errors.identifierNotFound,
     ItemContainmentCycleException() => errors.containmentCycle,
-    ItemContainmentTooDeepException(:final maxDepth) => errors.containmentTooDeep(max: maxDepth),
-    IdentifierAlreadyBoundException(:final boundItemId) =>
+    ItemContainmentTooDeepException(:final int maxDepth) => errors.containmentTooDeep(max: maxDepth),
+    IdentifierAlreadyBoundException(:final String boundItemId) =>
       boundItemId == currentItemId ? errors.alreadyBoundSame : errors.alreadyBoundOther,
     final ItemValidationException validation => validationMessage(validation),
     _ => errors.unexpected,
@@ -102,8 +102,8 @@ String errorMessage(Object error, {String? currentItemId}) {
 
 /// Fecha y hora locales de un instante UTC, con el formato del idioma activo.
 String formatTimestamp(BuildContext context, DateTime utc) {
-  final local = utc.toLocal();
-  final localizations = MaterialLocalizations.of(context);
+  final DateTime local = utc.toLocal();
+  final MaterialLocalizations localizations = MaterialLocalizations.of(context);
   return '${localizations.formatMediumDate(local)} · '
       '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
 }

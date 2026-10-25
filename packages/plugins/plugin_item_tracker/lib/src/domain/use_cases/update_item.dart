@@ -22,16 +22,16 @@ class UpdateItem {
     String? description,
     Map<String, Object?>? metadata,
   }) async {
-    final current = await _repository.getById(itemId);
+    final HouseholdItem? current = await _repository.getById(itemId);
     if (current == null) {
       throw ItemNotFoundException(itemId);
     }
 
-    final newName = name == null ? current.name : ItemValidator.name(name);
-    final newDescription = description == null ? current.description : ItemValidator.description(description);
-    final newMetadata = metadata == null ? current.metadata : ItemMetadata(metadata);
+    final String newName = name == null ? current.name : ItemValidator.name(name);
+    final String newDescription = description == null ? current.description : ItemValidator.description(description);
+    final ItemMetadata newMetadata = metadata == null ? current.metadata : ItemMetadata(metadata);
 
-    final changedFields = [
+    final List<String> changedFields = <String>[
       if (newName != current.name) 'name',
       if (newDescription != current.description) 'description',
       if (newMetadata != current.metadata) 'metadata',
@@ -40,8 +40,8 @@ class UpdateItem {
       return current;
     }
 
-    final now = _clock.nowUtc();
-    final updated = current.copyWith(
+    final DateTime now = _clock.nowUtc();
+    final HouseholdItem updated = current.copyWith(
       name: newName,
       description: newDescription,
       metadata: newMetadata,

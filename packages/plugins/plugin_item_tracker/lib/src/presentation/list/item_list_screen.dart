@@ -13,7 +13,7 @@ class ItemListScreen extends StatelessWidget {
   const ItemListScreen({super.key});
 
   Future<void> _create(BuildContext context) async {
-    final itemId = await context.push<String>(ItemTrackerRoutes.create);
+    final String? itemId = await context.push<String>(ItemTrackerRoutes.create);
     if (itemId != null && context.mounted) {
       await context.push<void>(ItemTrackerRoutes.detail(itemId));
     }
@@ -21,14 +21,14 @@ class ItemListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = itemTrackerStrings.itemTracker.list;
+    final ItemTrackerTranslations$itemTracker$list$es t = itemTrackerStrings.itemTracker.list;
     return Scaffold(
       appBar: AppBar(
         title: Text(t.title),
-        actions: [AppIconButton(icon: Icons.add, tooltip: t.create, onPressed: () => _create(context))],
+        actions: <Widget>[AppIconButton(icon: Icons.add, tooltip: t.create, onPressed: () => _create(context))],
       ),
       body: BlocBuilder<ItemListCubit, ItemListState>(
-        builder: (context, state) {
+        builder: (BuildContext context, ItemListState state) {
           if (state.loading) {
             return const AppLoadingView();
           }
@@ -40,9 +40,9 @@ class ItemListScreen extends StatelessWidget {
               action: AppButton(label: t.create, icon: Icons.add, onPressed: () => _create(context)),
             );
           }
-          final visible = state.visible;
+          final List<HouseholdItem> visible = state.visible;
           return Column(
-            children: [
+            children: <Widget>[
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: AppTextField(
@@ -56,11 +56,11 @@ class ItemListScreen extends StatelessWidget {
                     ? AppStatusView(icon: Icons.search_off, title: t.noResults)
                     : ItemCardList(
                         items: visible,
-                        subtitleBuilder: (item) => [
+                        subtitleBuilder: (HouseholdItem item) => <String>[
                           formatItemPath(state.tree.pathOf(item.id)),
                           item.description,
-                        ].where((line) => line.isNotEmpty).join('\n'),
-                        onSelected: (item) => context.push<void>(ItemTrackerRoutes.detail(item.id)),
+                        ].where((String line) => line.isNotEmpty).join('\n'),
+                        onSelected: (HouseholdItem item) => context.push<void>(ItemTrackerRoutes.detail(item.id)),
                       ),
               ),
             ],
@@ -99,11 +99,11 @@ class ItemCardList extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
       itemCount: items.length,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        final subtitle = subtitleBuilder?.call(item) ?? item.description;
-        final selectable = onSelected != null && (enabledBuilder?.call(item) ?? true);
-        final semanticLabel = semanticLabelBuilder?.call(item) ?? item.name;
+      itemBuilder: (BuildContext context, int index) {
+        final HouseholdItem item = items[index];
+        final String subtitle = subtitleBuilder?.call(item) ?? item.description;
+        final bool selectable = onSelected != null && (enabledBuilder?.call(item) ?? true);
+        final String semanticLabel = semanticLabelBuilder?.call(item) ?? item.name;
         return AppCard(
           semanticLabel: subtitle.isEmpty ? semanticLabel : '$semanticLabel. $subtitle',
           onTap: selectable ? () => onSelected!(item) : null,

@@ -1,6 +1,6 @@
 name: plugin_item_tracker
 description: Plugin de identificación y seguimiento de objetos del hogar (QR, códigos de barras y NFC).
-version: 0.1.0
+version: 1.1.0
 publish_to: none
 
 environment:

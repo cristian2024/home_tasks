@@ -11,9 +11,9 @@ enum BlockedReason { disabled, unavailable }
 /// registradas).
 class PluginRouteGuard {
   PluginRouteGuard({required PluginRegistry registry, required this.controller})
-    : _prefixes = {
-        for (final plugin in registry.allPlugins)
-          for (final route in plugin.routes.whereType<GoRoute>())
+    : _prefixes = <String, String>{
+        for (final HomePlugin plugin in registry.allPlugins)
+          for (final GoRoute route in plugin.routes.whereType<GoRoute>())
             ?_prefixOf(route.path): plugin.id,
       };
 
@@ -23,18 +23,18 @@ class PluginRouteGuard {
   final Map<String, String> _prefixes;
 
   static String? _prefixOf(String path) {
-    final segments = Uri.parse(path).pathSegments;
+    final List<String> segments = Uri.parse(path).pathSegments;
     return segments.isEmpty ? null : '/${segments.first}';
   }
 
   /// `null` si [path] puede abrirse; si no, el motivo del bloqueo.
   BlockedReason? check(String path) {
-    final prefix = _prefixOf(path);
-    final pluginId = prefix == null ? null : _prefixes[prefix];
+    final String? prefix = _prefixOf(path);
+    final String? pluginId = prefix == null ? null : _prefixes[prefix];
     if (pluginId == null) {
       return null;
     }
-    final state = controller.stateOf(pluginId);
+    final PluginState? state = controller.stateOf(pluginId);
     return switch (state?.status) {
       PluginStatus.ready => null,
       PluginStatus.disabled => BlockedReason.disabled,

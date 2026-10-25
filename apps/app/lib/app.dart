@@ -26,7 +26,7 @@ class HomeUtilityApp extends StatefulWidget {
 
 class _HomeUtilityAppState extends State<HomeUtilityApp>
     with WidgetsBindingObserver {
-  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final GoRouter _router = buildAppRouter(
     registry: widget.environment.registry,
     controller: widget.environment.plugins,
@@ -68,7 +68,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
 
   @override
   Widget build(BuildContext context) {
-    final localization = widget.environment.localization;
+    final LocalizationCoordinator localization = widget.environment.localization;
     return RepositoryProvider<LocalizationCoordinator>.value(
       value: localization,
       child: BlocProvider<AppSettingsController>.value(
@@ -78,7 +78,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
           languageCode: localization.languageCode,
           child: ValueListenableBuilder<String>(
             valueListenable: localization.languageCode,
-            builder: (context, languageCode, _) => MaterialApp.router(
+            builder: (BuildContext context, String languageCode, _) => MaterialApp.router(
               onGenerateTitle: (_) => appStrings.app.title,
               theme: AppTheme.light,
               darkTheme: AppTheme.dark,
