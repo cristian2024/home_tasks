@@ -18,7 +18,13 @@ void main() {
   late Directory directory;
   late InMemoryAppSettingsRepository settings;
 
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
+    // bootstrapApp lee de rootBundle los textos que la app reemplaza. El
+    // binding de test responde 400 a toda petición HTTP, así que se inicia
+    // después de descargar libisar (en CI no está en caché).
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
   setUp(() {
     directory = Directory.systemTemp.createTempSync('ac02');
     settings = InMemoryAppSettingsRepository();
@@ -34,8 +40,8 @@ void main() {
       );
 
   test('AC-02: la desactivación persiste tras reiniciar y los datos se conservan', () async {
-    var app = await start();
-    final created = await app.locator.get<ItemTrackerDependencies>().createItem(
+    AppEnvironment app = await start();
+    final HouseholdItem created = await app.locator.get<ItemTrackerDependencies>().createItem(
           name: 'Caja A',
           identifier: (rawValue: 'QR-123', type: IdentifierType.qr),
         );
@@ -49,12 +55,12 @@ void main() {
     expect(app.plugins.stateOf(ItemTrackerPlugin.pluginId)?.preference.isEnabled, isFalse);
     expect(app.plugins.dashboard, isEmpty);
     // Los datos siguen en Isar aunque el plugin esté desactivado.
-    final stored = await IsarHouseholdItemRepository(app.isar!).getById(created.id);
+    final HouseholdItem? stored = await IsarHouseholdItemRepository(app.isar!).getById(created.id);
     expect(stored?.name, 'Caja A');
 
     // Al reactivarlo, el plugin vuelve a encontrar sus datos.
     await app.plugins.setEnabled(ItemTrackerPlugin.pluginId, enabled: true);
-    final found = await app.locator.get<ItemTrackerDependencies>().findItemByIdentifier(
+    final HouseholdItem? found = await app.locator.get<ItemTrackerDependencies>().findItemByIdentifier(
           rawValue: 'QR-123',
           type: IdentifierType.qr,
         );

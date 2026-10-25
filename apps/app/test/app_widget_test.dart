@@ -24,8 +24,8 @@ void main() {
   ThemeMode themeMode(WidgetTester tester) => tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
 
   group('dashboard', () {
-    testWidgets('muestra las tarjetas de los plugins activos en su orden', (tester) async {
-      harness = AppHarness(extraPlugins: [FakeHomePlugin('notas')]);
+    testWidgets('muestra las tarjetas de los plugins activos en su orden', (WidgetTester tester) async {
+      harness = AppHarness(extraPlugins: <FakeHomePlugin>[FakeHomePlugin('notas')]);
       await harness.pump(tester);
 
       expect(find.text('Utilidades del Hogar'), findsOneWidget);
@@ -44,9 +44,11 @@ void main() {
       );
     });
 
-    testWidgets('un plugin que falla muestra una tarjeta de error sin bloquear a los demás', (tester) async {
-      final failing = FakeHomePlugin('notas', failOnInitialize: true);
-      harness = AppHarness(extraPlugins: [failing]);
+    testWidgets('un plugin que falla muestra una tarjeta de error sin bloquear a los demás', (
+      WidgetTester tester,
+    ) async {
+      final FakeHomePlugin failing = FakeHomePlugin('notas', failOnInitialize: true);
+      harness = AppHarness(extraPlugins: <FakeHomePlugin>[failing]);
       await harness.pump(tester);
 
       expect(find.text('No se pudo iniciar «Módulo notas».'), findsOneWidget);
@@ -58,7 +60,7 @@ void main() {
       expect(find.text('Tarjeta notas'), findsOneWidget);
     });
 
-    testWidgets('sin plugins activos ofrece abrir el catálogo', (tester) async {
+    testWidgets('sin plugins activos ofrece abrir el catálogo', (WidgetTester tester) async {
       harness = AppHarness();
       await harness.plugins.load();
       await harness.plugins.setEnabled(ItemTrackerPlugin.pluginId, enabled: false);
@@ -70,7 +72,7 @@ void main() {
       expect(find.text('Activa o desactiva los módulos. Al desactivar uno, sus datos se conservan.'), findsOneWidget);
     });
 
-    testWidgets('las tarjetas abren las rutas de su plugin', (tester) async {
+    testWidgets('las tarjetas abren las rutas de su plugin', (WidgetTester tester) async {
       harness = AppHarness();
       await harness.pump(tester);
 
@@ -81,9 +83,11 @@ void main() {
   });
 
   group('catálogo', () {
-    testWidgets('AC-02 (UI): desactivar un plugin lo quita del inicio y libera sus recursos', (tester) async {
-      final notes = FakeHomePlugin('notas');
-      harness = AppHarness(extraPlugins: [notes]);
+    testWidgets('AC-02 (UI): desactivar un plugin lo quita del inicio y libera sus recursos', (
+      WidgetTester tester,
+    ) async {
+      final FakeHomePlugin notes = FakeHomePlugin('notas');
+      harness = AppHarness(extraPlugins: <FakeHomePlugin>[notes]);
       await harness.pump(tester);
       await openCatalog(tester);
 
@@ -105,17 +109,17 @@ void main() {
       expect((await harness.preferences.getAll()).single.isEnabled, isFalse);
     });
 
-    testWidgets('un plugin no disponible no se puede activar', (tester) async {
-      harness = AppHarness(extraPlugins: [FakeHomePlugin('notas', available: false)]);
+    testWidgets('un plugin no disponible no se puede activar', (WidgetTester tester) async {
+      harness = AppHarness(extraPlugins: <FakeHomePlugin>[FakeHomePlugin('notas', available: false)]);
       await harness.pump(tester);
       await openCatalog(tester);
 
-      final tile = tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Módulo notas'));
+      final SwitchListTile tile = tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Módulo notas'));
       expect(tile.onChanged, isNull);
       expect(find.textContaining('No disponible en este dispositivo.'), findsOneWidget);
     });
 
-    testWidgets('muestra los nombres traducidos al cambiar de idioma', (tester) async {
+    testWidgets('muestra los nombres traducidos al cambiar de idioma', (WidgetTester tester) async {
       harness = AppHarness();
       await harness.pump(tester);
 
@@ -127,12 +131,12 @@ void main() {
       expect(find.text('Item Tracker'), findsOneWidget);
     });
 
-    testWidgets('sigue el cambio de idioma del sistema con la app abierta', (tester) async {
+    testWidgets('sigue el cambio de idioma del sistema con la app abierta', (WidgetTester tester) async {
       harness = AppHarness();
       await harness.pump(tester);
       expect(find.text('Utilidades del Hogar'), findsOneWidget);
 
-      tester.platformDispatcher.localesTestValue = const [Locale('en', 'US')];
+      tester.platformDispatcher.localesTestValue = const <Locale>[Locale('en', 'US')];
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
       await tester.pumpAndSettle();
 
@@ -221,7 +225,7 @@ void main() {
   });
 
   group('guard de rutas (§12.3)', () {
-    testWidgets('un deep link a un plugin desactivado redirige a inicio con un aviso', (tester) async {
+    testWidgets('un deep link a un plugin desactivado redirige a inicio con un aviso', (WidgetTester tester) async {
       harness = AppHarness();
       await harness.plugins.load();
       await harness.plugins.setEnabled(ItemTrackerPlugin.pluginId, enabled: false);
@@ -233,15 +237,15 @@ void main() {
       expect(find.text('Ese módulo está desactivado. Actívalo en el catálogo para usarlo.'), findsOneWidget);
     });
 
-    testWidgets('un deep link a un plugin activo se abre normalmente', (tester) async {
+    testWidgets('un deep link a un plugin activo se abre normalmente', (WidgetTester tester) async {
       harness = AppHarness();
       await harness.pump(tester, initialLocation: ItemTrackerRoutes.scan);
 
       expect(find.widgetWithText(AppBar, 'Escanear'), findsOneWidget);
     });
 
-    testWidgets('las rutas de un plugin que falló también se bloquean', (tester) async {
-      harness = AppHarness(extraPlugins: [FakeHomePlugin('notas', failOnInitialize: true)]);
+    testWidgets('las rutas de un plugin que falló también se bloquean', (WidgetTester tester) async {
+      harness = AppHarness(extraPlugins: <FakeHomePlugin>[FakeHomePlugin('notas', failOnInitialize: true)]);
       await harness.pump(tester, initialLocation: '/notas');
 
       expect(find.text('Pantalla notas'), findsNothing);
@@ -249,9 +253,9 @@ void main() {
     });
   });
 
-  testWidgets('inicio y catálogo cumplen las guías de accesibilidad', (tester) async {
-    final semantics = tester.ensureSemantics();
-    harness = AppHarness(extraPlugins: [FakeHomePlugin('notas')]);
+  testWidgets('inicio y catálogo cumplen las guías de accesibilidad', (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    harness = AppHarness(extraPlugins: <FakeHomePlugin>[FakeHomePlugin('notas')]);
     await harness.pump(tester);
 
     await expectLater(tester, meetsGuideline(androidTapTargetGuideline));

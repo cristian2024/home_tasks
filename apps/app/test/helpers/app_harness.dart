@@ -58,7 +58,7 @@ class FakeHomePlugin implements HomePlugin {
   Future<void> dispose() async => disposeCalls++;
 
   @override
-  List<RouteBase> get routes => [
+  List<RouteBase> get routes => <RouteBase>[
         GoRoute(path: route, builder: (_, _) => Scaffold(appBar: AppBar(title: Text('Pantalla $id')))),
       ];
 
@@ -70,24 +70,30 @@ class FakeHomePlugin implements HomePlugin {
 /// Entorno de la app sin Isar: plugin real con hardware falso y repositorio
 /// en memoria, más los [extraPlugins] que se indiquen.
 class AppHarness {
-  AppHarness({List<FakeHomePlugin> extraPlugins = const [], AppSettings savedSettings = const AppSettings()})
-      : extraPlugins = extraPlugins,
+  AppHarness({
+    List<FakeHomePlugin> extraPlugins = const <FakeHomePlugin>[],
+    AppSettings savedSettings = const AppSettings(),
+  })  : extraPlugins = extraPlugins,
         preferences = InMemoryPluginPreferenceRepository(),
         settingsRepository = InMemoryAppSettingsRepository(savedSettings) {
     localization.register(
       'app',
-      (code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
-      translate: (key) {
-        final value = app_i18n.appStrings[key];
+      (String code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
+      translate: (String key) {
+        final Object? value = app_i18n.appStrings[key];
         return value is String ? value : null;
       },
     );
-    localization.register('fakes', (_) {}, translate: (key) => key.endsWith('.name') ? 'Módulo ${key.split('.').first}' : null);
-    final registry = createPluginRegistry(
+    localization.register(
+      'fakes',
+      (_) {},
+      translate: (String key) => key.endsWith('.name') ? 'Módulo ${key.split('.').first}' : null,
+    );
+    final PluginRegistry registry = createPluginRegistry(
       locator: locator,
       localization: localization,
-      factories: [
-        (locator, localization) => ItemTrackerPlugin(
+      factories: <PluginFactory>[
+        (ServiceLocator locator, LocalizationCoordinator localization) => ItemTrackerPlugin(
               locator: locator,
               localization: localization,
               cameraScannerFactory: FakeCameraScanner.new,
@@ -95,7 +101,7 @@ class AppHarness {
               permissions: FakeHardwarePermissions(),
               repositoryFactory: (_) => items,
             )..registerLocalization(),
-        for (final plugin in extraPlugins) (_, _) => plugin,
+        for (final FakeHomePlugin plugin in extraPlugins) (_, _) => plugin,
       ],
     );
     environment = AppEnvironment(
@@ -115,9 +121,9 @@ class AppHarness {
   final List<FakeHomePlugin> extraPlugins;
   final InMemoryPluginPreferenceRepository preferences;
   final InMemoryAppSettingsRepository settingsRepository;
-  final locator = ServiceLocator();
-  final localization = LocalizationCoordinator();
-  final items = InMemoryHouseholdItemRepository();
+  final ServiceLocator locator = ServiceLocator();
+  final LocalizationCoordinator localization = LocalizationCoordinator();
+  final InMemoryHouseholdItemRepository items = InMemoryHouseholdItemRepository();
   late final AppEnvironment environment;
 
   PluginController get plugins => environment.plugins;

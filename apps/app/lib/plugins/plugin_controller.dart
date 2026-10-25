@@ -7,7 +7,7 @@ class PluginController extends ChangeNotifier {
   PluginController(this._manager);
 
   final PluginLifecycleManager _manager;
-  List<PluginState> _states = const [];
+  List<PluginState> _states = const <PluginState>[];
   bool _loaded = false;
 
   /// Todos los plugins registrados, ordenados por `sortOrder`.
@@ -16,12 +16,12 @@ class PluginController extends ChangeNotifier {
   /// Plugins que se muestran en el dashboard (activos y disponibles, aunque
   /// su inicialización haya fallado).
   List<PluginState> get dashboard =>
-      _states.where((state) => state.isVisibleOnDashboard).toList();
+      _states.where((PluginState state) => state.isVisibleOnDashboard).toList();
 
   bool get isLoaded => _loaded;
 
   PluginState? stateOf(String pluginId) =>
-      _states.where((state) => state.plugin.id == pluginId).firstOrNull;
+      _states.where((PluginState state) => state.plugin.id == pluginId).firstOrNull;
 
   /// Carga (o recarga) los plugins: inicializa los activos que falten y
   /// reintenta los que fallaron.
@@ -34,13 +34,13 @@ class PluginController extends ChangeNotifier {
   /// [newIndex] (convención de `ReorderableListView.onReorderItem`). Los
   /// plugins que no se muestran conservan su orden relativo, al final.
   Future<void> moveDashboardTile(int oldIndex, int newIndex) {
-    final visible = dashboard.map((state) => state.plugin.id).toList();
-    final moved = visible.removeAt(oldIndex);
+    final List<String> visible = dashboard.map((PluginState state) => state.plugin.id).toList();
+    final String moved = visible.removeAt(oldIndex);
     visible.insert(newIndex, moved);
-    final hidden = _states
-        .map((state) => state.plugin.id)
-        .where((id) => !visible.contains(id));
-    return _update(() => _manager.reorder([...visible, ...hidden]));
+    final Iterable<String> hidden = _states
+        .map((PluginState state) => state.plugin.id)
+        .where((String id) => !visible.contains(id));
+    return _update(() => _manager.reorder(<String>[...visible, ...hidden]));
   }
 
   Future<void> disposePlugins() => _manager.disposeAll();

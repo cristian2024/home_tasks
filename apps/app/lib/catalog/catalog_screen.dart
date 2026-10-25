@@ -12,17 +12,17 @@ class CatalogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = appStrings.app.catalog;
-    final localization = context.read<LocalizationCoordinator>();
+    final AppTranslations$app$catalog$es t = appStrings.app.catalog;
+    final LocalizationCoordinator localization = context.read<LocalizationCoordinator>();
     return Scaffold(
       appBar: AppBar(title: Text(t.title)),
       body: BlocBuilder<CatalogCubit, CatalogState>(
-        builder: (context, state) => ListView(
+        builder: (BuildContext context, CatalogState state) => ListView(
           padding: const EdgeInsets.all(AppSpacing.md),
-          children: [
+          children: <Widget>[
             Text(t.description),
             const SizedBox(height: AppSpacing.md),
-            for (final plugin in state.plugins)
+            for (final PluginState plugin in state.plugins)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: _CatalogEntry(
@@ -51,10 +51,10 @@ class _CatalogEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = appStrings.app.catalog;
-    final plugin = state.plugin;
-    final unavailable = state.status == PluginStatus.unavailable;
-    final status = switch (state.status) {
+    final AppTranslations$app$catalog$es t = appStrings.app.catalog;
+    final HomePlugin plugin = state.plugin;
+    final bool unavailable = state.status == PluginStatus.unavailable;
+    final String status = switch (state.status) {
       PluginStatus.unavailable => t.unavailable,
       PluginStatus.failed => t.failed,
       PluginStatus.ready => t.enabled,
@@ -72,7 +72,7 @@ class _CatalogEntry extends StatelessWidget {
         value: state.preference.isEnabled,
         onChanged: unavailable || pending
             ? null
-            : (enabled) => context.read<CatalogCubit>().setEnabled(
+            : (bool enabled) => context.read<CatalogCubit>().setEnabled(
                 plugin.id,
                 enabled: enabled,
               ),

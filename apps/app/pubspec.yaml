@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.11.0
@@ -40,3 +40,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Textos que la app reemplaza en cada paquete (lib/i18n/translation_overrides.dart).
+  assets:
+    - assets/i18n/core_ui/
+    - assets/i18n/item_tracker/
