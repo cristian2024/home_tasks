@@ -43,6 +43,7 @@
 - **Widgets reutilizables agnósticos:** un widget con una función concreta que pueda usarse en otro sitio recibe por parámetros todo lo que necesita y devuelve resultados con callbacks. No usa cubits ni blocs, navegación, diálogos ni snackbars: eso lo hace la screen, que los conecta. Las partes privadas en que se divide una screen para leerla mejor (`_DetailBody`, `_CameraView`…) son parte de la screen.
 - **Versión y CHANGELOG por paquete (§5.3):** toda rama que cambie un paquete (o `apps/app`) sube su `version:` y añade una entrada a su `CHANGELOG.md`. Se adopta poco a poco: el primer cambio a un paquete que aún no tiene CHANGELOG lo crea. Las apps de `example/`, `tool/` y la raíz no llevan.
   - **SemVer.** En `0.x.y`, un cambio incompatible sube el minor (`0.1.0` → `0.2.0`) y cualquier otro el patch (`0.1.0` → `0.1.1`). A partir de `1.0.0`, major / minor / patch. En `apps/app` se sube además el build (`+n`).
+  - **Dependientes.** Entre paquetes del workspace se usa `^x.y.z`, nunca `any`. Si una subida deja fuera la restricción de un dependiente (un cambio incompatible), la misma rama la actualiza en todos los `pubspec.yaml` que dependen del paquete, con su ejemplo y `apps/app`. Es la única excepción a una rama por proyecto. El dependiente no sube de versión por eso: lo anota en su siguiente entrada.
   - **Formato:** una entrada por rama, `## <versión> - <AAAA-MM-DD>`, con los cambios agrupados por tipo, en este orden y omitiendo los vacíos:
     - `Añadido`: funcionalidad nueva.
     - `Cambiado`: cambios en algo que ya existía.
