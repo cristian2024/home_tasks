@@ -13,7 +13,7 @@ dependencies:
   core_di: ^0.1.0
   core_events: ^0.1.0
   core_storage: ^0.1.0
-  core_ui: ^0.1.0
+  core_ui: ^0.1.1
   core_utils: ^0.1.0
   design_system: ^0.1.0
   flutter:
@@ -30,3 +30,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Todos los textos de cada paquete, inyectados por el ejemplo (lib/src/injected_translations.dart).
+  assets:
+    - assets/i18n/core_ui/
+    - assets/i18n/item_tracker/
