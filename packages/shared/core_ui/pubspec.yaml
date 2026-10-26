@@ -1,6 +1,6 @@
 name: core_ui
 description: Base de UI compartida - internacionalización (slang) y coordinación del idioma entre paquetes.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
