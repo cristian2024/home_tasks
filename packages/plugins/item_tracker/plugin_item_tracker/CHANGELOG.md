@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 - 2026-10-27
+
+### Interno
+
+- El paquete pasa a `packages/plugins/item_tracker/plugin_item_tracker`, la carpeta de la funcionalidad item_tracker, con su app de ejemplo. El nombre del paquete no cambia.
+
 ## 1.1.0 - 2026-10-24
 
 ### Añadido

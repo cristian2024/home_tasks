@@ -101,7 +101,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '1.1.0';
+  String get version => '1.1.1';
 
   @override
   List<CollectionSchema<dynamic>> get storageSchemas => itemTrackerSchemas;

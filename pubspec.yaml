@@ -12,8 +12,8 @@ workspace:
   - packages/core/core_hardware/example
   - packages/design_system
   - packages/design_system/example
-  - packages/plugins/*
-  - packages/plugins/plugin_item_tracker/example
+  - packages/plugins/*/*
+  - packages/plugins/item_tracker/plugin_item_tracker/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

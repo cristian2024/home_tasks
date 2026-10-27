@@ -9,7 +9,7 @@ App anfitriona mínima para probar el plugin `item_tracker` en un dispositivo re
 ## Ejecutar
 
 ```bash
-cd packages/plugins/plugin_item_tracker/example
+cd packages/plugins/item_tracker/plugin_item_tracker/example
 flutter run
 flutter test     # widget test con hardware falso y repositorio en memoria
 ```
