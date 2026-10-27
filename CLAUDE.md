@@ -92,6 +92,7 @@
 - **`tester.pageBack()`:** busca el tooltip en inglés. Con la app en español, usar `tester.tap(find.byType(BackButton))`.
 - **`pumpAndSettle`:** nunca termina con indicadores de carga animados visibles. Usar `pump()`.
 - **`SnackBar`:** llamar a `hideCurrentSnackBar()` antes de `showSnackBar` para que no se queden en cola.
+- **Isar y el binding de tests:** `TestWidgetsFlutterBinding` responde 400 a todas las peticiones HTTP. En un test que necesite el binding (p. ej. para `rootBundle`), ejecutar `Isar.initializeIsarCore(download: true)` **antes** de `TestWidgetsFlutterBinding.ensureInitialized()`. Si no, en CI (sin `libisar` en caché) la descarga falla. Ver `apps/app/test/ac02_persistence_test.dart`.
 
 ## Fase 4 (apps/app)
 - **Estructura:**
