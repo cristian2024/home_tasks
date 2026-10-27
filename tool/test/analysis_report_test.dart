@@ -62,6 +62,16 @@ Analyzing home_tasks...
 
     expect(project('/repo/packages/core/core_di/lib/a.dart'), 'packages/core/core_di');
     expect(project('/repo/packages/design_system/example/lib/main.dart'), 'packages/design_system');
+    expect(project('/repo/packages/plugins/plugin_a/lib/a.dart'), 'packages/plugins/plugin_a');
+    expect(project('/repo/packages/plugins/plugin_a/example/lib/main.dart'), 'packages/plugins/plugin_a');
+    expect(
+      project('/repo/packages/plugins/item_tracker/item_tracker_domain/lib/a.dart'),
+      'packages/plugins/item_tracker/item_tracker_domain',
+    );
+    expect(
+      project('/repo/packages/plugins/item_tracker/plugin_item_tracker/example/lib/main.dart'),
+      'packages/plugins/item_tracker/plugin_item_tracker',
+    );
     expect(project('/repo/apps/app/lib/main.dart'), 'apps/app');
     expect(project('/repo/tool/analyze.dart'), 'tool');
     expect(project('/repo/pubspec.yaml'), 'pubspec.yaml');
