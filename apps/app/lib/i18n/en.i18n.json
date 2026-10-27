@@ -9,7 +9,10 @@
       "reorder_hint": "Long-press a card to change the order.",
       "plugin_failed": "“{name}” could not be started.",
       "retry": "Retry",
-      "open_settings": "Settings"
+      "open_settings": "Settings",
+      "show_grid": "Show as shortcuts",
+      "show_list": "Show as list",
+      "add_shortcut": "Add"
     },
     "catalog": {
       "title": "Modules",

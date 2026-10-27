@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0+4 - 2026-10-26
+
+### Añadido
+
+- Vista de accesos rápidos en el inicio: los plugins activos en una grilla (icono y título, 4 columnas en móvil), con «Añadir» siempre al final para abrir el catálogo. Un botón de la barra superior alterna entre lista y grilla.
+- Al tocar un acceso rápido se abre la tarjeta del plugin en una hoja inferior, con todas sus acciones. Un plugin que no pudo iniciarse se ve con error y al tocarlo se reintenta.
+- La vista elegida se guarda (`app.home_layout`) aparte de los plugins: cambiarla no modifica cuáles están activos ni su orden.
+
+### Cambiado
+
+- Usa design_system 0.1.1 (`AppShortcutTile`, `AppShortcutGrid`).
+
 ## 1.2.0+3 - 2026-10-24
 
 ### Cambiado

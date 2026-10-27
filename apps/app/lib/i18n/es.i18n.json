@@ -9,7 +9,10 @@
       "reorder_hint": "Mantén pulsada una tarjeta para cambiar el orden.",
       "plugin_failed": "No se pudo iniciar «{name}».",
       "retry": "Reintentar",
-      "open_settings": "Configuración"
+      "open_settings": "Configuración",
+      "show_grid": "Ver como accesos rápidos",
+      "show_list": "Ver como lista",
+      "add_shortcut": "Añadir"
     },
     "catalog": {
       "title": "Módulos",

@@ -17,6 +17,7 @@ class SharedPreferencesAppSettingsRepository implements AppSettingsRepository {
 
   static const String themeKey = 'app.theme';
   static const String languageKey = 'app.language';
+  static const String homeLayoutKey = 'app.home_layout';
 
   @override
   Future<AppSettings> load() async {
@@ -25,6 +26,7 @@ class SharedPreferencesAppSettingsRepository implements AppSettingsRepository {
     return AppSettings(
       theme: AppThemePreference.values.asNameMap()[preferences.getString(themeKey)] ?? AppThemePreference.system,
       languageCode: languageCode == null || languageCode.isEmpty ? null : languageCode,
+      homeLayout: HomeLayout.values.asNameMap()[preferences.getString(homeLayoutKey)] ?? HomeLayout.list,
     );
   }
 
@@ -33,6 +35,7 @@ class SharedPreferencesAppSettingsRepository implements AppSettingsRepository {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     final String? languageCode = settings.languageCode;
     await preferences.setString(themeKey, settings.theme.name);
+    await preferences.setString(homeLayoutKey, settings.homeLayout.name);
     if (languageCode == null) {
       await preferences.remove(languageKey);
     } else {
