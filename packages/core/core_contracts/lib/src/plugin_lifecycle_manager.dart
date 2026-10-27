@@ -20,7 +20,7 @@ class PluginLifecycleManager {
   final PluginPreferenceRepository _preferences;
   final PluginErrorHandler? onError;
 
-  final Set<String> _initialized = {};
+  final Set<String> _initialized = <String>{};
 
   PluginLifecycleManager({
     required PluginRegistry registry,
@@ -36,25 +36,25 @@ class PluginLifecycleManager {
   /// Un plugin sin preferencia guardada se considera activado, con
   /// `sortOrder` igual a su posición de registro.
   Future<List<PluginState>> load() async {
-    final saved = {
-      for (final preference in await _preferences.getAll())
+    final Map<String, UserPluginPreference> saved = <String, UserPluginPreference>{
+      for (final UserPluginPreference preference in await _preferences.getAll())
         preference.pluginId: preference,
     };
-    final plugins = _registry.allPlugins;
+    final List<HomePlugin> plugins = _registry.allPlugins;
 
-    final states = <PluginState>[];
-    for (var i = 0; i < plugins.length; i++) {
-      final plugin = plugins[i];
-      final preference = saved[plugin.id] ??
+    final List<PluginState> states = <PluginState>[];
+    for (int i = 0; i < plugins.length; i++) {
+      final HomePlugin plugin = plugins[i];
+      final UserPluginPreference preference = saved[plugin.id] ??
           UserPluginPreference(pluginId: plugin.id, isEnabled: true, sortOrder: i);
       states.add(await _resolve(plugin, preference));
     }
 
-    final registrationIndex = {
-      for (var i = 0; i < plugins.length; i++) plugins[i].id: i,
+    final Map<String, int> registrationIndex = <String, int>{
+      for (int i = 0; i < plugins.length; i++) plugins[i].id: i,
     };
-    states.sort((a, b) {
-      final bySortOrder = a.preference.sortOrder.compareTo(b.preference.sortOrder);
+    states.sort((PluginState a, PluginState b) {
+      final int bySortOrder = a.preference.sortOrder.compareTo(b.preference.sortOrder);
       if (bySortOrder != 0) {
         return bySortOrder;
       }
@@ -67,7 +67,7 @@ class PluginLifecycleManager {
   /// `dispose()`; sus datos locales no se tocan. Devuelve el estado
   /// actualizado de todos los plugins.
   Future<List<PluginState>> setEnabled(String pluginId, {required bool enabled}) async {
-    final current = await _stateOf(pluginId);
+    final PluginState current = await _stateOf(pluginId);
     await _preferences.save(current.preference.copyWith(isEnabled: enabled));
     if (!enabled) {
       await _disposePlugin(current.plugin);
@@ -78,7 +78,7 @@ class PluginLifecycleManager {
   /// Persiste un nuevo orden. [orderedPluginIds] debe contener exactamente los
   /// IDs de todos los plugins registrados.
   Future<List<PluginState>> reorder(List<String> orderedPluginIds) async {
-    final registeredIds = _registry.allPlugins.map((plugin) => plugin.id).toSet();
+    final Set<String> registeredIds = _registry.allPlugins.map((HomePlugin plugin) => plugin.id).toSet();
     if (orderedPluginIds.length != registeredIds.length ||
         !registeredIds.containsAll(orderedPluginIds)) {
       throw ArgumentError.value(
@@ -88,9 +88,11 @@ class PluginLifecycleManager {
       );
     }
 
-    final states = {for (final state in await load()) state.plugin.id: state};
-    await _preferences.saveAll([
-      for (var i = 0; i < orderedPluginIds.length; i++)
+    final Map<String, PluginState> states = <String, PluginState>{
+      for (final PluginState state in await load()) state.plugin.id: state,
+    };
+    await _preferences.saveAll(<UserPluginPreference>[
+      for (int i = 0; i < orderedPluginIds.length; i++)
         states[orderedPluginIds[i]]!.preference.copyWith(sortOrder: i),
     ]);
     return load();
@@ -98,7 +100,7 @@ class PluginLifecycleManager {
 
   /// Libera todos los plugins inicializados (cierre de la aplicación).
   Future<void> disposeAll() async {
-    for (final plugin in _registry.allPlugins) {
+    for (final HomePlugin plugin in _registry.allPlugins) {
       await _disposePlugin(plugin);
     }
   }
@@ -107,8 +109,8 @@ class PluginLifecycleManager {
     if (_registry.getPlugin(pluginId) == null) {
       throw ArgumentError.value(pluginId, 'pluginId', 'Plugin no registrado');
     }
-    final states = await load();
-    return states.firstWhere((state) => state.plugin.id == pluginId);
+    final List<PluginState> states = await load();
+    return states.firstWhere((PluginState state) => state.plugin.id == pluginId);
   }
 
   Future<PluginState> _resolve(HomePlugin plugin, UserPluginPreference preference) async {

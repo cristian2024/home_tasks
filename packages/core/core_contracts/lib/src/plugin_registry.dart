@@ -1,7 +1,7 @@
 import 'home_plugin.dart';
 
 class PluginRegistry {
-  final Map<String, HomePlugin> _plugins = {};
+  final Map<String, HomePlugin> _plugins = <String, HomePlugin>{};
 
   void register(HomePlugin plugin) {
     if (_plugins.containsKey(plugin.id)) {
@@ -13,5 +13,5 @@ class PluginRegistry {
   HomePlugin? getPlugin(String id) => _plugins[id];
 
   /// Plugins en orden de registro.
-  List<HomePlugin> get allPlugins => List.unmodifiable(_plugins.values);
+  List<HomePlugin> get allPlugins => List<HomePlugin>.unmodifiable(_plugins.values);
 }

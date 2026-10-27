@@ -3,7 +3,9 @@ import 'user_plugin_preference.dart';
 /// Persistencia de las preferencias del usuario sobre cada plugin, separada de
 /// la definición estática del plugin ([HomePlugin]).
 ///
-/// La implementación concreta vive en `core_storage`.
+/// Cada motor de base de datos la implementa en su adaptador. Toda
+/// implementación debe pasar `pluginPreferenceRepositoryContract`
+/// (`package:core_contracts/testing.dart`).
 abstract interface class PluginPreferenceRepository {
   /// Devuelve todas las preferencias guardadas. Los plugins sin preferencia
   /// guardada no aparecen en la lista.

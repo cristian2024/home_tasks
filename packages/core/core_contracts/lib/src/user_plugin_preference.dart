@@ -23,7 +23,7 @@ class UserPluginPreference extends Equatable {
   }
 
   @override
-  List<Object?> get props => [pluginId, isEnabled, sortOrder];
+  List<Object?> get props => <Object?>[pluginId, isEnabled, sortOrder];
 
   @override
   bool get stringify => true;

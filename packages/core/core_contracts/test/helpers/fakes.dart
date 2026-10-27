@@ -46,7 +46,7 @@ class FakePlugin implements HomePlugin {
   }
 
   @override
-  List<RouteBase> get routes => const [];
+  List<RouteBase> get routes => const <RouteBase>[];
 
   @override
   Widget buildDashboardTile(BuildContext context) => const SizedBox.shrink();
