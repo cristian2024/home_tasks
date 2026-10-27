@@ -9,14 +9,14 @@ void main() {
   setUp(() => registry = PluginRegistry());
 
   test('registra plugins y los devuelve en orden de registro', () {
-    final a = FakePlugin('a');
-    final b = FakePlugin('b');
+    final FakePlugin a = FakePlugin('a');
+    final FakePlugin b = FakePlugin('b');
 
     registry
       ..register(a)
       ..register(b);
 
-    expect(registry.allPlugins, [a, b]);
+    expect(registry.allPlugins, <FakePlugin>[a, b]);
     expect(registry.getPlugin('b'), same(b));
     expect(registry.getPlugin('missing'), isNull);
   });

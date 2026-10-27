@@ -2,7 +2,7 @@ import 'package:core_contracts/core_contracts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const preference = UserPluginPreference(pluginId: 'a', isEnabled: true, sortOrder: 0);
+  const UserPluginPreference preference = UserPluginPreference(pluginId: 'a', isEnabled: true, sortOrder: 0);
 
   test('copyWith conserva pluginId y reemplaza solo los campos dados', () {
     expect(
@@ -17,8 +17,8 @@ void main() {
   });
 
   test('igualdad por valor', () {
-    const same = UserPluginPreference(pluginId: 'a', isEnabled: true, sortOrder: 0);
-    const other = UserPluginPreference(pluginId: 'b', isEnabled: true, sortOrder: 0);
+    const UserPluginPreference same = UserPluginPreference(pluginId: 'a', isEnabled: true, sortOrder: 0);
+    const UserPluginPreference other = UserPluginPreference(pluginId: 'b', isEnabled: true, sortOrder: 0);
 
     expect(preference, same);
     expect(preference.hashCode, same.hashCode);
