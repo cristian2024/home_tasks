@@ -30,10 +30,20 @@ void main() {
       expect(await repository.load(), const AppSettings(theme: AppThemePreference.light));
     });
 
+    test('guarda y lee la vista del inicio', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+
+      await repository.save(const AppSettings(homeLayout: HomeLayout.grid));
+      final SharedPreferences preferences = await SharedPreferences.getInstance();
+      expect(preferences.getString(SharedPreferencesAppSettingsRepository.homeLayoutKey), 'grid');
+      expect(await repository.load(), const AppSettings(homeLayout: HomeLayout.grid));
+    });
+
     test('un valor que ya no se reconoce se lee como el valor por defecto', () async {
       SharedPreferences.setMockInitialValues(<String, Object>{
         SharedPreferencesAppSettingsRepository.themeKey: 'sepia',
         SharedPreferencesAppSettingsRepository.languageKey: '',
+        SharedPreferencesAppSettingsRepository.homeLayoutKey: 'mosaico',
       });
 
       expect(await repository.load(), const AppSettings());
@@ -76,6 +86,16 @@ void main() {
 
       expect(controller.state.theme, AppThemePreference.dark);
       expect(repository.saved.theme, AppThemePreference.dark);
+      expect(repository.saves, 1);
+    });
+
+    test('cambiar la vista del inicio la guarda sin tocar el resto', () async {
+      final AppSettingsController controller = build(initial: const AppSettings(theme: AppThemePreference.dark));
+
+      await controller.setHomeLayout(HomeLayout.grid);
+      await controller.setHomeLayout(HomeLayout.grid);
+
+      expect(repository.saved, const AppSettings(theme: AppThemePreference.dark, homeLayout: HomeLayout.grid));
       expect(repository.saves, 1);
     });
 

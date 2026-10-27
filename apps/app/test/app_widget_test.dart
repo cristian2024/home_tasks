@@ -1,4 +1,7 @@
+import 'package:core_contracts/core_contracts.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
@@ -80,6 +83,150 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Escanear'), findsOneWidget);
     });
+  });
+
+  group('accesos rápidos', () {
+    Future<void> toggleLayout(WidgetTester tester, String tooltip) async {
+      await tester.tap(find.byTooltip(tooltip));
+      await tester.pumpAndSettle();
+    }
+
+    List<String> shortcutLabels(WidgetTester tester) => <String>[
+          for (final AppShortcutTile tile in tester.widgetList<AppShortcutTile>(find.byType(AppShortcutTile)))
+            tile.label,
+        ];
+
+    Future<List<UserPluginPreference>> savedPreferences() async =>
+        (await harness.preferences.getAll()).toList()
+          ..sort((UserPluginPreference a, UserPluginPreference b) => a.pluginId.compareTo(b.pluginId));
+
+    testWidgets('alternar entre lista y grilla no cambia los plugins seleccionados ni su orden', (
+      WidgetTester tester,
+    ) async {
+      harness = AppHarness(
+        extraPlugins: <FakeHomePlugin>[FakeHomePlugin('notas'), FakeHomePlugin('fotos'), FakeHomePlugin('oculto')],
+      );
+      await harness.plugins.load();
+      await harness.plugins.setEnabled('oculto', enabled: false);
+      await harness.plugins.moveDashboardTile(0, 2); // item_tracker pasa al final.
+      await harness.pump(tester);
+
+      final List<String> dashboard = <String>[for (final PluginState tile in harness.plugins.dashboard) tile.plugin.id];
+      final List<UserPluginPreference> preferences = await savedPreferences();
+      expect(dashboard, <String>['notas', 'fotos', ItemTrackerPlugin.pluginId]);
+
+      await toggleLayout(tester, 'Ver como accesos rápidos');
+      expect(shortcutLabels(tester), <String>['Módulo notas', 'Módulo fotos', 'Seguimiento de Objetos', 'Añadir']);
+      expect(find.text('Tarjeta notas'), findsNothing);
+      expect(harness.settingsRepository.saved.homeLayout, HomeLayout.grid);
+
+      await toggleLayout(tester, 'Ver como lista');
+      expect(find.byType(AppShortcutTile), findsNothing);
+      expect(
+        tester.getTopLeft(find.text('Tarjeta notas')).dy,
+        lessThan(tester.getTopLeft(find.text('Tarjeta fotos')).dy),
+      );
+      expect(harness.settingsRepository.saved.homeLayout, HomeLayout.list);
+
+      expect(<String>[for (final PluginState tile in harness.plugins.dashboard) tile.plugin.id], dashboard);
+      expect(await savedPreferences(), preferences);
+    });
+
+    testWidgets('la vista elegida se recuerda al reabrir la app', (WidgetTester tester) async {
+      harness = AppHarness();
+      await harness.pump(tester);
+      await toggleLayout(tester, 'Ver como accesos rápidos');
+      final AppSettings saved = harness.settingsRepository.saved;
+      await tester.pumpWidget(const SizedBox());
+      await harness.dispose();
+
+      harness = AppHarness(savedSettings: saved);
+      await harness.pump(tester);
+
+      expect(shortcutLabels(tester), <String>['Seguimiento de Objetos', 'Añadir']);
+      expect(find.byTooltip('Ver como lista'), findsOneWidget);
+    });
+
+    testWidgets('sin plugins activos solo muestra «Añadir», que abre el catálogo, junto al menú superior', (
+      WidgetTester tester,
+    ) async {
+      harness = AppHarness(savedSettings: const AppSettings(homeLayout: HomeLayout.grid));
+      await harness.plugins.load();
+      await harness.plugins.setEnabled(ItemTrackerPlugin.pluginId, enabled: false);
+      await harness.pump(tester);
+
+      expect(shortcutLabels(tester), <String>['Añadir']);
+      expect(find.byTooltip('Configuración'), findsOneWidget);
+      expect(find.byTooltip('Ver como lista'), findsOneWidget);
+
+      await tester.tap(find.text('Añadir'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Módulos'), findsOneWidget);
+    });
+
+    testWidgets('un título largo se corta en dos líneas', (WidgetTester tester) async {
+      const String id = 'inventario_de_herramientas_del_garaje_y_del_jardín';
+      harness = AppHarness(
+        extraPlugins: <FakeHomePlugin>[FakeHomePlugin(id)],
+        savedSettings: const AppSettings(homeLayout: HomeLayout.grid),
+      );
+      await harness.pump(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(tester.renderObject<RenderParagraph>(find.text('Módulo $id')).didExceedMaxLines, isTrue);
+    });
+
+    testWidgets('tocar un plugin abre su tarjeta en una hoja con todas sus acciones', (WidgetTester tester) async {
+      harness = AppHarness(savedSettings: const AppSettings(homeLayout: HomeLayout.grid));
+      await harness.pump(tester);
+
+      await tester.tap(find.text('Seguimiento de Objetos'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(find.text('Escanear'), findsOneWidget);
+
+      await tester.tap(find.text('Ver objetos'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Objetos'), findsOneWidget);
+    });
+
+    testWidgets('un plugin que falló se ve con error y al tocarlo reintenta', (WidgetTester tester) async {
+      final FakeHomePlugin failing = FakeHomePlugin('notas', failOnInitialize: true);
+      harness = AppHarness(
+        extraPlugins: <FakeHomePlugin>[failing],
+        savedSettings: const AppSettings(homeLayout: HomeLayout.grid),
+      );
+      await harness.pump(tester);
+
+      AppShortcutTile notes() => tester.widget<AppShortcutTile>(find.widgetWithText(AppShortcutTile, 'Módulo notas'));
+      expect(notes().error, isTrue);
+      expect(notes().tooltip, 'No se pudo iniciar «Módulo notas».');
+
+      failing.failOnInitialize = false;
+      await tester.tap(find.text('Módulo notas'));
+      await tester.pumpAndSettle();
+      expect(notes().error, isFalse);
+      expect(failing.initializeCalls, 2);
+    });
+
+    for (final (String name, AppThemePreference theme) in <(String, AppThemePreference)>[
+      ('claro', AppThemePreference.light),
+      ('oscuro', AppThemePreference.dark),
+    ]) {
+      testWidgets('tema $name: la grilla cumple las guías de accesibilidad', (WidgetTester tester) async {
+        final SemanticsHandle semantics = tester.ensureSemantics();
+        harness = AppHarness(
+          extraPlugins: <FakeHomePlugin>[FakeHomePlugin('notas')],
+          savedSettings: AppSettings(theme: theme, homeLayout: HomeLayout.grid),
+        );
+        await harness.pump(tester);
+
+        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(textContrastGuideline));
+        semantics.dispose();
+      });
+    }
   });
 
   group('catálogo', () {

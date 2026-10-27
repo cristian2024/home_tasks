@@ -30,6 +30,10 @@ class AppSettingsController extends Cubit<AppSettings> {
 
   Future<void> setTheme(AppThemePreference theme) => _update(state.copyWith(theme: theme));
 
+  /// Cambia cómo se muestran los plugins en el inicio; no toca cuáles están
+  /// activos ni su orden.
+  Future<void> setHomeLayout(HomeLayout layout) => _update(state.copyWith(homeLayout: layout));
+
   /// Fija el idioma, o vuelve al del sistema con `null`.
   Future<void> setLanguage(String? languageCode) async {
     await _update(state.copyWith(languageCode: () => languageCode));
