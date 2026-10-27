@@ -441,13 +441,19 @@ class UserPluginPreference extends Equatable {
 - **Reordenar** (`onReorderItem`) persiste el nuevo `sortOrder`; los plugins que no se muestran conservan su orden relativo al final.
 - **La tarjeta de error** ofrece *Reintentar*, que vuelve a llamar a `load()`.
 - **Sin plugins activos**, un estado vacío lleva al catálogo.
+- **Vista del inicio**: un botón de la barra superior, junto al engranaje, alterna entre la **lista** de tarjetas (la descrita arriba) y los **accesos rápidos**. Esta última es una grilla (`AppShortcutGrid`) con un icono y el título de cada plugin (`AppShortcutTile`, máximo dos líneas). Tiene 4 columnas en móvil y más en pantallas anchas.
+  - Los plugins salen en el mismo orden que en la lista. En la grilla no se reordena.
+  - Al final siempre hay un acceso **Añadir** que abre el catálogo, también cuando no hay plugins activos.
+  - Al tocar un plugin se abre su tarjeta (`buildDashboardTile`) en una hoja inferior, con todas sus acciones. Así los plugins no necesitan declarar una pantalla de entrada.
+  - Un plugin que falló se ve con colores de error y al tocarlo se reintenta.
+  - La vista elegida es una preferencia de la app (`AppSettings.homeLayout`, clave `app.home_layout`), separada de las `UserPluginPreference`: cambiarla no modifica qué plugins están activos ni su orden.
 - **Catálogo** (`/plugins-catalog`): un interruptor por plugin con su nombre y descripción traducidos (`LocalizationCoordinator.translate(nameKey)`). Los no disponibles no se pueden activar. Se abre desde Configuración.
 - **Configuración** (`/settings`, engranaje de la barra de inicio):
   - **Apariencia**: tema *Sistema / Claro / Oscuro* (`ThemeMode` de `MaterialApp`).
   - **Idioma**: *Sistema / Español / English*, cada idioma con su propio nombre. Con *Sistema* la app sigue el idioma del dispositivo, también si cambia con la app abierta; con uno fijado, esos cambios se ignoran.
   - **Módulos**: abre el catálogo.
   - **Datos**: *Exportar / importar datos*, visible pero desactivado (*Próximamente*). Pendiente de diseño (§21).
-  - **Persistencia**: `AppSettingsRepository` con `SharedPreferencesAppSettingsRepository`. Las preferencias de la app van en `shared_preferences`, separadas de la base de datos de los plugins; un valor que ya no se reconoce se lee como el valor por defecto. `AppSettingsController` (Cubit) aplica el idioma y guarda cada cambio; se cargan antes del primer frame.
+  - **Persistencia** (tema, idioma y vista del inicio): `AppSettingsRepository` con `SharedPreferencesAppSettingsRepository`. Las preferencias de la app van en `shared_preferences`, separadas de la base de datos de los plugins; un valor que ya no se reconoce se lee como el valor por defecto. `AppSettingsController` (Cubit) aplica el idioma y guarda cada cambio; se cargan antes del primer frame.
 
 ---
 
@@ -1026,6 +1032,8 @@ abstract final class AppSizes {
 | `AppStatusView` | Hace scroll: no se desborda al 200 % |
 | `AppSettingsSection` | Título como encabezado semántico; filas en una tarjeta |
 | `AppSettingsTile` | Fila de 48 dp o más; con `enabled: false` no responde (funciones futuras) |
+| `AppShortcutTile` | Un único botón con el título como etiqueta; título en dos líneas como máximo; `tooltip` opcional (p. ej. el motivo de un error) |
+| `AppShortcutGrid` | 4 columnas en móvil y más en pantallas anchas; cada casilla toma su alto: no desborda al 200 % |
 | `AppChoiceSelector<T>` | `ChoiceChip` que pasan a la línea siguiente: no desborda al 200 %; anuncia la opción elegida |
 | `AppLoadingView` | Anunciado como "Cargando…" |
 | `showAppConfirmDialog` | Devuelve `true` solo al confirmar; textos por defecto de `core_ui` |
