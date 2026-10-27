@@ -29,16 +29,16 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onPressed = isLoading ? null : this.onPressed;
-    final leading = isLoading
+    final VoidCallback? onPressed = isLoading ? null : this.onPressed;
+    final Widget? leading = isLoading
         ? const SizedBox.square(
             dimension: AppSpacing.md,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
         : (icon == null ? null : Icon(icon));
-    final text = Text(label, textAlign: TextAlign.center);
+    final Text text = Text(label, textAlign: TextAlign.center);
 
-    final button = switch ((variant, leading)) {
+    final Widget button = switch ((variant, leading)) {
       (AppButtonVariant.primary, null) => FilledButton(onPressed: onPressed, child: text),
       (AppButtonVariant.primary, final Widget leading) =>
         FilledButton.icon(onPressed: onPressed, icon: leading, label: text),

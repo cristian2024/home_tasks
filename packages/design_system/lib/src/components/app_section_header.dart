@@ -15,7 +15,7 @@ class AppSectionHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
-        children: [
+        children: <Widget>[
           Expanded(
             child: Semantics(
               header: true,

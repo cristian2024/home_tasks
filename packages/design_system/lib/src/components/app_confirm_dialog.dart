@@ -10,14 +10,14 @@ Future<bool> showAppConfirmDialog(
   String? cancelLabel,
   bool destructive = false,
 }) async {
-  final result = await showDialog<bool>(
+  final bool? result = await showDialog<bool>(
     context: context,
-    builder: (context) {
-      final colors = Theme.of(context).colorScheme;
+    builder: (BuildContext context) {
+      final ColorScheme colors = Theme.of(context).colorScheme;
       return AlertDialog(
         title: Text(title),
         content: SingleChildScrollView(child: Text(message)),
-        actions: [
+        actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(cancelLabel ?? commonStrings.common.cancel),

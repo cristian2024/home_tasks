@@ -12,6 +12,8 @@ export 'src/components/app_loading_view.dart';
 export 'src/components/app_section_header.dart';
 export 'src/components/app_settings_section.dart';
 export 'src/components/app_settings_tile.dart';
+export 'src/components/app_shortcut_grid.dart';
+export 'src/components/app_shortcut_tile.dart';
 export 'src/components/app_status_view.dart';
 export 'src/components/app_text_field.dart';
 export 'src/theme/app_theme.dart';

@@ -20,7 +20,7 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = Padding(padding: padding, child: child);
+    final Widget content = Padding(padding: padding, child: child);
     return Semantics(
       label: semanticLabel,
       button: onTap != null,
