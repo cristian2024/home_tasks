@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0+3 - 2026-10-24
+
+### Cambiado
+
+- La app define todos los textos de core_ui e item_tracker en `assets/i18n/<paquete>/<idioma>.json`, no solo los que cambian. Los inyecta con `injectTranslations` de core_ui 0.1.1.
+
+### Interno
+
+- Un test falla si a la app le falta un texto de un paquete, le sobra uno o cambia sus parámetros.
+
 ## 1.1.0+2 - 2026-10-24
 
 ### Añadido
