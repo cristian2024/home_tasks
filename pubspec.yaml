@@ -6,6 +6,7 @@ environment:
 
 workspace:
   - apps/app
+  - packages/adapters/*
   - packages/core/*
   - packages/shared/*
   - packages/core/core_hardware/example

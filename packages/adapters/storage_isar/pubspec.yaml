@@ -1,0 +1,25 @@
+name: storage_isar
+description: Adaptador de almacenamiento sobre Isar (isar_community) - apertura de la base de datos y preferencias de plugins.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_contracts: ^0.1.1
+  flutter:
+    sdk: flutter
+  isar_community: 3.3.2
+  isar_community_flutter_libs: 3.3.2
+
+dev_dependencies:
+  build_runner: ">=2.4.0 <3.0.0"
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  go_router: ">=14.0.0 <17.0.0"
+  isar_community_generator: 3.3.2
