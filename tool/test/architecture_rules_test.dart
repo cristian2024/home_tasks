@@ -22,7 +22,18 @@ void main() {
       ..writeAsStringSync(content);
   }
 
-  List<String> rules() => [for (final v in findViolations(root)) v.rule.split(':').first];
+  List<String> rules() =>
+      <String>[for (final ArchitectureViolation v in findViolations(root)) v.rule.split(':').first];
+
+  /// Funcionalidad `item_tracker` con la estructura de carpeta: dominio,
+  /// plugin (con su ejemplo) y adaptador Isar, más el adaptador base.
+  void featureFolder() {
+    package('packages/adapters/storage_isar', 'storage_isar');
+    package('packages/plugins/item_tracker/item_tracker_domain', 'item_tracker_domain');
+    package('packages/plugins/item_tracker/plugin_item_tracker', 'plugin_item_tracker');
+    package('packages/plugins/item_tracker/plugin_item_tracker/example', 'item_tracker_example');
+    package('packages/plugins/item_tracker/item_tracker_isar', 'item_tracker_isar');
+  }
 
   test('un monorepo que respeta las reglas no tiene violaciones', () {
     package('packages/core/core_contracts', 'core_contracts');
@@ -44,43 +55,97 @@ import 'package:design_system/tokens.dart';
     expect(findViolations(root), isEmpty);
   });
 
-  test('Regla 1: detecta un plugin que importa otro plugin', () {
-    package('packages/plugins/plugin_a', 'plugin_a');
-    package('packages/plugins/plugin_b', 'plugin_b');
-    source('packages/plugins/plugin_a/lib/a.dart', "export 'package:plugin_b/b.dart';\n");
-
-    final violations = findViolations(root);
-
-    expect(rules(), ['Regla 1']);
-    expect(violations.single.file, 'packages/plugins/plugin_a/lib/a.dart');
-    expect(violations.single.import, 'package:plugin_b/b.dart');
-  });
-
-  test('Regla 1: la app de ejemplo de un plugin puede importarlo', () {
-    package('packages/plugins/plugin_a', 'plugin_a');
-    package('packages/plugins/plugin_a/example', 'plugin_a_example');
-    source('packages/plugins/plugin_a/example/lib/main.dart', "import 'package:plugin_a/plugin_a.dart';\n");
+  test('una carpeta de funcionalidad que respeta las reglas no tiene violaciones', () {
+    featureFolder();
+    package('apps/app', 'app');
+    source('packages/plugins/item_tracker/item_tracker_domain/lib/item.dart', '''
+import 'dart:async';
+import 'package:equatable/equatable.dart';
+''');
+    source('packages/plugins/item_tracker/plugin_item_tracker/lib/plugin.dart', '''
+import 'package:flutter/material.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
+''');
+    source('packages/plugins/item_tracker/item_tracker_isar/lib/repository.dart', '''
+import 'package:isar_community/isar.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
+import 'package:storage_isar/storage_isar.dart';
+''');
+    source('packages/adapters/storage_isar/lib/storage_isar.dart', "export 'package:isar_community/isar.dart';\n");
+    source('packages/plugins/item_tracker/plugin_item_tracker/example/lib/main.dart', '''
+import 'package:item_tracker_isar/item_tracker_isar.dart';
+import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+import 'package:storage_isar/storage_isar.dart';
+''');
+    source('apps/app/lib/bootstrap.dart', '''
+import 'package:item_tracker_isar/item_tracker_isar.dart';
+import 'package:storage_isar/storage_isar.dart';
+''');
 
     expect(findViolations(root), isEmpty);
   });
 
-  test('Regla 2: detecta Flutter, Isar y dart:ui en Domain', () {
+  group('Regla 1', () {
+    test('detecta un plugin que importa otro plugin', () {
+      package('packages/plugins/plugin_a', 'plugin_a');
+      package('packages/plugins/plugin_b', 'plugin_b');
+      source('packages/plugins/plugin_a/lib/a.dart', "export 'package:plugin_b/b.dart';\n");
+
+      final List<ArchitectureViolation> violations = findViolations(root);
+
+      expect(rules(), <String>['Regla 1']);
+      expect(violations.single.file, 'packages/plugins/plugin_a/lib/a.dart');
+      expect(violations.single.import, 'package:plugin_b/b.dart');
+    });
+
+    test('detecta una funcionalidad que importa paquetes de otra, en las dos estructuras', () {
+      featureFolder();
+      package('packages/plugins/notes/notes_domain', 'notes_domain');
+      package('packages/plugins/plugin_legacy', 'plugin_legacy');
+      source('packages/plugins/notes/notes_domain/lib/a.dart', "import 'package:item_tracker_domain/a.dart';\n");
+      source('packages/plugins/plugin_legacy/lib/a.dart', "import 'package:item_tracker_domain/a.dart';\n");
+      source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart', "import 'package:plugin_legacy/a.dart';\n");
+
+      expect(rules(), <String>['Regla 1', 'Regla 1', 'Regla 1']);
+    });
+
+    test('la app de ejemplo de un plugin puede importarlo', () {
+      package('packages/plugins/plugin_a', 'plugin_a');
+      package('packages/plugins/plugin_a/example', 'plugin_a_example');
+      source('packages/plugins/plugin_a/example/lib/main.dart', "import 'package:plugin_a/plugin_a.dart';\n");
+
+      expect(findViolations(root), isEmpty);
+    });
+  });
+
+  test('Regla 2: detecta Flutter, motores de base de datos y dart:ui en Domain', () {
     package('packages/plugins/plugin_a', 'plugin_a');
     source('packages/plugins/plugin_a/lib/src/domain/item.dart', '''
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
 import 'package:isar_community/isar.dart';
 import "dart:ui";
 ''');
 
-    expect(rules(), ['Regla 2', 'Regla 2', 'Regla 2', 'Regla 2']);
+    // El motor incumple también la Regla 5.
+    expect(rules(), <String>['Regla 2', 'Regla 2', 'Regla 5', 'Regla 2']);
+  });
+
+  test('Regla 2: todo un paquete *_domain es Domain', () {
+    featureFolder();
+    source('packages/plugins/item_tracker/item_tracker_domain/lib/a.dart', '''
+import 'package:flutter/widgets.dart';
+import 'package:sqflite/sqflite.dart';
+''');
+
+    // El motor incumple también la Regla 5.
+    expect(rules(), <String>['Regla 2', 'Regla 2', 'Regla 5']);
   });
 
   test('Regla 3: detecta design_system importando infraestructura', () {
     package('packages/design_system', 'design_system');
     source('packages/design_system/lib/a.dart', "import 'package:core_storage/core_storage.dart';\n");
 
-    expect(rules(), ['Regla 3']);
+    expect(rules(), <String>['Regla 3']);
   });
 
   test('Regla 4: solo core_hardware importa SDKs nativos de hardware', () {
@@ -96,7 +161,54 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 ''');
 
-    expect(rules(), ['Regla 4', 'Regla 4', 'Regla 4']);
+    expect(rules(), <String>['Regla 4', 'Regla 4', 'Regla 4']);
+  });
+
+  group('Regla 5', () {
+    test('detecta motores de base de datos fuera de los adaptadores', () {
+      featureFolder();
+      package('packages/core/core_utils', 'core_utils');
+      package('apps/app', 'app');
+      source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart', '''
+import 'package:isar_community/isar.dart';
+import 'package:drift/drift.dart';
+''');
+      source('packages/core/core_utils/lib/a.dart', "import 'package:hive/hive.dart';\n");
+      source('apps/app/lib/a.dart', "import 'package:isar/isar.dart';\n");
+
+      expect(rules(), <String>['Regla 5', 'Regla 5', 'Regla 5', 'Regla 5']);
+    });
+
+    test('core_storage puede importar Isar hasta que se elimine', () {
+      package('packages/core/core_storage', 'core_storage');
+      source('packages/core/core_storage/lib/a.dart', "export 'package:isar_community/isar.dart';\n");
+
+      expect(findViolations(root), isEmpty);
+    });
+  });
+
+  test('Regla 6: solo las apps, los ejemplos y otros adaptadores importan adaptadores', () {
+    featureFolder();
+    package('packages/core/core_contracts', 'core_contracts');
+    source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart', '''
+import 'package:item_tracker_isar/item_tracker_isar.dart';
+import 'package:storage_isar/storage_isar.dart';
+''');
+    source('packages/core/core_contracts/lib/a.dart', "import 'package:storage_isar/storage_isar.dart';\n");
+
+    expect(rules(), <String>['Regla 6', 'Regla 6', 'Regla 6']);
+  });
+
+  test('Regla 7: un adaptador o un dominio no importa el plugin', () {
+    featureFolder();
+    package('packages/plugins/plugin_legacy', 'plugin_legacy');
+    source('packages/plugins/item_tracker/item_tracker_isar/lib/a.dart',
+        "import 'package:plugin_item_tracker/plugin_item_tracker.dart';\n");
+    source('packages/plugins/item_tracker/item_tracker_domain/lib/a.dart',
+        "import 'package:plugin_item_tracker/plugin_item_tracker.dart';\n");
+    source('packages/adapters/storage_isar/lib/a.dart', "import 'package:plugin_legacy/plugin_legacy.dart';\n");
+
+    expect(rules(), <String>['Regla 7', 'Regla 7', 'Regla 7']);
   });
 
   test('ignora enlaces simbólicos, directorios ocultos y build/', () {

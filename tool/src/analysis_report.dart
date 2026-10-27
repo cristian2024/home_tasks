@@ -83,7 +83,25 @@ class AnalysisReport {
     };
   }
 
-  /// Proyecto del monorepo al que pertenece [file].
+  /// Carpetas y archivos de la raíz de un paquete: si aparecen en
+  /// `packages/plugins/<x>/`, `<x>` es un paquete y no una carpeta de
+  /// funcionalidad.
+  static const Set<String> _packageEntries = <String>{
+    'lib',
+    'test',
+    'example',
+    'integration_test',
+    'bin',
+    'assets',
+    'pubspec.yaml',
+    'analysis_options.yaml',
+    'build.yaml',
+    'slang.yaml',
+  };
+
+  /// Proyecto del monorepo al que pertenece [file]: `apps/<app>`,
+  /// `packages/<grupo>/<paquete>`, `packages/plugins/<funcionalidad>/<paquete>`
+  /// o `tool`.
   static String projectOf(String file, {required String root}) {
     final String prefix = root.endsWith('/') ? root : '$root/';
     final String relative = file.startsWith(prefix) ? file.substring(prefix.length) : file;
@@ -92,6 +110,8 @@ class AnalysisReport {
       return 'packages/design_system';
     }
     final int depth = switch (segments.first) {
+      // `packages/plugins/<funcionalidad>/<paquete>`: carpeta de funcionalidad.
+      'packages' when segments.length > 4 && segments[1] == 'plugins' && !_packageEntries.contains(segments[3]) => 4,
       'packages' => 3,
       'apps' => 2,
       _ => 1,
