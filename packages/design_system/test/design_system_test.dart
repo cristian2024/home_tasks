@@ -12,7 +12,7 @@ Widget host(Widget child, {ThemeData? theme, double textScale = 1}) => MaterialA
 
 Widget gallery() => ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
-      children: [
+      children: <Widget>[
         const AppSectionHeader('Sección'),
         AppButton(label: 'Guardar', onPressed: () {}),
         AppButton(label: 'Secundario', icon: Icons.add, variant: AppButtonVariant.secondary, onPressed: () {}),
@@ -21,6 +21,16 @@ Widget gallery() => ListView(
         AppIconButton(icon: Icons.add, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
         const AppTextField(label: 'Nombre'),
         AppCard(semanticLabel: 'Caja A', onTap: () {}, child: const Text('Caja A')),
+        SizedBox(
+          height: 240,
+          child: AppShortcutGrid(
+            children: <Widget>[
+              AppShortcutTile(icon: Icons.qr_code_scanner, label: 'Objetos', onTap: () {}),
+              AppShortcutTile(label: 'Falló', error: true, tooltip: 'No se pudo iniciar', onTap: () {}),
+              AppShortcutTile(icon: Icons.add, label: 'Añadir', onTap: () {}),
+            ],
+          ),
+        ),
         AppSettingsSection(
           title: 'Ajustes',
           children: <Widget>[
@@ -52,9 +62,9 @@ void main() {
     expect(AppColors.error.a, 1.0);
   });
 
-  for (final (name, theme) in [('claro', AppTheme.light), ('oscuro', AppTheme.dark)]) {
-    testWidgets('tema $name: cumple las guías de accesibilidad', (tester) async {
-      final semantics = tester.ensureSemantics();
+  for (final (String name, ThemeData theme) in <(String, ThemeData)>[('claro', AppTheme.light), ('oscuro', AppTheme.dark)]) {
+    testWidgets('tema $name: cumple las guías de accesibilidad', (WidgetTester tester) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
       await tester.pumpWidget(host(gallery(), theme: theme));
 
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
@@ -65,8 +75,8 @@ void main() {
     });
   }
 
-  testWidgets('AppIconButton expone el tooltip a los lectores de pantalla', (tester) async {
-    final semantics = tester.ensureSemantics();
+  testWidgets('AppIconButton expone el tooltip a los lectores de pantalla', (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
     await tester.pumpWidget(host(AppIconButton(icon: Icons.delete, tooltip: 'Eliminar', onPressed: () {})));
 
     expect(
@@ -76,8 +86,8 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('AppButton con isLoading se desactiva y conserva la etiqueta', (tester) async {
-    var taps = 0;
+  testWidgets('AppButton con isLoading se desactiva y conserva la etiqueta', (WidgetTester tester) async {
+    int taps = 0;
     await tester.pumpWidget(host(AppButton(label: 'Guardar', isLoading: true, onPressed: () => taps++)));
 
     await tester.tap(find.text('Guardar'));
@@ -85,7 +95,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
-  testWidgets('AppStatusView no desborda con el texto al 200 %', (tester) async {
+  testWidgets('AppStatusView no desborda con el texto al 200 %', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -103,6 +113,90 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('accesos rápidos', () {
+    testWidgets('AppShortcutTile sin icono usa el genérico y corta el título en dos líneas', (WidgetTester tester) async {
+      await tester.pumpWidget(host(const AppShortcutTile(label: 'Un título muy largo para un acceso rápido')));
+
+      expect(find.byIcon(AppShortcutTile.fallbackIcon), findsOneWidget);
+      final Text title = tester.widget<Text>(find.text('Un título muy largo para un acceso rápido'));
+      expect(title.maxLines, 2);
+      expect(title.overflow, TextOverflow.ellipsis);
+    });
+
+    testWidgets('AppShortcutTile es un botón con su título para los lectores de pantalla', (WidgetTester tester) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      int taps = 0;
+      await tester.pumpWidget(host(AppShortcutTile(icon: Icons.inventory_2_outlined, label: 'Objetos', onTap: () => taps++)));
+
+      expect(
+        tester.getSemantics(find.byType(AppShortcutTile)),
+        isSemantics(label: 'Objetos', isButton: true, isEnabled: true, hasEnabledState: true, hasTapAction: true),
+      );
+      await tester.tap(find.text('Objetos'));
+      expect(taps, 1);
+      semantics.dispose();
+    });
+
+    testWidgets('AppShortcutTile con tooltip lo muestra al mantener pulsado', (WidgetTester tester) async {
+      await tester.pumpWidget(host(AppShortcutTile(label: 'Notas', error: true, tooltip: 'No se pudo iniciar', onTap: () {})));
+
+      await tester.longPress(find.text('Notas'));
+      await tester.pump();
+
+      expect(find.text('No se pudo iniciar'), findsOneWidget);
+    });
+
+    test('AppShortcutGrid usa 4 columnas en móvil y más en pantallas anchas', () {
+      expect(AppShortcutGrid.columnsFor(360), 4);
+      expect(AppShortcutGrid.columnsFor(599), 4);
+      expect(AppShortcutGrid.columnsFor(600), 4);
+      expect(AppShortcutGrid.columnsFor(1000), 7);
+    });
+
+    for (final (double width, int columns) in <(double, int)>[(400, 4), (1000, 7)]) {
+      testWidgets('AppShortcutGrid a $width px pone $columns casillas por fila', (WidgetTester tester) async {
+        tester.view.physicalSize = Size(width, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          host(
+            AppShortcutGrid(
+              children: <Widget>[
+                for (int i = 0; i <= columns; i++) AppShortcutTile(label: 'Acceso $i', onTap: () {}),
+              ],
+            ),
+          ),
+        );
+
+        final double firstRow = tester.getTopLeft(find.text('Acceso 0')).dy;
+        for (int i = 1; i < columns; i++) {
+          expect(tester.getTopLeft(find.text('Acceso $i')).dy, firstRow);
+        }
+        expect(tester.getTopLeft(find.text('Acceso $columns')).dy, greaterThan(firstRow));
+      });
+    }
+
+    testWidgets('AppShortcutGrid no desborda con el texto al 200 %', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        host(
+          AppShortcutGrid(
+            children: <Widget>[
+              for (int i = 0; i < 9; i++) AppShortcutTile(label: 'Un acceso con título largo $i', onTap: () {}),
+            ],
+          ),
+          textScale: 2,
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('ajustes', () {
@@ -183,12 +277,12 @@ void main() {
     });
   });
 
-  testWidgets('showAppConfirmDialog devuelve true al confirmar y false al cancelar', (tester) async {
-    final results = <bool>[];
+  testWidgets('showAppConfirmDialog devuelve true al confirmar y false al cancelar', (WidgetTester tester) async {
+    final List<bool> results = <bool>[];
     await tester.pumpWidget(
       host(
         Builder(
-          builder: (context) => AppButton(
+          builder: (BuildContext context) => AppButton(
             label: 'Abrir',
             onPressed: () async => results.add(await showAppConfirmDialog(context, title: 'T', message: 'M')),
           ),
@@ -206,6 +300,6 @@ void main() {
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
 
-    expect(results, [true, false]);
+    expect(results, <bool>[true, false]);
   });
 }

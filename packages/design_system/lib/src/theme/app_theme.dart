@@ -32,9 +32,9 @@ abstract final class AppTheme {
       );
 
   static ThemeData _build(ColorScheme scheme, {required Color scaffoldBackground}) {
-    const minimumButtonSize = Size(AppSizes.minTouchTarget, AppSizes.minTouchTarget);
-    final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.medium));
-    const buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm);
+    const Size minimumButtonSize = Size(AppSizes.minTouchTarget, AppSizes.minTouchTarget);
+    final RoundedRectangleBorder buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.medium));
+    const EdgeInsets buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm);
 
     return ThemeData(
       useMaterial3: true,

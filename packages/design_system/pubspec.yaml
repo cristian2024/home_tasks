@@ -1,6 +1,6 @@
 name: design_system
 description: Sistema de diseño centralizado - tokens, temas claro/oscuro y componentes accesibles.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:

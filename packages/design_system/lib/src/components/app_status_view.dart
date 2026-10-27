@@ -21,24 +21,24 @@ class AppStatusView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final TextTheme textTheme = Theme.of(context).textTheme;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             ExcludeSemantics(child: Icon(icon, size: AppSizes.iconLarge)),
             const SizedBox(height: AppSpacing.md),
             Semantics(
               header: true,
               child: Text(title, style: textTheme.titleMedium, textAlign: TextAlign.center),
             ),
-            if (message != null) ...[
+            if (message != null) ...<Widget>[
               const SizedBox(height: AppSpacing.sm),
               Text(message!, style: textTheme.bodyMedium, textAlign: TextAlign.center),
             ],
-            if (action != null) ...[const SizedBox(height: AppSpacing.lg), action!],
+            if (action != null) ...<Widget>[const SizedBox(height: AppSpacing.lg), action!],
           ],
         ),
       ),
