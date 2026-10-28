@@ -1,11 +1,5 @@
 import 'package:core_utils/core_utils.dart';
-
-import '../entities/household_item.dart';
-import '../entities/item_event.dart';
-import '../errors/item_tracker_exception.dart';
-import '../item_validator.dart';
-import '../repositories/household_item_repository.dart';
-import '../value_objects/item_metadata.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Edita un objeto. Si algo cambia, actualiza `updatedAt` y registra un
 /// evento técnico con los campos modificados; si no, no escribe nada.

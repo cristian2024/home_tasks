@@ -1,10 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:plugin_item_tracker/src/domain/hierarchy/item_tree.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/household_item.dart';
-import '../../domain/entities/physical_identifier.dart';
-import '../../domain/errors/item_tracker_exception.dart';
 import '../../domain/use_cases/create_item.dart';
 import '../../domain/use_cases/item_queries.dart';
 import '../../domain/use_cases/update_item.dart';

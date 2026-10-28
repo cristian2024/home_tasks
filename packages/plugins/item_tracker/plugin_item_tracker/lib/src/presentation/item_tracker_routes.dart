@@ -1,4 +1,4 @@
-import '../domain/entities/physical_identifier.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Rutas del plugin. Son absolutas y planas para que la app las añada tal
 /// cual a su `GoRouter`. El identificador escaneado viaja en query params

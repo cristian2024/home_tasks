@@ -2,9 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/household_item.dart';
-import '../../domain/hierarchy/item_tree.dart';
 import '../../domain/use_cases/item_queries.dart';
 
 class ItemListState extends Equatable {

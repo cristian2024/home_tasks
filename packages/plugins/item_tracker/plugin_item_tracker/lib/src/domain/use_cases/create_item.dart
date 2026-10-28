@@ -1,15 +1,6 @@
 import 'package:core_events/core_events.dart';
 import 'package:core_utils/core_utils.dart';
-
-import '../entities/household_item.dart';
-import '../entities/item_event.dart';
-import '../entities/physical_identifier.dart';
-import '../errors/item_tracker_exception.dart';
-import '../hierarchy/containment_policy.dart';
-import '../hierarchy/item_tree.dart';
-import '../item_validator.dart';
-import '../repositories/household_item_repository.dart';
-import '../value_objects/item_metadata.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Identificador físico que se asocia al crear un objeto.
 typedef IdentifierInput = ({String rawValue, IdentifierType type});

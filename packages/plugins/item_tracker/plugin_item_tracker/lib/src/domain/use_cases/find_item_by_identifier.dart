@@ -1,7 +1,4 @@
-import '../entities/household_item.dart';
-import '../entities/physical_identifier.dart';
-import '../item_validator.dart';
-import '../repositories/household_item_repository.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Busca el objeto ligado a un identificador escaneado o escrito a mano
 /// (AC-03, AC-04, AC-05). Devuelve `null` si el identificador no existe.

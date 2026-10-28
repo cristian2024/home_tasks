@@ -1,6 +1,5 @@
 import 'package:core_storage/core_storage.dart';
-
-import '../../domain/entities/item_event.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 part 'isar_item_event.g.dart';
 

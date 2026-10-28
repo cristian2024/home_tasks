@@ -1,10 +1,5 @@
 import 'package:core_utils/core_utils.dart';
-
-import '../entities/item_event.dart';
-import '../entities/physical_identifier.dart';
-import '../errors/item_tracker_exception.dart';
-import '../item_validator.dart';
-import '../repositories/household_item_repository.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Asocia un identificador físico a un objeto existente (AC-05). Un
 /// identificador ya ligado a cualquier objeto se rechaza: nunca se mueve.

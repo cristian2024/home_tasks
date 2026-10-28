@@ -1,13 +1,9 @@
 import 'package:core_storage/core_storage.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'package:plugin_item_tracker/src/data/models/isar_household_item.dart';
 import 'package:plugin_item_tracker/src/data/models/isar_item_event.dart';
 import 'package:plugin_item_tracker/src/data/models/isar_physical_identifier.dart';
 
-import '../../domain/entities/household_item.dart';
-import '../../domain/entities/item_event.dart';
-import '../../domain/entities/physical_identifier.dart';
-import '../../domain/errors/item_tracker_exception.dart';
-import '../../domain/repositories/household_item_repository.dart';
 import '../datasources/isar_local_data_source.dart';
 import '../mappers/item_data_mapper.dart';
 

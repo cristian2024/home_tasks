@@ -1,6 +1,6 @@
 import 'package:core_storage/core_storage.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/physical_identifier.dart';
 import '../models/isar_household_item.dart';
 import '../models/isar_item_event.dart';
 import '../models/isar_physical_identifier.dart';
