@@ -6,6 +6,17 @@ class Service {
   final String name;
 }
 
+/// Módulo que abre un recurso al registrarse y lo libera con el locator.
+class _ServiceModule implements DependencyModule {
+  final List<String> events = <String>[];
+
+  @override
+  Future<void> register(ServiceLocator services) async {
+    events.add('abierto');
+    services.registerSingleton(Service('módulo'), dispose: (Service _) => events.add('cerrado'));
+  }
+}
+
 void main() {
   late ServiceLocator locator;
 
@@ -13,7 +24,7 @@ void main() {
   tearDown(() => locator.reset());
 
   test('registerSingleton devuelve siempre la misma instancia', () {
-    final service = Service('a');
+    final Service service = Service('a');
     locator.registerSingleton(service);
 
     expect(locator.get<Service>(), same(service));
@@ -21,14 +32,14 @@ void main() {
   });
 
   test('registerLazySingleton crea la instancia en el primer get', () {
-    var created = 0;
+    int created = 0;
     locator.registerLazySingleton(() {
       created++;
       return Service('lazy');
     });
 
     expect(created, 0);
-    final first = locator.get<Service>();
+    final Service first = locator.get<Service>();
     expect(locator.get<Service>(), same(first));
     expect(created, 1);
   });
@@ -49,10 +60,10 @@ void main() {
 
   group('scopes por plugin', () {
     test('dropScope libera los registros del plugin e invoca dispose', () async {
-      final disposed = <String>[];
+      final List<String> disposed = <String>[];
       await locator.pushScope(
         'plugin_a',
-        init: (l) => l.registerSingleton(Service('a'), dispose: (s) => disposed.add(s.name)),
+        init: (ServiceLocator l) => l.registerSingleton(Service('a'), dispose: (Service s) => disposed.add(s.name)),
       );
 
       expect(locator.get<Service>().name, 'a');
@@ -61,14 +72,14 @@ void main() {
 
       expect(locator.isRegistered<Service>(), isFalse);
       expect(locator.hasScope('plugin_a'), isFalse);
-      expect(disposed, ['a']);
+      expect(disposed, <String>['a']);
     });
 
     test('descartar un scope intermedio no afecta a los demás', () async {
-      await locator.pushScope('plugin_a', init: (l) => l.registerSingleton(Service('a')));
+      await locator.pushScope('plugin_a', init: (ServiceLocator l) => l.registerSingleton(Service('a')));
       await locator.pushScope(
         'plugin_b',
-        init: (l) => l.registerSingleton(Service('b'), instanceName: 'b'),
+        init: (ServiceLocator l) => l.registerSingleton(Service('b'), instanceName: 'b'),
       );
 
       await locator.dropScope('plugin_a');
@@ -80,7 +91,7 @@ void main() {
 
     test('un scope oculta registros previos del mismo tipo', () async {
       locator.registerSingleton(Service('base'));
-      await locator.pushScope('plugin_a', init: (l) => l.registerSingleton(Service('a')));
+      await locator.pushScope('plugin_a', init: (ServiceLocator l) => l.registerSingleton(Service('a')));
 
       expect(locator.get<Service>().name, 'a');
 
@@ -98,5 +109,15 @@ void main() {
     test('dropScope de un scope inexistente no hace nada', () async {
       await locator.dropScope('missing');
     });
+  });
+
+  test('un DependencyModule registra sus implementaciones y las libera con reset', () async {
+    final _ServiceModule module = _ServiceModule();
+
+    await module.register(locator);
+
+    expect(locator.get<Service>().name, 'módulo');
+    await locator.reset();
+    expect(module.events, <String>['abierto', 'cerrado']);
   });
 }
