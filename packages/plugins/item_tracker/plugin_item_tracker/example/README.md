@@ -1,8 +1,8 @@
 # item_tracker_example
 
-App anfitriona mínima para probar el plugin `item_tracker` en un dispositivo real. Arranca igual que lo hará `apps/app` en la Fase 4:
-1. Registra en `core_di` los servicios base: `Isar`, `EventBus`, `IdGenerator` y `Clock`.
-2. Abre la base de datos con `LocalDatabase.open(contributors: [plugin])`.
+App anfitriona mínima para probar el plugin `item_tracker` en un dispositivo real. Arranca igual que `apps/app`:
+1. Registra en `core_di` los servicios base: `EventBus`, `IdGenerator` y `Clock`.
+2. Registra el adaptador de almacenamiento que elige: `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])`. El adaptador abre la base (su propio archivo, separado del de `apps/app`) y registra el repositorio del plugin.
 3. Aplica el idioma del dispositivo.
 4. Llama a `plugin.initialize()`.
 

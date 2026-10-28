@@ -10,14 +10,15 @@ import 'package:plugin_item_tracker/testing.dart';
 void main() {
   testWidgets('carga los datos de ejemplo y abre «Caja A» al escanear QR-123', (WidgetTester tester) async {
     final FakeCameraScanner camera = FakeCameraScanner();
-    final ServiceLocator locator = ServiceLocator();
+    // Como el adaptador de almacenamiento, pero en memoria.
+    final ServiceLocator locator = ServiceLocator()
+      ..registerSingleton<HouseholdItemRepository>(InMemoryHouseholdItemRepository());
     final LocalizationCoordinator localization = LocalizationCoordinator();
     final ItemTrackerPlugin plugin = ItemTrackerPlugin(
       locator: locator,
       cameraScannerFactory: () => camera,
       nfcScannerFactory: FakeNfcScanner.new,
       permissions: FakeHardwarePermissions(),
-      repositoryFactory: (_) => InMemoryHouseholdItemRepository(),
       localization: localization,
     );
     await plugin.initialize();
