@@ -43,7 +43,10 @@ import 'src/presentation/scan/scan_screen.dart';
 /// Plugin de identificación y seguimiento de objetos (§8).
 ///
 /// Dependencias que toma del `ServiceLocator` de la app (scope base):
-/// - `Isar` (obligatoria salvo que se pase [repositoryFactory]).
+/// - `HouseholdItemRepository`, que registra el adaptador de almacenamiento
+///   que elige la app (p. ej. `ItemTrackerIsar`). Si no hay ninguno, usa el
+///   repositorio Isar del propio plugin sobre el `Isar` registrado; ese
+///   respaldo desaparecerá. [repositoryFactory] sustituye a ambos.
 /// - `EventBus`, `IdGenerator` y `Clock` (opcionales: si faltan usa los
 ///   suyos).
 ///
@@ -67,8 +70,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         _cameraScannerFactory = cameraScannerFactory ?? MobileScannerCameraScanner.new,
         _nfcScannerFactory = nfcScannerFactory ?? NfcManagerScanner.new,
         _permissions = permissions ?? const PermissionHandlerPermissions(),
-        _repositoryFactory =
-            repositoryFactory ?? ((ServiceLocator locator) => IsarHouseholdItemRepository(locator.get<Isar>())),
+        _repositoryFactory = repositoryFactory ?? _registeredRepository,
         _localization = localization ?? LocalizationCoordinator.instance;
 
   static const String pluginId = 'item_tracker';
@@ -87,6 +89,13 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
 
   ItemTrackerDependencies get _dependencies => _locator.get<ItemTrackerDependencies>();
 
+  /// El repositorio que registró el adaptador elegido por la app o, mientras
+  /// la app no use ninguno, el repositorio Isar del plugin.
+  static HouseholdItemRepository _registeredRepository(ServiceLocator locator) =>
+      locator.isRegistered<HouseholdItemRepository>()
+          ? locator.get<HouseholdItemRepository>()
+          : IsarHouseholdItemRepository(locator.get<Isar>());
+
   @override
   String get id => pluginId;
 
@@ -100,7 +109,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '1.1.2';
+  String get version => '1.2.0';
 
   @override
   List<CollectionSchema<dynamic>> get storageSchemas => itemTrackerSchemas;

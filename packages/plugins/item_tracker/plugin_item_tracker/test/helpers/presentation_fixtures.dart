@@ -70,7 +70,9 @@ class _Ids implements IdGenerator {
 /// `/` y sus rutas. El plugin se inicializa la primera vez que hace falta.
 class PluginHarness {
   PluginHarness({FakeHardware? hardware, int? maxContainmentDepth}) : hardware = hardware ?? FakeHardware() {
+    // Como el adaptador de almacenamiento que elige la app.
     locator
+      ..registerSingleton<HouseholdItemRepository>(repository)
       ..registerSingleton<IdGenerator>(_Ids())
       ..registerSingleton<Clock>(FixedClock(DateTime.utc(2026, 10, 21, 14, 30)));
     plugin = ItemTrackerPlugin(
@@ -78,7 +80,6 @@ class PluginHarness {
       cameraScannerFactory: this.hardware.createCamera,
       nfcScannerFactory: this.hardware.createNfc,
       permissions: this.hardware.permissions,
-      repositoryFactory: (_) => repository,
       localization: localization,
       maxContainmentDepth: maxContainmentDepth,
     );
