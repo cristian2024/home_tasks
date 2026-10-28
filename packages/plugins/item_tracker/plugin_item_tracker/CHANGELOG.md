@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.2 - 2026-10-27
+
+### Cambiado
+
+- Las entidades, `ItemMetadata`, `ItemValidator`, `ItemTree`, `ContainmentPolicy`, los errores `ItemTrackerException` y `HouseholdItemRepository` vienen ahora de `item_tracker_domain`. El plugin los reexporta, así que se siguen importando desde `package:plugin_item_tracker/plugin_item_tracker.dart`.
+- `package:plugin_item_tracker/testing.dart` reexporta `package:item_tracker_domain/testing.dart`, que además trae `householdItemRepositoryContract`.
+
+### Corregido
+
+- Los streams de `InMemoryHouseholdItemRepository` ya no pierden una escritura hecha justo después de suscribirse: leen el estado y escuchan los cambios en cuanto alguien se suscribe, como los de Isar.
+- "Mover a…" podía cerrar la pantalla dos veces (y fallar con "There is nothing to pop") si la lista de objetos se actualizaba justo después de mover. Ahora solo reacciona cuando cambia el estado.
+
+### Interno
+
+- `IsarHouseholdItemRepository` pasa `householdItemRepositoryContract`. Los tests de dominio están ahora en `item_tracker_domain`.
+
 ## 1.1.1 - 2026-10-27
 
 ### Interno

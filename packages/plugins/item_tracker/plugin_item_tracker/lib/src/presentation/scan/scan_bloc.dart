@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:core_hardware/core_hardware.dart';
 import 'package:equatable/equatable.dart';
-import 'package:plugin_item_tracker/src/domain/entities/household_item.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/physical_identifier.dart';
-import '../../domain/errors/item_tracker_exception.dart';
 import '../../domain/use_cases/bind_identifier.dart';
 import '../../domain/use_cases/find_item_by_identifier.dart';
 import '../../item_tracker_dependencies.dart';

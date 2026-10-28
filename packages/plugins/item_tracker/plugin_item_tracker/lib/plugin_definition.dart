@@ -8,11 +8,10 @@ import 'package:core_utils/core_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 import 'src/data/item_tracker_storage.dart';
 import 'src/data/repositories/isar_household_item_repository.dart';
-import 'src/domain/hierarchy/containment_policy.dart';
-import 'src/domain/repositories/household_item_repository.dart';
 import 'src/domain/use_cases/add_item_event.dart';
 import 'src/domain/use_cases/bind_identifier.dart';
 import 'src/domain/use_cases/create_item.dart';
@@ -101,7 +100,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '1.1.1';
+  String get version => '1.1.2';
 
   @override
   List<CollectionSchema<dynamic>> get storageSchemas => itemTrackerSchemas;

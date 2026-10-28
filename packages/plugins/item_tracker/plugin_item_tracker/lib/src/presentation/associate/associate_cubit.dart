@@ -1,8 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/household_item.dart';
-import '../../domain/entities/physical_identifier.dart';
 import '../../domain/use_cases/bind_identifier.dart';
 import '../../domain/use_cases/item_queries.dart';
 

@@ -2,10 +2,8 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plugin_item_tracker/src/domain/entities/physical_identifier.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/errors/item_tracker_exception.dart';
-import '../../domain/item_validator.dart';
 import '../../i18n/strings.g.dart';
 import '../common/item_tracker_l10n.dart';
 import '../item_tracker_routes.dart';

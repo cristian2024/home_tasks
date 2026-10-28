@@ -1,9 +1,4 @@
-import '../entities/household_item.dart';
-import '../entities/item_event.dart';
-import '../entities/physical_identifier.dart';
-import '../errors/item_tracker_exception.dart';
-import '../hierarchy/item_tree.dart';
-import '../repositories/household_item_repository.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Consultas de solo lectura sobre los objetos.
 class GetItem {

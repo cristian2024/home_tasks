@@ -1,9 +1,5 @@
 import 'package:core_utils/core_utils.dart';
-
-import '../entities/item_event.dart';
-import '../entities/physical_identifier.dart';
-import '../errors/item_tracker_exception.dart';
-import '../repositories/household_item_repository.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 /// Quita un identificador de un objeto. El identificador queda libre y se
 /// puede asociar de nuevo a cualquier objeto.

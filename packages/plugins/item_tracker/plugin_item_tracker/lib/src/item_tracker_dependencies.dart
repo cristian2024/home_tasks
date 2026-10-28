@@ -1,10 +1,10 @@
 import 'package:core_hardware/core_hardware.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 import 'domain/use_cases/add_item_event.dart';
 import 'domain/use_cases/bind_identifier.dart';
 import 'domain/use_cases/create_item.dart';
 import 'domain/use_cases/find_item_by_identifier.dart';
-import 'domain/hierarchy/containment_policy.dart';
 import 'domain/use_cases/item_queries.dart';
 import 'domain/use_cases/move_item.dart';
 import 'domain/use_cases/unbind_identifier.dart';

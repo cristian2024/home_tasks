@@ -2,7 +2,7 @@ import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plugin_item_tracker/src/domain/entities/household_item.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
 import '../../i18n/strings.g.dart';
 import '../common/item_tracker_l10n.dart';
@@ -19,6 +19,9 @@ class MoveItemScreen extends StatelessWidget {
     final ItemTrackerTranslations$itemTracker$move$es t = itemTrackerStrings.itemTracker.move;
     final MoveItemCubit cubit = context.read<MoveItemCubit>();
     return BlocConsumer<MoveItemCubit, MoveItemState>(
+      // El árbol puede volver a emitir después de mover el objeto; el estado
+      // sigue en `moved` y no hay que cerrar la pantalla otra vez.
+      listenWhen: (MoveItemState previous, MoveItemState current) => previous.status != current.status,
       listener: (BuildContext context, MoveItemState state) {
         final HouseholdItem? destination = state.destination;
         if (state.status == MoveItemStatus.moved && destination != null) {

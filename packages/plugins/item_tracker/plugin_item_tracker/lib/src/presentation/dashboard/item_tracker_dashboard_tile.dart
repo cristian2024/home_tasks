@@ -1,8 +1,8 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/household_item.dart';
 import '../../domain/use_cases/item_queries.dart';
 import '../../i18n/strings.g.dart';
 import '../item_tracker_routes.dart';

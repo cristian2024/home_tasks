@@ -2,12 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/household_item.dart';
-import '../../domain/entities/item_event.dart';
-import '../../domain/entities/physical_identifier.dart';
-import '../../domain/hierarchy/containment_policy.dart';
-import '../../domain/hierarchy/item_tree.dart';
 import '../../domain/use_cases/item_queries.dart';
 import '../../domain/use_cases/move_item.dart';
 import '../../domain/use_cases/unbind_identifier.dart';

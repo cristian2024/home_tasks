@@ -1,10 +1,7 @@
 import 'package:core_hardware/core_hardware.dart';
 import 'package:flutter/material.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import '../../domain/entities/household_item.dart';
-import '../../domain/entities/item_event.dart';
-import '../../domain/entities/physical_identifier.dart';
-import '../../domain/errors/item_tracker_exception.dart';
 import '../../i18n/strings.g.dart';
 
 ItemTrackerTranslations get _t => itemTrackerStrings;
