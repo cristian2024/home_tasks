@@ -35,9 +35,11 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
         controller.add(read());
         changes = _changes.stream.listen((_) => controller.add(read()));
       },
+      // No devuelve el futuro de `cancel()`: `first` lo espera, y con el reloj
+      // simulado de los widget tests no se completa.
       onCancel: () {
+        unawaited(changes?.cancel());
         unawaited(controller.close());
-        return changes?.cancel();
       },
     );
     return controller.stream;
