@@ -1,0 +1,18 @@
+name: item_tracker_domain
+description: Dominio de item_tracker en Dart puro - entidades, reglas de validación y jerarquía, y el contrato del repositorio.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  equatable: ^3.0.0
+  # Solo para los tests de contrato de `package:item_tracker_domain/testing.dart`.
+  test: ^1.28.0
+
+dev_dependencies:
+  fake_async: ^1.3.3
+  flutter_lints: ^6.0.0
