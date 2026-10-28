@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 - 2026-10-27
+
+### Añadido
+
+- `IsarStorage`: `DependencyModule` de `core_di`. Quien compone la app solo lo elige (`IsarStorage(features: <IsarFeature>[...])`); al registrarse abre la base de datos (por defecto en la carpeta de documentos de la app) y registra `PluginPreferenceRepository` y los contratos de cada funcionalidad en el `ServiceLocator`. La base se cierra con `ServiceLocator.reset`.
+- `IsarFeature`: adaptador Isar de una funcionalidad. Aporta sus colecciones y registra sus implementaciones con la base ya abierta.
+- `package:storage_isar/adapter.dart`: para los adaptadores Isar de las funcionalidades. Reexporta la API de Isar e `IsarFeature`.
+
+### Eliminado
+
+- **Incompatible:** `IsarSchemaModule` (sustituido por `IsarFeature`).
+- **Incompatible:** `package:storage_isar/storage_isar.dart` ya no exporta `IsarDatabase`, `IsarPluginPreferenceRepository` ni la API de Isar: quien compone la app no necesita nada de Isar.
+
 ## 0.1.0 - 2026-10-27
 
 ### Añadido
