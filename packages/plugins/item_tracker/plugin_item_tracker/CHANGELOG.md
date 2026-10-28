@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.0 - 2026-10-28
+
+### Cambiado
+
+- **Incompatible:** `HouseholdItemRepository` debe estar registrado en el `ServiceLocator` antes de `initialize()`. Lo registra el adaptador de almacenamiento que elige la app (p. ej. `ItemTrackerIsar` de `item_tracker_isar`); en tests, `InMemoryHouseholdItemRepository`.
+
+### Eliminado
+
+- **Incompatible:** la capa data Isar del plugin: `IsarHouseholdItemRepository`, sus modelos e `itemTrackerSchemas`. Están en `item_tracker_isar`.
+- **Incompatible:** `ItemTrackerPlugin` ya no implementa `StorageSchemaContributor` ni usa el `Isar` del locator como respaldo.
+- **Incompatible:** el parámetro `repositoryFactory` del constructor. El repositorio sale siempre del locator.
+- La dependencia de `core_storage` y la generación de código de Isar (`build_runner`, `isar_community_generator`).
+
 ## 1.2.0 - 2026-10-27
 
 ### Añadido

@@ -19,7 +19,7 @@ dependencies:
     sdk: flutter
   go_router: ">=14.0.0 <17.0.0"
   item_tracker_isar: ^0.1.0
-  plugin_item_tracker: ^1.2.0
+  plugin_item_tracker: ^2.0.0
   storage_isar: ^0.2.0
 
 dev_dependencies:
