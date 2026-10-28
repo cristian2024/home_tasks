@@ -164,15 +164,17 @@ home_utility_monorepo/
 │   │   ├── core_ui/                  # Slang L10n helpers y componentes base
 │   │   └── core_utils/               # Formatters, Extensions, UUID
 │   └── plugins/                      # Módulos Funcionales Autónomos
-│       └── plugin_item_tracker/      # Módulo de Seguimiento de Objetos
-│           ├── pubspec.yaml
-│           ├── lib/
-│           │   ├── plugin_definition.dart # Definición e Inicialización
-│           │   └── src/
-│           │       ├── domain/       # Entities, ValueObjects, UseCases, Repositories
-│           │       ├── data/         # Isar Collections, Mappers, ReposImpl
-│           │       └── presentation/ # BLoCs, Cubits, Screens, Widgets
-│           └── test/
+│       └── item_tracker/             # Carpeta de la funcionalidad (no es un paquete)
+│           └── plugin_item_tracker/  # Módulo de Seguimiento de Objetos
+│               ├── pubspec.yaml
+│               ├── lib/
+│               │   ├── plugin_definition.dart # Definición e Inicialización
+│               │   └── src/
+│               │       ├── domain/   # Entities, ValueObjects, UseCases, Repositories
+│               │       ├── data/     # Isar Collections, Mappers, ReposImpl
+│               │       └── presentation/ # BLoCs, Cubits, Screens, Widgets
+│               ├── example/          # App de ejemplo del plugin
+│               └── test/
 ```
 
 ### 5.2. Definición de Paquetes y Reglas de Dependencias
@@ -183,7 +185,7 @@ graph TD
     App --> CoreDI[packages/core/core_di]
     App --> CoreStorage[packages/core/core_storage]
     App --> DesignSystem[packages/design_system]
-    App --> PluginItemTracker[packages/plugins/plugin_item_tracker]
+    App --> PluginItemTracker[packages/plugins/item_tracker/plugin_item_tracker]
 
     PluginItemTracker --> CoreContracts
     PluginItemTracker --> CoreHardware[packages/core/core_hardware]
@@ -563,7 +565,7 @@ abstract interface class HardwarePermissions {
 
 ## 9. Entidades y Modelos de Datos
 
-### 9.1. Entidades de Dominio (`packages/plugins/plugin_item_tracker/lib/src/domain/entities`)
+### 9.1. Entidades de Dominio (`packages/plugins/item_tracker/plugin_item_tracker/lib/src/domain/entities`)
 
 #### `HouseholdItem`
 ```dart
@@ -637,7 +639,7 @@ class ItemEvent extends Equatable {
 }
 ```
 
-### 9.2. Colecciones Isar para Persistencia Local (`packages/plugins/plugin_item_tracker/lib/src/data/models`)
+### 9.2. Colecciones Isar para Persistencia Local (`packages/plugins/item_tracker/plugin_item_tracker/lib/src/data/models`)
 
 ```dart
 import 'package:core_storage/core_storage.dart'; // Reexporta la API de Isar
@@ -1113,7 +1115,7 @@ gantt
 Antes de dar por completada la implementación de la primera iteración, verifica los siguientes puntos:
 
 - [x] ¿`melos bootstrap` resuelve el workspace (`pubspec.yaml` raíz) vinculando los paquetes locales sin errores de resolución de dependencias?
-- [x] ¿Ningún archivo dentro de `packages/plugins/plugin_item_tracker/lib/src/domain/` importa paquetes de Flutter SDK ni de Isar DB?
+- [x] ¿Ningún archivo dentro de `packages/plugins/item_tracker/plugin_item_tracker/lib/src/domain/` importa paquetes de Flutter SDK ni de Isar DB?
 - [x] ¿Todos los modelos de dominio generan su identificador primario utilizando la biblioteca `uuid` (UUID v4)?
 - [x] ¿La interfaz `IdentifierScanner` aísla completamente las librerías `mobile_scanner` y `nfc_manager` de la capa de presentación?
 - [x] ¿El catálogo de plugins persiste la preferencia del usuario (`UserPluginPreference`) separada de la definición estática del plugin (`HomePlugin`)?
