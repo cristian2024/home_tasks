@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.0 - 2026-10-27
+
+### Añadido
+
+- El plugin pide `HouseholdItemRepository` al `ServiceLocator`: lo registra el adaptador de almacenamiento que elige la app (p. ej. `ItemTrackerIsar` de `item_tracker_isar`). Así la app no construye ni pasa el repositorio.
+
+### Obsoleto
+
+- Si no hay `HouseholdItemRepository` registrado, el plugin sigue usando su repositorio Isar sobre el `Isar` del locator, y sigue aportando sus colecciones como `StorageSchemaContributor`. Ambas cosas desaparecerán cuando la app y el ejemplo usen el adaptador.
+
+### Interno
+
+- Los tests de widgets registran el repositorio en memoria en el locator, como haría un adaptador.
+
 ## 1.1.2 - 2026-10-27
 
 ### Cambiado
