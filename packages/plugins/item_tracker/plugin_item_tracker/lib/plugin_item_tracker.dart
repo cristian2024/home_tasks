@@ -4,8 +4,6 @@ library;
 export 'package:item_tracker_domain/item_tracker_domain.dart';
 
 export 'plugin_definition.dart';
-export 'src/data/item_tracker_storage.dart';
-export 'src/data/repositories/isar_household_item_repository.dart';
 export 'src/domain/use_cases/add_item_event.dart';
 export 'src/domain/use_cases/bind_identifier.dart';
 export 'src/domain/use_cases/create_item.dart';

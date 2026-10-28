@@ -26,7 +26,6 @@ void main() {
       expect(plugin.id, 'item_tracker');
       expect(harness.localization.translate(plugin.nameKey), 'Seguimiento de Objetos');
       expect(harness.localization.translate(plugin.descriptionKey), startsWith('Identifica'));
-      expect(plugin.storageSchemas, itemTrackerSchemas);
       expect(await plugin.isAvailable(), isTrue);
       expect(harness.locator.hasScope('item_tracker'), isTrue);
       expect(harness.locator.isRegistered<ItemTrackerDependencies>(), isTrue);

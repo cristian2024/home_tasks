@@ -1,8 +1,0 @@
-# La app de ejemplo no es parte del build: su carpeta ios/.symlinks enlaza a
-# paquetes de ~/.pub-cache y build_runner llegaría a borrar archivos generados
-# de esos paquetes (p. ej. pigeon.g.dart de nfc_manager).
-targets:
-  $default:
-    sources:
-      exclude:
-        - example/**

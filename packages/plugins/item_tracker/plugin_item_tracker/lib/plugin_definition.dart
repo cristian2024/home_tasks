@@ -2,7 +2,6 @@ import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_events/core_events.dart';
 import 'package:core_hardware/core_hardware.dart';
-import 'package:core_storage/core_storage.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:core_utils/core_utils.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 
-import 'src/data/item_tracker_storage.dart';
-import 'src/data/repositories/isar_household_item_repository.dart';
 import 'src/domain/use_cases/add_item_event.dart';
 import 'src/domain/use_cases/bind_identifier.dart';
 import 'src/domain/use_cases/create_item.dart';
@@ -43,10 +40,9 @@ import 'src/presentation/scan/scan_screen.dart';
 /// Plugin de identificación y seguimiento de objetos (§8).
 ///
 /// Dependencias que toma del `ServiceLocator` de la app (scope base):
-/// - `HouseholdItemRepository`, que registra el adaptador de almacenamiento
-///   que elige la app (p. ej. `ItemTrackerIsar`). Si no hay ninguno, usa el
-///   repositorio Isar del propio plugin sobre el `Isar` registrado; ese
-///   respaldo desaparecerá. [repositoryFactory] sustituye a ambos.
+/// - `HouseholdItemRepository` (obligatorio), que registra el adaptador de
+///   almacenamiento que elige la app (p. ej. `ItemTrackerIsar`). En tests,
+///   `InMemoryHouseholdItemRepository` de `package:plugin_item_tracker/testing.dart`.
 /// - `EventBus`, `IdGenerator` y `Clock` (opcionales: si faltan usa los
 ///   suyos).
 ///
@@ -56,13 +52,12 @@ import 'src/presentation/scan/scan_screen.dart';
 /// El nivel máximo de anidamiento de objetos se configura al compilar con
 /// `--dart-define=ITEM_TRACKER_MAX_DEPTH=<n>` (por defecto
 /// [ContainmentPolicy.defaultMaxDepth]); [maxContainmentDepth] lo sustituye.
-class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
+class ItemTrackerPlugin implements HomePlugin {
   ItemTrackerPlugin({
     required ServiceLocator locator,
     CameraScannerFactory? cameraScannerFactory,
     NfcScannerFactory? nfcScannerFactory,
     HardwarePermissions? permissions,
-    HouseholdItemRepository Function(ServiceLocator locator)? repositoryFactory,
     LocalizationCoordinator? localization,
     int? maxContainmentDepth,
   })  : _locator = locator,
@@ -70,7 +65,6 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
         _cameraScannerFactory = cameraScannerFactory ?? MobileScannerCameraScanner.new,
         _nfcScannerFactory = nfcScannerFactory ?? NfcManagerScanner.new,
         _permissions = permissions ?? const PermissionHandlerPermissions(),
-        _repositoryFactory = repositoryFactory ?? _registeredRepository,
         _localization = localization ?? LocalizationCoordinator.instance;
 
   static const String pluginId = 'item_tracker';
@@ -83,18 +77,10 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   final CameraScannerFactory _cameraScannerFactory;
   final NfcScannerFactory _nfcScannerFactory;
   final HardwarePermissions _permissions;
-  final HouseholdItemRepository Function(ServiceLocator locator) _repositoryFactory;
   final LocalizationCoordinator _localization;
   final ContainmentPolicy _containmentPolicy;
 
   ItemTrackerDependencies get _dependencies => _locator.get<ItemTrackerDependencies>();
-
-  /// El repositorio que registró el adaptador elegido por la app o, mientras
-  /// la app no use ninguno, el repositorio Isar del plugin.
-  static HouseholdItemRepository _registeredRepository(ServiceLocator locator) =>
-      locator.isRegistered<HouseholdItemRepository>()
-          ? locator.get<HouseholdItemRepository>()
-          : IsarHouseholdItemRepository(locator.get<Isar>());
 
   @override
   String get id => pluginId;
@@ -109,10 +95,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '1.2.0';
-
-  @override
-  List<CollectionSchema<dynamic>> get storageSchemas => itemTrackerSchemas;
+  String get version => '2.0.0';
 
   /// Siempre disponible: sin cámara ni NFC queda la entrada manual. Cada modo
   /// de escaneo comprueba su propio hardware.
@@ -148,7 +131,7 @@ class ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor {
     await _locator.pushScope(
       pluginId,
       init: (ServiceLocator locator) {
-        final HouseholdItemRepository repository = _repositoryFactory(locator);
+        final HouseholdItemRepository repository = locator.get<HouseholdItemRepository>();
         final IdGenerator ids =
             locator.isRegistered<IdGenerator>() ? locator.get<IdGenerator>() : const UuidV4Generator();
         final Clock clock = locator.isRegistered<Clock>() ? locator.get<Clock>() : const SystemClock();

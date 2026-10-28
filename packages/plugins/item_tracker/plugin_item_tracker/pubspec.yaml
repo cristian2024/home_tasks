@@ -1,6 +1,6 @@
 name: plugin_item_tracker
 description: Plugin de identificación y seguimiento de objetos del hogar (QR, códigos de barras y NFC).
-version: 1.2.0
+version: 2.0.0
 publish_to: none
 
 environment:
@@ -15,7 +15,6 @@ dependencies:
   core_di: ^0.1.0
   core_events: ^0.1.0
   core_hardware: ^0.1.0
-  core_storage: ^0.1.0
   core_ui: ^0.1.0
   core_utils: ^0.1.0
   design_system: ^0.1.0
@@ -30,9 +29,7 @@ dependencies:
 
 dev_dependencies:
   bloc_test: ^10.0.0
-  build_runner: ">=2.4.0 <3.0.0"
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
-  isar_community_generator: 3.3.2
   mocktail: ^1.0.4
