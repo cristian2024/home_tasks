@@ -1,7 +1,17 @@
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+import 'package:storage_isar/storage_isar.dart';
+
+/// Adaptadores que usa la app. Cada uno abre sus recursos y registra sus
+/// contratos en el `ServiceLocator`; la app solo los elige. Incluye los
+/// adaptadores de **todos** los plugins registrados, también los
+/// desactivados, para que sus datos sigan accesibles (AC-02).
+const List<DependencyModule> appAdapters = <DependencyModule>[
+  IsarStorage(features: <IsarFeature>[ItemTrackerIsar()]),
+];
 
 /// Crea un plugin con los servicios de la app. Además de construirlo, debe
 /// registrar sus traducciones para que el catálogo pueda mostrar su nombre

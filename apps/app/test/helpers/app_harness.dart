@@ -67,8 +67,9 @@ class FakeHomePlugin implements HomePlugin {
       Card(child: ListTile(title: Text('Tarjeta $id'), onTap: () => GoRouter.of(context).push(route)));
 }
 
-/// Entorno de la app sin Isar: plugin real con hardware falso y repositorio
-/// en memoria, más los [extraPlugins] que se indiquen.
+/// Entorno de la app sin base de datos: plugin real con hardware falso y
+/// repositorio en memoria registrado en el locator (como lo haría un
+/// adaptador), más los [extraPlugins] que se indiquen.
 class AppHarness {
   AppHarness({
     List<FakeHomePlugin> extraPlugins = const <FakeHomePlugin>[],
@@ -76,6 +77,7 @@ class AppHarness {
   })  : extraPlugins = extraPlugins,
         preferences = InMemoryPluginPreferenceRepository(),
         settingsRepository = InMemoryAppSettingsRepository(savedSettings) {
+    locator.registerSingleton<HouseholdItemRepository>(items);
     localization.register(
       'app',
       (String code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
@@ -99,7 +101,6 @@ class AppHarness {
               cameraScannerFactory: FakeCameraScanner.new,
               nfcScannerFactory: FakeNfcScanner.new,
               permissions: FakeHardwarePermissions(),
-              repositoryFactory: (_) => items,
             )..registerLocalization(),
         for (final FakeHomePlugin plugin in extraPlugins) (_, _) => plugin,
       ],

@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_events/core_events.dart';
-import 'package:core_storage/core_storage.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:core_utils/core_utils.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +23,6 @@ class AppEnvironment {
     required this.registry,
     required this.plugins,
     required this.settings,
-    this.isar,
   });
 
   final ServiceLocator locator;
@@ -35,18 +33,13 @@ class AppEnvironment {
   /// Tema e idioma elegidos por el usuario.
   final AppSettingsController settings;
 
-  /// `null` en los widget tests, que usan repositorios en memoria.
-  final Isar? isar;
-
-  /// Libera los plugins, los servicios y la base de datos (tests y reinicios).
+  /// Libera los plugins y los servicios; los adaptadores liberan con el
+  /// locator lo que abrieron, p. ej. la base de datos (tests y reinicios).
   Future<void> dispose() async {
     await plugins.disposePlugins();
     plugins.dispose();
     await settings.close();
     await locator.reset();
-    if (isar?.isOpen ?? false) {
-      await isar!.close();
-    }
   }
 }
 
@@ -55,19 +48,19 @@ class AppEnvironment {
 ///    defecto `rootBundle`), preferencias de la app (tema e idioma;
 ///    [systemLanguageCode] si el usuario no fijó uno) y servicios base en el
 ///    scope raíz de `core_di`.
-/// 2. Registro de plugins en tiempo de compilación ([appPluginFactories]).
-/// 3. Base de datos con los esquemas de **todos** los plugins registrados,
-///    también los desactivados (sus datos deben seguir accesibles, AC-02).
-/// 4. Ciclo de vida: inicializa los plugins activos y disponibles.
+/// 2. Adaptadores elegidos ([appAdapters]): cada uno abre sus recursos (p. ej.
+///    la base de datos) y registra sus contratos en el `ServiceLocator`.
+/// 3. Registro de plugins en tiempo de compilación ([appPluginFactories]).
+/// 4. Ciclo de vida: inicializa los plugins activos y disponibles, con el
+///    `PluginPreferenceRepository` que registró un adaptador.
 Future<AppEnvironment> bootstrapApp({
-  required String databaseDirectory,
   required String systemLanguageCode,
+  List<DependencyModule> adapters = appAdapters,
   AppSettingsRepository settingsRepository = const SharedPreferencesAppSettingsRepository(),
   AssetBundle? assetBundle,
   ServiceLocator? locator,
   LocalizationCoordinator? localization,
   List<PluginFactory> pluginFactories = appPluginFactories,
-  String databaseName = Isar.defaultName,
 }) async {
   final ServiceLocator services = locator ?? ServiceLocator.instance;
   final LocalizationCoordinator l10n = localization ?? LocalizationCoordinator.instance;
@@ -92,6 +85,9 @@ Future<AppEnvironment> bootstrapApp({
     ..registerSingleton<EventBus>(EventBus(), dispose: (EventBus bus) => bus.dispose())
     ..registerSingleton<IdGenerator>(const UuidV4Generator())
     ..registerSingleton<Clock>(const SystemClock());
+  for (final DependencyModule adapter in adapters) {
+    await adapter.register(services);
+  }
 
   final PluginRegistry registry = createPluginRegistry(
     locator: services,
@@ -99,17 +95,10 @@ Future<AppEnvironment> bootstrapApp({
     factories: pluginFactories,
   );
 
-  final Isar isar = await LocalDatabase.open(
-    directory: databaseDirectory,
-    name: databaseName,
-    contributors: registry.allPlugins.whereType<StorageSchemaContributor>(),
-  );
-  services.registerSingleton<Isar>(isar);
-
   final PluginController plugins = PluginController(
     PluginLifecycleManager(
       registry: registry,
-      preferences: IsarPluginPreferenceRepository(isar),
+      preferences: services.get<PluginPreferenceRepository>(),
       onError: (String pluginId, Object error, StackTrace stackTrace) => developer.log(
         'El plugin $pluginId falló',
         name: 'home_utility_app',
@@ -126,6 +115,5 @@ Future<AppEnvironment> bootstrapApp({
     registry: registry,
     plugins: plugins,
     settings: settings,
-    isar: isar,
   );
 }
