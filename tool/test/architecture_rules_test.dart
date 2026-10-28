@@ -178,13 +178,6 @@ import 'package:drift/drift.dart';
 
       expect(rules(), <String>['Regla 5', 'Regla 5', 'Regla 5', 'Regla 5']);
     });
-
-    test('core_storage puede importar Isar hasta que se elimine', () {
-      package('packages/core/core_storage', 'core_storage');
-      source('packages/core/core_storage/lib/a.dart', "export 'package:isar_community/isar.dart';\n");
-
-      expect(findViolations(root), isEmpty);
-    });
   });
 
   test('Regla 6: solo las apps, los ejemplos y otros adaptadores importan adaptadores', () {

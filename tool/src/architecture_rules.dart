@@ -38,10 +38,6 @@ final RegExp _storageEnginePackage =
 /// `item_tracker_isar`).
 final RegExp _featureAdapterName = RegExp(r'_(isar|sqflite|sqlite|drift|hive|objectbox|realm|sembast)$');
 
-/// Paquetes que aún usan un motor directamente y se eliminarán al terminar la
-/// migración a adaptadores (§10.2).
-const Set<String> _legacyEngineUsers = <String>{'packages/core/core_storage'};
-
 enum _Role {
   /// App o app de ejemplo: compone paquetes y elige adaptadores.
   host,
@@ -125,7 +121,7 @@ List<ArchitectureViolation> findViolations(Directory root) {
         if (!package.isCoreHardware && importedName != null && _nativeHardwarePackage.hasMatch(importedName)) {
           report(_rule4);
         }
-        if (importsEngine && package.role != _Role.adapter && !_legacyEngineUsers.contains(package.path)) {
+        if (importsEngine && package.role != _Role.adapter) {
           report(_rule5);
         }
         if (imported?.role == _Role.adapter && package.role != _Role.host && package.role != _Role.adapter) {
