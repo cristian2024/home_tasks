@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.1+5 - 2026-10-27
+
+### Cambiado
+
+- La app solo elige sus adaptadores (`appAdapters` en `app_module_registrar.dart`): `IsarStorage` de storage_isar 0.2.0 con `ItemTrackerIsar` de item_tracker_isar 0.1.0. Cada adaptador abre la base y registra sus repositorios en el `ServiceLocator`; la app ya no abre Isar ni construye repositorios, y no depende de core_storage.
+- `bootstrapApp` recibe `adapters` en lugar de `databaseDirectory` y `databaseName`. La base sigue en la carpeta de documentos con el mismo nombre y las mismas colecciones, así que los datos guardados se conservan.
+- `AppEnvironment` ya no expone `isar`: la base se cierra al liberar el locator.
+- core_di 0.1.1 e item_tracker 1.2.0.
+
+### Interno
+
+- Los widget tests registran el repositorio en memoria en el locator, como un adaptador. AC-02 y los `integration_test` usan los adaptadores reales en un directorio temporal.
+
 ## 1.3.0+4 - 2026-10-26
 
 ### Añadido

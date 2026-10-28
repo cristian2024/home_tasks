@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:core_di/core_di.dart';
-import 'package:core_storage/core_storage.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/bootstrap.dart';
 import 'package:home_utility_app/settings/app_settings.dart';
+import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+import 'package:storage_isar/adapter.dart' show Isar;
+import 'package:storage_isar/storage_isar.dart';
 
 import 'helpers/in_memory_app_settings_repository.dart';
 
@@ -31,8 +33,11 @@ void main() {
   });
   tearDown(() => directory.deleteSync(recursive: true));
 
+  // Los adaptadores reales, con la base en un directorio temporal.
   Future<AppEnvironment> start() => bootstrapApp(
-        databaseDirectory: directory.path,
+        adapters: <DependencyModule>[
+          IsarStorage(directory: directory.path, features: const <IsarFeature>[ItemTrackerIsar()]),
+        ],
         systemLanguageCode: 'es',
         settingsRepository: settings,
         locator: ServiceLocator(),
@@ -54,8 +59,8 @@ void main() {
     expect(app.registry.getPlugin(ItemTrackerPlugin.pluginId), isNotNull, reason: 'AC-01');
     expect(app.plugins.stateOf(ItemTrackerPlugin.pluginId)?.preference.isEnabled, isFalse);
     expect(app.plugins.dashboard, isEmpty);
-    // Los datos siguen en Isar aunque el plugin esté desactivado.
-    final HouseholdItem? stored = await IsarHouseholdItemRepository(app.isar!).getById(created.id);
+    // Los datos siguen guardados aunque el plugin esté desactivado.
+    final HouseholdItem? stored = await app.locator.get<HouseholdItemRepository>().getById(created.id);
     expect(stored?.name, 'Caja A');
 
     // Al reactivarlo, el plugin vuelve a encontrar sus datos.

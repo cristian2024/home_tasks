@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/app.dart';
 import 'package:home_utility_app/bootstrap.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:storage_isar/storage_isar.dart';
 
 /// Criterios de aceptación en un dispositivo o emulador, con Isar y el
 /// arranque reales:
@@ -29,7 +31,9 @@ void main() {
 
   Future<AppEnvironment> start(WidgetTester tester) async {
     final AppEnvironment app = await bootstrapApp(
-      databaseDirectory: directory.path,
+      adapters: <DependencyModule>[
+        IsarStorage(directory: directory.path, features: const <IsarFeature>[ItemTrackerIsar()]),
+      ],
       systemLanguageCode: 'es',
       locator: ServiceLocator(),
       localization: LocalizationCoordinator(),
