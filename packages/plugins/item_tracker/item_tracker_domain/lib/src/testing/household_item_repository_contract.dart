@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:test/test.dart';
 
 import '../entities/household_item.dart';
@@ -310,50 +311,60 @@ void householdItemRepositoryContract(
       });
     });
 
+    // Una base de datos calcula el estado inicial de forma asíncrona: cada
+    // test espera esa primera emisión antes de escribir, y después acepta
+    // emisiones intermedias hasta ver el estado esperado.
     group('streams', () {
       test('watchById emite null si no existe, el objeto al crearse y cada cambio', () async {
-        final Future<List<HouseholdItem?>> emissions = repository.watchById('item-1').take(3).toList();
+        final StreamQueue<HouseholdItem?> queue = StreamQueue<HouseholdItem?>(repository.watchById('item-1'));
+        addTearDown(() => queue.cancel(immediate: true));
 
+        expect(await queue.next, isNull);
         await repository.createItem(item(), events: const <ItemEvent>[]);
+        await expectLater(queue, emitsThrough(item()));
         await repository.updateItem(item(name: 'Caja B'), event('e1'));
-
-        expect(await emissions, <HouseholdItem?>[null, item(), item(name: 'Caja B')]);
+        await expectLater(queue, emitsThrough(item(name: 'Caja B')));
       });
 
       test('watchAll emite el estado actual al suscribirse y la lista completa en cada cambio', () async {
         await repository.createItem(item(id: 'a'), events: const <ItemEvent>[]);
-        final Future<List<List<HouseholdItem>>> emissions = repository.watchAll().take(2).toList();
+        final StreamQueue<List<String>> queue = StreamQueue<List<String>>(
+          repository.watchAll().map((List<HouseholdItem> items) => items.map((HouseholdItem i) => i.id).toList()),
+        );
+        addTearDown(() => queue.cancel(immediate: true));
 
+        expect(await queue.next, <String>['a']);
         await repository.createItem(
           item(id: 'b', updatedAt: t0.add(const Duration(hours: 1))),
           events: const <ItemEvent>[],
         );
-
-        final List<List<HouseholdItem>> result = await emissions;
-        expect(result[0].map((HouseholdItem i) => i.id), <String>['a']);
-        expect(result[1].map((HouseholdItem i) => i.id), <String>['b', 'a']);
+        await expectLater(queue, emitsThrough(<String>['b', 'a']));
       });
 
       test('watchIdentifiers emite al asociar y al quitar', () async {
         await repository.createItem(item(), events: const <ItemEvent>[]);
-        final Future<List<List<PhysicalIdentifier>>> emissions = repository.watchIdentifiers('item-1').take(3).toList();
+        final StreamQueue<int> queue = StreamQueue<int>(
+          repository.watchIdentifiers('item-1').map((List<PhysicalIdentifier> identifiers) => identifiers.length),
+        );
+        addTearDown(() => queue.cancel(immediate: true));
 
+        expect(await queue.next, 0);
         await repository.bindIdentifier(ident('i1', 'QR-1', IdentifierType.qr), event('e1'));
+        await expectLater(queue, emitsThrough(1));
         await repository.unbindIdentifier('i1', deletedAt: t0, event: event('e2'));
-
-        final List<List<PhysicalIdentifier>> result = await emissions;
-        expect(result.map((List<PhysicalIdentifier> list) => list.length), <int>[0, 1, 0]);
+        await expectLater(queue, emitsThrough(0));
       });
 
       test('watchEvents emite el historial completo en cada evento nuevo', () async {
         await repository.createItem(item(), events: const <ItemEvent>[]);
-        final Future<List<List<ItemEvent>>> emissions = repository.watchEvents('item-1').take(2).toList();
+        final StreamQueue<List<String>> queue = StreamQueue<List<String>>(
+          repository.watchEvents('item-1').map((List<ItemEvent> events) => events.map((ItemEvent e) => e.id).toList()),
+        );
+        addTearDown(() => queue.cancel(immediate: true));
 
+        expect(await queue.next, isEmpty);
         await repository.addEvent(event('e1'));
-
-        final List<List<ItemEvent>> result = await emissions;
-        expect(result[0], isEmpty);
-        expect(result[1].single.id, 'e1');
+        await expectLater(queue, emitsThrough(<String>['e1']));
       });
     });
   });

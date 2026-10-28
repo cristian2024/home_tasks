@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-10-27
+
+### Corregido
+
+- Los tests de streams de `householdItemRepositoryContract` esperan la emisión inicial antes de escribir. Una base de datos real (Isar) calcula ese estado de forma asíncrona, y si la escritura terminaba antes la primera emisión ya la incluía: el test fallaba según la velocidad de la máquina.
+
 ## 0.1.0 - 2026-10-27
 
 ### Añadido
