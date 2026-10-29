@@ -104,7 +104,18 @@
       "no_contents": "No contiene ningún objeto.",
       "add_inside": "Añadir objeto aquí",
       "full": "No caben más niveles dentro de este objeto (máximo {max}).",
-      "overflowing": "Este objeto está en el nivel {depth} y el máximo es {max}: lo que contiene supera el límite. Muévelo o sácalo."
+      "overflowing": "Este objeto está en el nivel {depth} y el máximo es {max}: lo que contiene supera el límite. Muévelo o sácalo.",
+      "delete": "Borrar objeto",
+      "delete_title": "¿Borrar «{name}»?",
+      "delete_message": "Se borrará con su historial. Sus identificadores quedarán libres para asociarlos a otro objeto.",
+      "delete_contents_message(plural)": {
+        "one": "Contiene 1 objeto. ¿Qué hacemos con él?",
+        "other": "Contiene {n} objetos. ¿Qué hacemos con ellos?"
+      },
+      "keep_contents_in": "Pasarlo a «{container}»",
+      "keep_contents_loose": "Dejarlo suelto",
+      "delete_all": "Borrar todo",
+      "deleted": "«{name}» borrado."
     },
     "events": {
       "created": "Objeto creado como «{name}»",
