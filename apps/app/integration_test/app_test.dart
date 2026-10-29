@@ -9,6 +9,7 @@ import 'package:home_utility_app/bootstrap.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shopping_list_isar/shopping_list_isar.dart';
 import 'package:storage_isar/storage_isar.dart';
 
 /// Criterios de aceptación en un dispositivo o emulador, con Isar y el
@@ -32,7 +33,10 @@ void main() {
   Future<AppEnvironment> start(WidgetTester tester) async {
     final AppEnvironment app = await bootstrapApp(
       adapters: <DependencyModule>[
-        IsarStorage(directory: directory.path, features: const <IsarFeature>[ItemTrackerIsar()]),
+        IsarStorage(
+          directory: directory.path,
+          features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()],
+        ),
       ],
       systemLanguageCode: 'es',
       locator: ServiceLocator(),
@@ -81,6 +85,8 @@ void main() {
     await tester.tap(find.widgetWithText(ListTile, 'Módulos'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(SwitchListTile, 'Seguimiento de Objetos'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(SwitchListTile, 'Lista de compras'));
     await tester.pumpAndSettle();
 
     // …y reiniciar la app.

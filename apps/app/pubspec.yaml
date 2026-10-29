@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.3.1+5
+version: 1.4.0+6
 
 environment:
   sdk: ^3.11.0
@@ -13,10 +13,10 @@ dependencies:
   bloc: ^9.2.0
   core_contracts: ^0.1.0
   core_di: ^0.1.1
-  core_events: ^0.1.0
+  core_events: ^0.1.1
   core_ui: ^0.1.1
   core_utils: ^0.1.0
-  design_system: ^0.1.1
+  design_system: ^0.1.2
   equatable: ^3.0.0
   flutter:
     sdk: flutter
@@ -24,7 +24,10 @@ dependencies:
   go_router: ">=14.0.0 <17.0.0"
   item_tracker_isar: ^0.1.0
   plugin_item_tracker: ^2.0.0
+  plugin_shopping_list: ^0.1.0
+  share_native: ^0.1.0
   shared_preferences: ^2.5.6
+  shopping_list_isar: ^0.1.0
   slang: ^4.19.0
   slang_flutter: ^4.19.0
   storage_isar: ^0.2.0
@@ -32,6 +35,7 @@ dependencies:
 dev_dependencies:
   bloc_test: ^10.0.0
   core_hardware: ^0.1.0
+  core_share: ^0.1.0
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
@@ -39,6 +43,7 @@ dev_dependencies:
     sdk: flutter
   # Carpeta temporal de los integration_test.
   path_provider: ^2.1.6
+  shopping_list_contract: ^0.1.0
 
 flutter:
   uses-material-design: true
@@ -46,3 +51,4 @@ flutter:
   assets:
     - assets/i18n/core_ui/
     - assets/i18n/item_tracker/
+    - assets/i18n/shopping_list/
