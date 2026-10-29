@@ -722,6 +722,8 @@ class IsarHouseholdItem {
 
   @Index() // Contenido de un objeto. Los registros anteriores se leen como null
   String? parentId;
+
+  DateTime? deletedAt; // Borrado lógico (§10.3), UTC; null si está activo
 }
 
 @collection
@@ -833,11 +835,17 @@ Isar devuelve las fechas en hora local: `ItemDataMapper` las convierte a UTC al 
 - **Añadir** desde el detalle o la edición del objeto: escaneo en modo asociar (`ScanBloc` con `bindToItemId`). Un código ya asociado se rechaza con el nombre de su objeto y la cámara no lo reintenta mientras siga en el encuadre.
 - **Quitar** (`UnbindIdentifier`): borrado lógico (§10.3) con confirmación. Si el objeto no tiene ese identificador activo, `IdentifierNotFoundException`. Un valor quitado queda libre y se puede asociar a cualquier objeto.
 
+**Borrar un objeto** (`DeleteItem`, desde el detalle): borrado lógico (§10.3) con confirmación. El objeto deja de aparecer en listados, búsquedas y escaneos, y sus identificadores activos quedan libres. Si contiene otros, el diálogo pregunta qué hacer con ellos (`DeletedContents`):
+- `moveToParent`: su contenido directo pasa al contenedor del objeto borrado (o queda suelto si no estaba dentro de ninguno), con todo lo que contiene. Al subir de nivel nunca supera el máximo.
+- `deleteAll`: se borra con él a cualquier profundidad (`ItemTree.descendantsOf`).
+
+Todo va en una sola transacción (`HouseholdItemRepository.deleteItems`). El contenedor del objeto borrado registra `childRemoved`; con `moveToParent`, cada objeto que sale registra `moved` y el contenedor que lo recibe, `childAdded`. Al terminar, el detalle vuelve a la pantalla anterior (o al listado).
+
 **Contenedores**: un objeto puede estar dentro de otro (`parentId`), p. ej. Mueble › Organizador › Cajón 2. Lo que contiene un objeto se mueve con él.
 - **Niveles**: un objeto suelto está en el nivel 1. El máximo (`ContainmentPolicy.maxDepth`) es 5 y se configura con `--dart-define=ITEM_TRACKER_MAX_DEPTH=n` (un valor menor que 1 usa 5). Al mover se cuenta todo el subárbol: un organizador con cajones ocupa 2 niveles.
 - **Errores**: meter un objeto en sí mismo o en algo que contiene lanza `ItemContainmentCycleException`; superar el máximo, `ItemContainmentTooDeepException(maxDepth)`.
 - **Si se baja el límite** no se mueve nada: el contenedor que queda en el nivel máximo o por debajo y aún contiene objetos se marca como desbordado (`ContainmentPolicy.isOverflowing`) y el detalle lo avisa.
-- **`ItemTree`** (`domain/hierarchy`) calcula ruta, nivel, contenido (ordenado por nombre) y altura a partir de la lista de objetos. Tolera contenedores inexistentes y ciclos.
+- **`ItemTree`** (`domain/hierarchy`) calcula ruta, nivel, contenido (ordenado por nombre), descendientes y altura a partir de la lista de objetos. Tolera contenedores inexistentes y ciclos.
 - **Presentación**: el detalle muestra la ruta navegable, "Mover a…", "Sacar del contenedor", el contenido y "Añadir objeto aquí". "Mover a…" excluye el propio objeto y su contenido y muestra desactivados, con el motivo, el contenedor actual y los destinos que superarían el límite. La lista y la búsqueda muestran todos los objetos con su ruta.
 
 **Eventos técnicos automáticos**: guardan datos, no texto traducido; la presentación compone el mensaje localizado.
@@ -850,10 +858,10 @@ Isar devuelve las fechas en hora local: `ItemDataMapper` las convierte a UTC al 
 | `identifierUnbound` | Al quitar un identificador | `IdentifierType.name` | `rawValue` |
 | `moved` | En el objeto, al cambiar de contenedor | Nombre del contenedor nuevo (vacío si sale de todos) | Su ID (vacío si sale de todos) |
 | `childAdded` | En el contenedor, al entrar un objeto (también al crearlo dentro) | Nombre del objeto | Su ID |
-| `childRemoved` | En el contenedor anterior, al salir un objeto | Nombre del objeto | Su ID |
+| `childRemoved` | En el contenedor anterior, al salir un objeto o al borrarlo | Nombre del objeto | Su ID |
 | `note` | El usuario añade una nota | Texto libre | Texto libre |
 
-**Casos de uso** (`lib/src/domain/use_cases`): `CreateItem` (publica `ItemCreatedCrossEvent`; acepta `parentId`), `UpdateItem`, `MoveItem` (con `parentId: null` saca el objeto; si el contenedor no cambia no escribe nada), `BindIdentifier`, `UnbindIdentifier`, `AddItemEvent`, `FindItemByIdentifier`, `GetItem`, `WatchItem`, `WatchItems`, `WatchItemTree`, `SearchItems`, `WatchItemIdentifiers`, `WatchItemEvents`. Reciben `IdGenerator` y `Clock` de `core_utils` por inyección, y `ContainmentPolicy` los que colocan objetos.
+**Casos de uso** (`lib/src/domain/use_cases`): `CreateItem` (publica `ItemCreatedCrossEvent`; acepta `parentId`), `UpdateItem`, `MoveItem` (con `parentId: null` saca el objeto; si el contenedor no cambia no escribe nada), `DeleteItem`, `BindIdentifier`, `UnbindIdentifier`, `AddItemEvent`, `FindItemByIdentifier`, `GetItem`, `WatchItem`, `WatchItems`, `WatchItemTree`, `SearchItems`, `WatchItemIdentifiers`, `WatchItemEvents`. Reciben `IdGenerator` y `Clock` de `core_utils` por inyección, y `ContainmentPolicy` los que colocan objetos.
 
 **Errores de dominio** (`sealed ItemTrackerException`): `ItemNotFoundException`, `IdentifierNotFoundException`, `IdentifierAlreadyBoundException`, `ItemContainmentCycleException`, `ItemContainmentTooDeepException` e `ItemValidationException`.
 
@@ -947,7 +955,7 @@ const List<DependencyModule> appAdapters = <DependencyModule>[
 ### 10.3. Preparación para Sincronización Remota Futura
 Para garantizar que la adición de un servidor remoto no quiebre la arquitectura:
 1. **Campos Inmutables**: `id` y `createdAt` jamás cambian tras su creación local.
-2. **Soft Deletes**: Los elementos no se borran físicamente mediante `DELETE`, sino que se marcan como borrados para propagar el borrado a la nube. **Implementado para los identificadores**: `deletedId` (el propio `id`, para que el índice único admita varios quitados del mismo valor) y `deletedAt` en UTC; las consultas solo devuelven los activos. Los objetos aún no se pueden borrar.
+2. **Soft Deletes**: Los elementos no se borran físicamente mediante `DELETE`, sino que se marcan como borrados para propagar el borrado a la nube. **Implementado para los identificadores**: `deletedId` (el propio `id`, para que el índice único admita varios quitados del mismo valor) y `deletedAt` en UTC. **Y para los objetos**: `IsarHouseholdItem.deletedAt` en UTC; al borrar un objeto también se marcan sus identificadores activos. Las consultas y los streams solo devuelven los activos.
 3. **Control de Modificación**: El campo `updatedAt` se actualiza localmente en cada escritura. La futura sincronización utilizará este campo para el algoritmo de resolución de conflictos *Last-Write-Wins (LWW)*.
 
 ---
