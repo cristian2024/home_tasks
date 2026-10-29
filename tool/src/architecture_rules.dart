@@ -23,12 +23,18 @@ const String _rule4 = 'Regla 4: solo core_hardware importa SDKs nativos de hardw
 const String _rule5 = 'Regla 5: solo los adaptadores importan motores de base de datos';
 const String _rule6 = 'Regla 6: solo las apps, los ejemplos y otros adaptadores importan adaptadores';
 const String _rule7 = 'Regla 7: un adaptador o un dominio no importa el plugin';
+const String _rule8 = 'Regla 8: un contrato es Dart puro y no importa funcionalidades ni apps';
+const String _rule9 = 'Regla 9: solo los adaptadores importan SDKs de plataforma';
 
 final RegExp _directive = RegExp(r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''', multiLine: true);
 final RegExp _pubspecName = RegExp(r'^name:\s*(\S+)', multiLine: true);
 final RegExp _flutterInDomain = RegExp(r'^(package:flutter\w*/|dart:ui$)');
 const Set<String> _allowedInDesignSystem = <String>{'flutter', 'core_ui'};
 final RegExp _nativeHardwarePackage = RegExp(r'^(mobile_scanner|nfc_manager\w*|permission_handler\w*)$');
+
+/// SDKs de plataforma que solo usan los adaptadores (compartir, abrir
+/// enlaces, archivos).
+final RegExp _platformSdkPackage = RegExp(r'^(share_plus\w*|url_launcher\w*|file_picker|path_provider\w*)$');
 
 /// Paquetes de motores de base de datos.
 final RegExp _storageEnginePackage =
@@ -49,6 +55,10 @@ enum _Role {
   /// `packages/plugins/<funcionalidad>/<funcionalidad>_domain`: Dart puro.
   domain,
 
+  /// `packages/contracts/*`: API pública de una funcionalidad (eventos y
+  /// capacidades) que otras pueden usar. Dart puro.
+  contract,
+
   /// `packages/adapters/*` o `packages/plugins/<funcionalidad>/<funcionalidad>_<motor>`.
   adapter,
 
@@ -58,6 +68,10 @@ enum _Role {
   /// Paquetes `core`, `shared` y `design_system`.
   other,
 }
+
+/// Roles que un contrato no puede importar: solo depende de otros contratos
+/// y de paquetes comunes. Los adaptadores ya los prohíbe la regla 6.
+const Set<_Role> _contractForbiddenImports = <_Role>{_Role.host, _Role.plugin, _Role.domain, _Role.featureOther};
 
 class _Package {
   _Package(this.name, this.path, this.role, this.feature);
@@ -130,6 +144,13 @@ List<ArchitectureViolation> findViolations(Directory root) {
         if (imported?.role == _Role.plugin && (package.role == _Role.adapter || package.role == _Role.domain)) {
           report(_rule7);
         }
+        if (package.role == _Role.contract &&
+            (_flutterInDomain.hasMatch(uri) || _contractForbiddenImports.contains(imported?.role))) {
+          report(_rule8);
+        }
+        if (package.role != _Role.adapter && importedName != null && _platformSdkPackage.hasMatch(importedName)) {
+          report(_rule9);
+        }
       }
     }
   }
@@ -170,6 +191,9 @@ _Package _classify(String path, String name, Set<String> packagePaths) {
   }
   if (segments.length >= 2 && segments[1] == 'adapters') {
     return _Package(name, path, _Role.adapter, null);
+  }
+  if (segments.length >= 2 && segments[1] == 'contracts') {
+    return _Package(name, path, _Role.contract, null);
   }
   if (segments.length >= 3 && segments[1] == 'plugins') {
     final String feature = segments[2];
