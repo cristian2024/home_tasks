@@ -2,6 +2,7 @@
 library;
 
 export 'src/home_plugin.dart';
+export 'src/home_plugin_entry_route.dart';
 export 'src/plugin_lifecycle_manager.dart';
 export 'src/plugin_preference_repository.dart';
 export 'src/plugin_registry.dart';
