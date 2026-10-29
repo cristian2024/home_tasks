@@ -36,7 +36,7 @@ class _ShoppingListExampleAppState extends State<ShoppingListExampleApp> {
             localization: widget.localization,
             demoData: DemoData(
               widget.locator.get<ShoppingListDependencies>(),
-              () => widget.locator.get<ShoppingListRepository>().getCategories(),
+              widget.locator.get<ShoppingListRepository>(),
             ),
             isDark: _themeMode == ThemeMode.dark,
             onDarkChanged: (bool dark) => setState(

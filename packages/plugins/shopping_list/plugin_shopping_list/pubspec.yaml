@@ -24,6 +24,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   go_router: ">=14.0.0 <17.0.0"
   list_export: ^0.1.0
+  rxdart: ^0.28.0
   shopping_list_contract: ^0.1.0
   shopping_list_domain: ^0.1.0
   slang: ^4.19.0
