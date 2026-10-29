@@ -1,6 +1,6 @@
 name: core_events
 description: Bus de eventos global para la comunicación desacoplada entre plugins.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
@@ -9,8 +9,8 @@ environment:
 resolution: workspace
 
 dependencies:
-  rxdart: ^0.28.0
+  # Solo para los tests de contrato de `package:core_events/testing.dart`.
+  test: ^1.28.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
-  test: ^1.28.0

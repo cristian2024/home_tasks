@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.2 - 2026-10-28
+
+### Añadido
+
+- `HomePluginEntryRoute`: interfaz opcional para un plugin con pantalla principal (`entryRoute`). La app la abre directamente donde no cabe la tarjeta del plugin, como la grilla del inicio. Los plugins que no la implementan no cambian.
+
+### Corregido
+
+- El `onCancel` de `InMemoryPluginPreferenceRepository.watch()` ya no devuelve el futuro de `cancel()`. `watch().first` podía quedarse esperando con el reloj simulado de `testWidgets`.
+
 ## 0.1.1 - 2026-10-27
 
 ### Añadido

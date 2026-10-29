@@ -1,0 +1,27 @@
+name: share_native
+description: Adaptador de core_share con share_plus, url_launcher y file_picker - comparte, abre WhatsApp y guarda archivos.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.1
+  core_share: ^0.1.0
+  file_picker: ^13.1.0
+  flutter:
+    sdk: flutter
+  share_plus: ^13.3.1
+  url_launcher: ^6.3.3
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+  share_plus_platform_interface: ^7.2.0
+  url_launcher_platform_interface: ^2.3.2
