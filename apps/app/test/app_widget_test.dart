@@ -190,6 +190,17 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Objetos'), findsOneWidget);
     });
 
+    testWidgets('un plugin con pantalla principal se abre directamente, sin hoja', (WidgetTester tester) async {
+      harness = AppHarness(savedSettings: const AppSettings(homeLayout: HomeLayout.grid), includeShoppingList: true);
+      await harness.pump(tester);
+
+      await tester.tap(find.text('Lista de compras'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.widgetWithText(AppBar, 'Lista de compras'), findsOneWidget);
+    });
+
     testWidgets('un plugin que falló se ve con error y al tocarlo reintenta', (WidgetTester tester) async {
       final FakeHomePlugin failing = FakeHomePlugin('notas', failOnInitialize: true);
       harness = AppHarness(

@@ -120,8 +120,10 @@ class _ShortcutGrid extends StatelessWidget {
       );
 }
 
-/// Acceso rápido de un plugin. Abre su tarjeta en una hoja inferior, con
-/// todas sus acciones; si no pudo iniciarse, se muestra con error y reintenta.
+/// Acceso rápido de un plugin. Si el plugin tiene pantalla principal
+/// ([HomePluginEntryRoute]) la abre; si no, muestra su tarjeta en una hoja
+/// inferior, con todas sus acciones. Si no pudo iniciarse, se muestra con
+/// error y reintenta.
 class _PluginShortcut extends StatelessWidget {
   const _PluginShortcut({super.key, required this.tile, required this.retrying});
 
@@ -140,6 +142,9 @@ class _PluginShortcut extends StatelessWidget {
         tooltip: appStrings.app.home.pluginFailed(name: name),
         onTap: retrying ? null : () => context.read<HomeBloc>().add(const HomeRetryRequested()),
       );
+    }
+    if (plugin case HomePluginEntryRoute(:final String entryRoute)) {
+      return AppShortcutTile(icon: plugin.icon, label: name, onTap: () => context.push(entryRoute));
     }
     return AppShortcutTile(
       icon: plugin.icon,
