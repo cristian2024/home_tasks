@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,8 @@ import 'package:home_utility_app/bootstrap.dart';
 import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:shopping_list_isar/shopping_list_isar.dart';
 import 'package:storage_isar/adapter.dart' show Isar;
 import 'package:storage_isar/storage_isar.dart';
 
@@ -36,7 +39,10 @@ void main() {
   // Los adaptadores reales, con la base en un directorio temporal.
   Future<AppEnvironment> start() => bootstrapApp(
         adapters: <DependencyModule>[
-          IsarStorage(directory: directory.path, features: const <IsarFeature>[ItemTrackerIsar()]),
+          IsarStorage(
+            directory: directory.path,
+            features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()],
+          ),
         ],
         systemLanguageCode: 'es',
         settingsRepository: settings,
@@ -58,7 +64,10 @@ void main() {
     app = await start();
     expect(app.registry.getPlugin(ItemTrackerPlugin.pluginId), isNotNull, reason: 'AC-01');
     expect(app.plugins.stateOf(ItemTrackerPlugin.pluginId)?.preference.isEnabled, isFalse);
-    expect(app.plugins.dashboard, isEmpty);
+    expect(
+      app.plugins.dashboard.map((PluginState state) => state.plugin.id),
+      isNot(contains(ItemTrackerPlugin.pluginId)),
+    );
     // Los datos siguen guardados aunque el plugin esté desactivado.
     final HouseholdItem? stored = await app.locator.get<HouseholdItemRepository>().getById(created.id);
     expect(stored?.name, 'Caja A');
@@ -70,6 +79,28 @@ void main() {
           type: IdentifierType.qr,
         );
     expect(found?.id, created.id);
+    await app.dispose();
+  });
+
+  test('AC-02: la lista de compras desactivada conserva sus items, categorías e historial', () async {
+    AppEnvironment app = await start();
+    final ShoppingListDependencies deps = app.locator.get<ShoppingListDependencies>();
+    final ShoppingItem eggs = await deps.createItem(name: 'Huevos', recurrence: Recurrence.between(8, 15));
+    await deps.markPurchased(eggs.id);
+    await app.plugins.setEnabled(ShoppingListPlugin.pluginId, enabled: false);
+    expect(app.locator.isRegistered<ShoppingListDependencies>(), isFalse, reason: 'dispose() libera su scope');
+    await app.dispose();
+
+    app = await start();
+    expect(app.plugins.stateOf(ShoppingListPlugin.pluginId)?.preference.isEnabled, isFalse);
+    final ShoppingListRepository repository = app.locator.get<ShoppingListRepository>();
+    expect((await repository.getItem(eggs.id))?.lastPurchasedAt, isNotNull);
+    expect(await repository.getPurchases(eggs.id), hasLength(1));
+    expect(await repository.getCategories(), hasLength(5));
+
+    // Al reactivarlo no se vuelven a crear las categorías por defecto.
+    await app.plugins.setEnabled(ShoppingListPlugin.pluginId, enabled: true);
+    expect(await repository.getCategories(), hasLength(5));
     await app.dispose();
   });
 

@@ -1,6 +1,7 @@
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_contracts/testing.dart';
 import 'package:core_di/core_di.dart';
+import 'package:core_events/core_events.dart';
 import 'package:core_hardware/testing.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,8 @@ import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:home_utility_app/settings/app_settings_controller.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
+import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:plugin_shopping_list/testing.dart';
 
 import 'in_memory_app_settings_repository.dart';
 
@@ -69,15 +72,25 @@ class FakeHomePlugin implements HomePlugin {
 
 /// Entorno de la app sin base de datos: plugin real con hardware falso y
 /// repositorio en memoria registrado en el locator (como lo haría un
-/// adaptador), más los [extraPlugins] que se indiquen.
+/// adaptador), más los [extraPlugins] que se indiquen. Con
+/// [includeShoppingList] registra también la lista de compras real, con su
+/// repositorio en memoria.
 class AppHarness {
   AppHarness({
-    List<FakeHomePlugin> extraPlugins = const <FakeHomePlugin>[],
+    List<HomePlugin> extraPlugins = const <HomePlugin>[],
     AppSettings savedSettings = const AppSettings(),
+    bool includeShoppingList = false,
+    ServiceLocator? locator,
   })  : extraPlugins = extraPlugins,
+        locator = locator ?? ServiceLocator(),
         preferences = InMemoryPluginPreferenceRepository(),
         settingsRepository = InMemoryAppSettingsRepository(savedSettings) {
-    locator.registerSingleton<HouseholdItemRepository>(items);
+    // Como bootstrapApp: el EventBus va en el scope raíz, compartido por
+    // todos los plugins.
+    this.locator
+      ..registerSingleton<EventBus>(EventBus(), dispose: (EventBus bus) => bus.dispose())
+      ..registerSingleton<HouseholdItemRepository>(items)
+      ..registerSingleton<ShoppingListRepository>(shoppingItems);
     localization.register(
       'app',
       (String code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
@@ -92,7 +105,7 @@ class AppHarness {
       translate: (String key) => key.endsWith('.name') ? 'Módulo ${key.split('.').first}' : null,
     );
     final PluginRegistry registry = createPluginRegistry(
-      locator: locator,
+      locator: this.locator,
       localization: localization,
       factories: <PluginFactory>[
         (ServiceLocator locator, LocalizationCoordinator localization) => ItemTrackerPlugin(
@@ -102,11 +115,14 @@ class AppHarness {
               nfcScannerFactory: FakeNfcScanner.new,
               permissions: FakeHardwarePermissions(),
             )..registerLocalization(),
-        for (final FakeHomePlugin plugin in extraPlugins) (_, _) => plugin,
+        if (includeShoppingList)
+          (ServiceLocator locator, LocalizationCoordinator localization) =>
+              ShoppingListPlugin(locator: locator, localization: localization)..registerLocalization(),
+        for (final HomePlugin plugin in extraPlugins) (_, _) => plugin,
       ],
     );
     environment = AppEnvironment(
-      locator: locator,
+      locator: this.locator,
       localization: localization,
       registry: registry,
       plugins: PluginController(PluginLifecycleManager(registry: registry, preferences: preferences)),
@@ -119,12 +135,13 @@ class AppHarness {
     );
   }
 
-  final List<FakeHomePlugin> extraPlugins;
+  final List<HomePlugin> extraPlugins;
   final InMemoryPluginPreferenceRepository preferences;
   final InMemoryAppSettingsRepository settingsRepository;
-  final ServiceLocator locator = ServiceLocator();
+  final ServiceLocator locator;
   final LocalizationCoordinator localization = LocalizationCoordinator();
   final InMemoryHouseholdItemRepository items = InMemoryHouseholdItemRepository();
+  final InMemoryShoppingListRepository shoppingItems = InMemoryShoppingListRepository();
   late final AppEnvironment environment;
 
   PluginController get plugins => environment.plugins;

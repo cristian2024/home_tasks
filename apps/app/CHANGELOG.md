@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.4.0+6 - 2026-10-28
+
+### Añadido
+
+- Plugin de lista de compras (`plugin_shopping_list` 0.1.0): su factoría en `appPluginFactories` y sus textos en `assets/i18n/shopping_list/`.
+- Adaptadores: `ShoppingListIsar` dentro de `IsarStorage` y `NativeShare` (share_native 0.1.0) para exportar a WhatsApp, como texto o como archivo `.md`.
+- WhatsApp declarado en `<queries>` (Android) y en `LSApplicationQueriesSchemes` (iOS), para que la app sepa si está instalado.
+- En la grilla del inicio, un plugin con pantalla principal (`HomePluginEntryRoute` de core_contracts 0.1.2, como la lista de compras) se abre directamente al tocarlo. Los demás siguen mostrando su tarjeta en una hoja inferior.
+
+### Cambiado
+
+- core_contracts 0.1.2, core_events 0.1.1 y design_system 0.1.2.
+
+### Interno
+
+- `AppHarness` registra el `EventBus` en el scope raíz, como `bootstrapApp`, y puede incluir la lista de compras real (`includeShoppingList`).
+- Tests de comunicación entre plugins: un plugin falso usa la lista de compras solo a través de `shopping_list_contract` y sigue funcionando cuando está desactivada.
+- AC-02 también para la lista de compras; los `integration_test` usan los dos adaptadores Isar.
+
 ## 1.3.1+5 - 2026-10-27
 
 ### Cambiado
