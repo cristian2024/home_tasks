@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.2 - 2026-10-28
+
+### Añadido
+
+- `AppFilterChips<T>`: elegir varias opciones a la vez (p. ej. filtrar por categorías), con la etiqueta visible u oculta (`showLabel`). Los lectores de pantalla anuncian la etiqueta.
+- `AppBadge`: etiqueta corta con tono `critical`, `warning` o `neutral`, con colores del tema e icono opcional.
+- `AppCheckTile`: fila que se marca como hecha con su casilla (con etiqueta para lectores de pantalla), tacha el título al marcarla y muestra badges bajo el subtítulo.
+- La galería del ejemplo muestra los nuevos componentes en la sección «Listas».
+
+### Interno
+
+- Tipos explícitos en la app de ejemplo (`always_specify_types`).
+
 ## 0.1.1 - 2026-10-26
 
 ### Añadido

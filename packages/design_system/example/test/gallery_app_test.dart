@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('la galería cambia de idioma, tema y escala sin errores', (tester) async {
+  testWidgets('la galería cambia de idioma, tema y escala sin errores', (WidgetTester tester) async {
     await tester.pumpWidget(const GalleryApp());
     // La galería contiene otros Scrollable (campos de texto, estados).
-    final galleryList = find.byType(Scrollable).first;
+    final Finder galleryList = find.byType(Scrollable).first;
 
     await tester.tap(find.text('Tema oscuro'));
     await tester.drag(find.byType(Slider), const Offset(1000, 0));

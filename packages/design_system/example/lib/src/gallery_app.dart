@@ -12,7 +12,7 @@ class GalleryApp extends StatefulWidget {
 }
 
 class _GalleryAppState extends State<GalleryApp> {
-  final _localization = LocalizationCoordinator.instance;
+  final LocalizationCoordinator _localization = LocalizationCoordinator.instance;
   ThemeMode _themeMode = ThemeMode.light;
   double _textScale = 1;
 
@@ -20,7 +20,7 @@ class _GalleryAppState extends State<GalleryApp> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<String>(
       valueListenable: _localization.languageCode,
-      builder: (context, languageCode, _) => MaterialApp(
+      builder: (BuildContext context, String languageCode, _) => MaterialApp(
         title: 'design_system',
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
@@ -28,7 +28,7 @@ class _GalleryAppState extends State<GalleryApp> {
         locale: Locale(languageCode),
         supportedLocales: LocalizationCoordinator.supportedLocales,
         localizationsDelegates: LocalizationCoordinator.localizationsDelegates,
-        builder: (context, child) => MediaQuery(
+        builder: (BuildContext context, Widget? child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_textScale)),
           child: child!,
         ),
@@ -36,9 +36,9 @@ class _GalleryAppState extends State<GalleryApp> {
           isDark: _themeMode == ThemeMode.dark,
           languageCode: languageCode,
           textScale: _textScale,
-          onDarkChanged: (dark) => setState(() => _themeMode = dark ? ThemeMode.dark : ThemeMode.light),
+          onDarkChanged: (bool dark) => setState(() => _themeMode = dark ? ThemeMode.dark : ThemeMode.light),
           onLanguageChanged: _localization.setLanguage,
-          onTextScaleChanged: (scale) => setState(() => _textScale = scale),
+          onTextScaleChanged: (double scale) => setState(() => _textScale = scale),
         ),
       ),
     );
@@ -68,18 +68,18 @@ class _GalleryPage extends StatelessWidget {
       appBar: AppBar(title: const Text('design_system')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
+        children: <Widget>[
           const AppSectionHeader('Ajustes de la galería'),
           SwitchListTile(title: const Text('Tema oscuro'), value: isDark, onChanged: onDarkChanged),
           ListTile(
             title: const Text('Idioma'),
             trailing: SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'es', label: Text('ES')),
-                ButtonSegment(value: 'en', label: Text('EN')),
+              segments: const <ButtonSegment<String>>[
+                ButtonSegment<String>(value: 'es', label: Text('ES')),
+                ButtonSegment<String>(value: 'en', label: Text('EN')),
               ],
-              selected: {languageCode},
-              onSelectionChanged: (selection) => onLanguageChanged(selection.single),
+              selected: <String>{languageCode},
+              onSelectionChanged: (Set<String> selection) => onLanguageChanged(selection.single),
             ),
           ),
           ListTile(title: Text('Escala de texto: ${(textScale * 100).round()} %')),
@@ -96,7 +96,7 @@ class _GalleryPage extends StatelessWidget {
           const Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: [
+            children: <Widget>[
               _Swatch('primary', AppColors.primary),
               _Swatch('primaryDark', AppColors.primaryDark),
               _Swatch('secondary', AppColors.secondary),
@@ -106,7 +106,7 @@ class _GalleryPage extends StatelessWidget {
             ],
           ),
           const AppSectionHeader('Espaciados'),
-          for (final (name, value) in const [
+          for (final (String name, double value) in const <(String, double)>[
             ('xs', AppSpacing.xs),
             ('sm', AppSpacing.sm),
             ('md', AppSpacing.md),
@@ -116,7 +116,7 @@ class _GalleryPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: Row(
-                children: [
+                children: <Widget>[
                   SizedBox(width: 48, child: Text(name)),
                   Container(width: value * 4, height: AppSpacing.sm, color: AppColors.primary),
                 ],
@@ -126,7 +126,7 @@ class _GalleryPage extends StatelessWidget {
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: [
+            children: <Widget>[
               AppButton(label: commonStrings.common.save, onPressed: () {}),
               AppButton(
                 label: commonStrings.common.retry,
@@ -142,9 +142,14 @@ class _GalleryPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
-            children: [
+            children: <Widget>[
               AppIconButton(icon: Icons.edit, tooltip: 'Editar', onPressed: () {}),
-              AppIconButton(icon: Icons.add, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
+              AppIconButton(
+                icon: Icons.add,
+                tooltip: 'Añadir',
+                variant: AppIconButtonVariant.filled,
+                onPressed: () {},
+              ),
               AppIconButton(
                 icon: Icons.qr_code_scanner,
                 tooltip: 'Escanear',
@@ -190,13 +195,15 @@ class _GalleryPage extends StatelessWidget {
               ),
             ],
           ),
+          const AppSectionHeader('Listas'),
+          const _ListsDemo(),
           const AppSectionHeader('Diálogos'),
           Builder(
-            builder: (context) => AppButton(
+            builder: (BuildContext context) => AppButton(
               label: 'Mostrar confirmación',
               variant: AppButtonVariant.secondary,
               onPressed: () async {
-                final confirmed = await showAppConfirmDialog(
+                final bool confirmed = await showAppConfirmDialog(
                   context,
                   title: '¿Eliminar objeto?',
                   message: 'Esta acción no se puede deshacer.',
@@ -240,7 +247,7 @@ class _Swatch extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [
+      children: <Widget>[
         Container(
           width: 64,
           height: 40,
@@ -252,6 +259,52 @@ class _Swatch extends StatelessWidget {
         ),
         Text(name, style: Theme.of(context).textTheme.labelSmall),
       ],
+    );
+  }
+}
+
+/// Filtros por categoría y filas marcables, como en una lista de compras.
+class _ListsDemo extends StatefulWidget {
+  const _ListsDemo();
+
+  @override
+  State<_ListsDemo> createState() => _ListsDemoState();
+}
+
+class _ListsDemoState extends State<_ListsDemo> {
+  Set<String> _categories = <String>{'food'};
+  bool _eggsBought = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          AppFilterChips<String>(
+            label: 'Categorías',
+            options: const <AppChoice<String>>[
+              AppChoice<String>(value: 'food', label: 'Comida'),
+              AppChoice<String>(value: 'cleaning', label: 'Limpieza'),
+              AppChoice<String>(value: 'home', label: 'Hogar', icon: Icons.home_outlined),
+            ],
+            selected: _categories,
+            onChanged: (Set<String> categories) => setState(() => _categories = categories),
+          ),
+          AppCheckTile(
+            title: 'Huevos',
+            subtitle: '2 docenas',
+            value: _eggsBought,
+            checkboxLabel: 'Marcar como comprado',
+            onChanged: (bool bought) => setState(() => _eggsBought = bought),
+            badges: const <Widget>[
+              AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+              AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
+              AppBadge(label: 'Comida'),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

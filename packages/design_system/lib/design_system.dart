@@ -3,10 +3,13 @@
 /// Solo depende de Flutter y de `core_ui` (Regla 3 del §5.2).
 library;
 
+export 'src/components/app_badge.dart';
 export 'src/components/app_button.dart';
 export 'src/components/app_card.dart';
+export 'src/components/app_check_tile.dart';
 export 'src/components/app_choice_selector.dart';
 export 'src/components/app_confirm_dialog.dart';
+export 'src/components/app_filter_chips.dart';
 export 'src/components/app_icon_button.dart';
 export 'src/components/app_loading_view.dart';
 export 'src/components/app_section_header.dart';
