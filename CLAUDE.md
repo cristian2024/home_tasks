@@ -100,6 +100,7 @@
 - **`SnackBar`:** llamar a `hideCurrentSnackBar()` antes de `showSnackBar` para que no se queden en cola.
 - **Isar y el binding de tests:** `TestWidgetsFlutterBinding` responde 400 a todas las peticiones HTTP. En un test que necesite el binding (p. ej. para `rootBundle`), ejecutar `Isar.initializeIsarCore(download: true)` **antes** de `TestWidgetsFlutterBinding.ensureInitialized()`. Si no, en CI (sin `libisar` en caché) la descarga falla. Ver `apps/app/test/ac02_persistence_test.dart`.
 - **`onCancel` de un stream:** en un `StreamController` que reenvía otra suscripción, `onCancel` no debe devolver el futuro de su `cancel()`. `Stream.first` lo espera y, en `testWidgets`, no se completa con el reloj simulado: el test se cuelga. Cancelar sin devolverlo (ver `InMemoryHouseholdItemRepository`).
+- **`first` sobre streams de rxdart:** operadores como `Rx.combineLatest2` devuelven en su `onCancel` el futuro de las cancelaciones, y `first` lo espera. En `testWidgets` no termina (p. ej. `WatchShoppingList().first`). Para leer una vez, usar el repositorio (`getItems()`…).
 - **Streams contra una base real:** esperar la emisión inicial antes de escribir, con `StreamQueue` y `emitsThrough`. Con `take(n).toList()` y una escritura inmediata, la escritura compite con la consulta inicial y el test falla de forma intermitente (pasaba en local y fallaba en la CI de Ubuntu).
 
 ## Fase 4 (apps/app)
