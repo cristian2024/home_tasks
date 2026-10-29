@@ -88,7 +88,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 ```
 
 - **Compile-Time Discovery**: Todos los plugins conocidos se registran estáticamente en la aplicación principal (`apps/app/lib/app_module_registrar.dart`) como una lista de `PluginFactory`. Cada factoría construye su plugin y registra sus traducciones (para que el catálogo muestre su nombre aunque esté desactivado). **Para añadir un plugin**: dependencia en `apps/app/pubspec.yaml` y una entrada en `appPluginFactories`.
-- **Arranque** (`apps/app/lib/bootstrap.dart`): preferencias de la app (tema e idioma, de `shared_preferences`) → servicios base en `core_di` (`EventBus`, `IdGenerator`, `Clock`) → registro de plugins → `LocalDatabase.open` con los esquemas de **todos** los plugins → `Isar` en `core_di` → `PluginLifecycleManager` con `IsarPluginPreferenceRepository` → carga de los plugins activos y disponibles.
+- **Arranque** (`apps/app/lib/bootstrap.dart`): preferencias de la app (tema e idioma, de `shared_preferences`) → servicios base en `core_di` (`EventBus`, `IdGenerator`, `Clock`) → adaptadores elegidos (`appAdapters`, §10.2): cada uno abre sus recursos y registra sus contratos en el `ServiceLocator` → registro de plugins → `PluginLifecycleManager` con el `PluginPreferenceRepository` que registró un adaptador → carga de los plugins activos y disponibles.
 - **Run-Time Activation**: Un plugin registrado puede ser desactivado por el usuario. Al desactivarse:
   - Sus rutas de navegación se remueven o bloquean.
   - Sus Widgets en la pantalla de inicio no se renderizan.
@@ -102,7 +102,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 - **Estrategia Anti-Acoplamiento (Evolución Cloud)**:
   - **Identificadores Únicos**: Todas las entidades de dominio utilizan **UUID v4** (Strings estables de 128 bits) generados en el cliente. Prohibido el uso de autoincrementales numéricos para IDs de dominio.
   - **Estampa de Tiempo**: Todos los campos temporales se almacenan en **UTC** (`DateTime.now().toUtc()`).
-  - **Patrón Repository**: Los casos de uso consumen abstracciones (`HouseholdItemRepository`). La implementación actual `IsarHouseholdItemRepository` convierte los modelos de dominio en colecciones Isar (`IsarHouseholdItem`). En el futuro, se podrá añadir una implementación remota (`HttpHouseholdItemRepository`) sin modificar un solo archivo del dominio ni de la presentación.
+  - **Patrón Repository**: Los casos de uso consumen abstracciones (`HouseholdItemRepository`). La implementación actual, `IsarHouseholdItemRepository`, vive en el adaptador `item_tracker_isar` y convierte los modelos de dominio en colecciones Isar (`IsarHouseholdItem`). Otro motor o una implementación remota (`HttpHouseholdItemRepository`) será otro adaptador que pase la misma batería de tests de contrato: no cambia ningún archivo del dominio, del plugin ni de la presentación, solo la lista de adaptadores de la app (§10.2).
 
 ---
 
@@ -113,7 +113,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 | **Flutter SDK (>=3.27.0)** | Framework UI | Estándar de la aplicación, alto rendimiento multiplataforma. | `apps/app`, `packages/*` | [flutter.dev](https://flutter.dev) |
 | **Melos (>=8.0.0)** | Monorepo Tooling | Gestión de múltiples paquetes Dart, enlace de dependencias locales y ejecución de scripts. | Raíz del Proyecto | [melos.invertase.dev](https://melos.invertase.dev) |
 | **flutter_bloc (>=8.1.3)** | Gestión de Estado | Predicibilidad de estados, separación entre eventos/UI, facilidad de pruebas unitarias. | `packages/plugins/*`, `apps/app` | [bloclibrary.dev](https://bloclibrary.dev) |
-| **isar_community (3.3.2)** | Persistencia Local | Fork mantenido de Isar: NoSQL nativa de alto rendimiento con reactividad por `Streams`. Versión fijada: `isar_community_generator` 3.3.2 exige `analyzer` <11, lo que limita `build_runner` a 2.15.x. | `packages/core/core_storage` (reexporta la API) | [pub.dev/packages/isar_community](https://pub.dev/packages/isar_community) |
+| **isar_community (3.3.2)** | Persistencia Local | Fork mantenido de Isar: NoSQL nativa de alto rendimiento con reactividad por `Streams`. Versión fijada: `isar_community_generator` 3.3.2 exige `analyzer` <11, lo que limita `build_runner` a 2.15.x. | Solo adaptadores: `packages/adapters/storage_isar` (reexporta la API) e `item_tracker_isar` | [pub.dev/packages/isar_community](https://pub.dev/packages/isar_community) |
 | **go_router (>=14.0.0)** | Navegación Declarativa | Integración declarativa basada en URLs, soporte nativo para sub-rutas de plugins y `ShellRoute`. | `apps/app`, `packages/core/core_contracts` | [pub.dev/packages/go_router](https://pub.dev/packages/go_router) |
 | **mobile_scanner (>=7.4.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/core/core_hardware` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
 | **nfc_manager (>=4.2.0)** + **nfc_manager_ndef (>=1.1.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). En 4.x la lectura/escritura NDEF vive en `nfc_manager_ndef`. | `packages/core/core_hardware` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
@@ -151,10 +151,11 @@ home_utility_monorepo/
 ├── packages/
 │   ├── core/                         # Infraestructura y Contratos Centrales
 │   │   ├── core_contracts/           # Abstracciones de Plugins y Módulos
-│   │   ├── core_storage/             # Motor e Interfaces Isar DB
-│   │   ├── core_di/                  # Service Locator (GetIt)
+│   │   ├── core_di/                  # Service Locator (GetIt) y DependencyModule
 │   │   ├── core_events/              # Bus de Eventos Global (RxDart)
 │   │   └── core_hardware/            # Abstracciones de Cámara, QR y NFC
+│   ├── adapters/                     # Adaptadores transversales (tecnologías reemplazables)
+│   │   └── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature
 │   ├── design_system/                # Sistema de Diseño UI Centralizado
 │   │   ├── lib/
 │   │   │   ├── tokens/               # Colores, Tipografía, Espaciados
@@ -165,15 +166,20 @@ home_utility_monorepo/
 │   │   └── core_utils/               # Formatters, Extensions, UUID
 │   └── plugins/                      # Módulos Funcionales Autónomos
 │       └── item_tracker/             # Carpeta de la funcionalidad (no es un paquete)
-│           └── plugin_item_tracker/  # Módulo de Seguimiento de Objetos
-│               ├── pubspec.yaml
+│           ├── item_tracker_domain/  # Dart puro: Entities, ValueObjects, Repository, errores
+│           │   └── lib/testing.dart  # Tests de contrato y repositorio en memoria
+│           ├── plugin_item_tracker/  # Módulo de Seguimiento de Objetos (HomePlugin)
+│           │   ├── pubspec.yaml
+│           │   ├── lib/
+│           │   │   ├── plugin_definition.dart # Definición e Inicialización
+│           │   │   └── src/
+│           │   │       ├── domain/use_cases/ # Casos de uso
+│           │   │       ├── i18n/     # Textos (slang)
+│           │   │       └── presentation/ # BLoCs, Cubits, Screens, Widgets
+│           │   ├── example/          # App de ejemplo del plugin
+│           │   └── test/
+│           └── item_tracker_isar/    # Adaptador Isar: Collections, Mappers, ReposImpl
 │               ├── lib/
-│               │   ├── plugin_definition.dart # Definición e Inicialización
-│               │   └── src/
-│               │       ├── domain/   # Entities, ValueObjects, UseCases, Repositories
-│               │       ├── data/     # Isar Collections, Mappers, ReposImpl
-│               │       └── presentation/ # BLoCs, Cubits, Screens, Widgets
-│               ├── example/          # App de ejemplo del plugin
 │               └── test/
 ```
 
@@ -183,31 +189,48 @@ home_utility_monorepo/
 graph TD
     App[apps/app] --> CoreContracts[packages/core/core_contracts]
     App --> CoreDI[packages/core/core_di]
-    App --> CoreStorage[packages/core/core_storage]
     App --> DesignSystem[packages/design_system]
-    App --> PluginItemTracker[packages/plugins/item_tracker/plugin_item_tracker]
+    App --> PluginItemTracker[item_tracker/plugin_item_tracker]
+    App --> StorageIsar[packages/adapters/storage_isar]
+    App --> ItemTrackerIsar[item_tracker/item_tracker_isar]
 
+    PluginItemTracker --> ItemTrackerDomain[item_tracker/item_tracker_domain]
     PluginItemTracker --> CoreContracts
     PluginItemTracker --> CoreHardware[packages/core/core_hardware]
     PluginItemTracker --> CoreEvents[packages/core/core_events]
     PluginItemTracker --> DesignSystem
     PluginItemTracker --> CoreUI[packages/shared/core_ui]
     PluginItemTracker --> CoreUtils[packages/shared/core_utils]
-    PluginItemTracker --> CoreStorage
 
-    CoreHardware --> CoreContracts
-    CoreStorage --> CoreContracts
-    CoreEvents --> CoreContracts
+    ItemTrackerIsar --> ItemTrackerDomain
+    ItemTrackerIsar --> StorageIsar
+    StorageIsar --> CoreContracts
+    StorageIsar --> CoreDI
     DesignSystem --> CoreUI
 ```
 
+`plugin_item_tracker` e `item_tracker_isar` no se conocen: se encuentran en el `ServiceLocator` a través del contrato `HouseholdItemRepository` de `item_tracker_domain`.
+
+#### Roles de los paquetes
+
+El verificador deduce el rol de cada paquete por su ruta y su nombre:
+
+- **Host**: `apps/*` y las apps de `example/`. Componen paquetes y eligen adaptadores.
+- **Plugin**: `packages/plugins/<funcionalidad>/plugin_<funcionalidad>`.
+- **Dominio**: `packages/plugins/<funcionalidad>/<funcionalidad>_domain`. Dart puro.
+- **Adaptador**: `packages/adapters/*` y `packages/plugins/<funcionalidad>/<funcionalidad>_<motor>` (`isar`, `sqflite`, `sqlite`, `drift`, `hive`, `objectbox`, `realm`, `sembast`).
+- **Otros**: `core`, `shared` y `design_system`.
+
 #### Reglas de Importación Strict:
-1. **Regla 1**: Un paquete situado en `packages/plugins/*` **NUNCA** debe importar otro paquete de `packages/plugins/*`.
-2. **Regla 2**: La capa de `Domain` dentro de cualquier paquete **NUNCA** debe importar código de Flutter (`package:flutter/...`) ni bibliotecas de persistencia (`package:isar/...`).
+1. **Regla 1**: Un paquete de una funcionalidad (`packages/plugins/<funcionalidad>/*`) **NUNCA** importa paquetes de otra funcionalidad. Los hosts sí, porque componen varias.
+2. **Regla 2**: El dominio (los paquetes `<funcionalidad>_domain` y las carpetas `lib/src/domain/` o `lib/domain/` de cualquier paquete) **NUNCA** importa código de Flutter (`package:flutter*/...`, `dart:ui`) ni motores de base de datos.
 3. **Regla 3**: `packages/design_system` **SOLO** depende de Flutter SDK y de `packages/shared/core_ui`. Prohibido importar paquetes de infraestructura o plugins.
 4. **Regla 4**: Solo `packages/core/core_hardware` importa `mobile_scanner`, `nfc_manager*` o `permission_handler`.
+5. **Regla 5**: Solo los adaptadores importan motores de base de datos (`isar*`, `sqflite*`, `sqlite3*`, `drift*`, `hive*`, `objectbox*`, `realm*`, `sembast*`).
+6. **Regla 6**: Solo los hosts y otros adaptadores importan adaptadores. Un plugin nunca conoce su adaptador: pide el contrato al `ServiceLocator`.
+7. **Regla 7**: Un adaptador o un dominio **NUNCA** importa el plugin.
 
-Las cuatro reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`).
+Las siete reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
 
 ### 5.3. Archivos de Configuración del Monorepo
 
@@ -427,12 +450,12 @@ class UserPluginPreference extends Equatable {
 ```
 
 #### `PluginPreferenceRepository` y `PluginLifecycleManager`
-- `PluginPreferenceRepository` (`getAll`, `save`, `saveAll`, `watch`) es el contrato de persistencia de `UserPluginPreference`; su implementación vive en `core_storage`.
+- `PluginPreferenceRepository` (`getAll`, `save`, `saveAll`, `watch`) es el contrato de persistencia de `UserPluginPreference`; la registra el adaptador de almacenamiento (`IsarPluginPreferenceRepository`, de `storage_isar`).
 - `PluginLifecycleManager` aplica el ciclo de vida del §3.2 y expone `load()`, `setEnabled()`, `reorder()` y `disposeAll()`. Cada plugin termina en un `PluginStatus` (`unavailable`, `disabled`, `failed`, `ready`). Un plugin sin preferencia guardada se considera activado, con `sortOrder` igual a su posición de registro.
 
 ### 6.2. Algoritmo de Carga de la Pantalla de Inicio
 
-1. El `HomeBloc` consulta las `UserPluginPreference` almacenadas en `core_storage`.
+1. El `HomeBloc` consulta las `UserPluginPreference` almacenadas mediante `PluginPreferenceRepository`.
 2. Solicita al `PluginRegistry` la lista de plugins conocidos.
 3. Filtra la lista reteniendo únicamente aquellos cuyo `isEnabled == true`.
 4. Ordena la lista resultante según el campo `sortOrder`.
@@ -466,6 +489,7 @@ class UserPluginPreference extends Equatable {
 - **Presentation Layer**: Contiene Widgets, Screens, BLoCs/Cubits y ViewModels. Escucha estados e emite eventos. Depende exclusivamente de los Casos de Uso.
 - **Domain Layer**: Contiene la lógica central del negocio: Entities, Value Objects, Repository Interfaces y Use Cases. Es código Dart puro (sin dependencias de Flutter o motores de BD).
 - **Data Layer**: Contiene la implementación de los Repositorios, Data Sources (Isar DB, Hardware Adapters), DTOs (Data Transfer Objects) y Mappers bi-direccionales.
+- **Ubicación en una funcionalidad con datos**: las entidades y la interfaz del repositorio están en `<funcionalidad>_domain`; los casos de uso y la presentación, en `plugin_<funcionalidad>`; la capa data, en el adaptador `<funcionalidad>_<motor>`. El plugin no tiene capa data propia.
 
 ### 7.2. Diagrama de Inversión de Dependencias (Capa Data $\rightarrow$ Capa Domain)
 
@@ -476,11 +500,11 @@ graph LR
     end
 
     subgraph Domain
-        Bloc --> UseCase[GetItemByIdentifierUseCase]
-        UseCase --> RepInt[IHouseholdItemRepository]
+        Bloc --> UseCase[FindItemByIdentifier]
+        UseCase --> RepInt[HouseholdItemRepository]
     end
 
-    subgraph Data
+    subgraph Data ["Data (item_tracker_isar)"]
         RepImpl[IsarHouseholdItemRepository] ..|> RepInt
         RepImpl --> LocalDS[IsarLocalDataSource]
         RepImpl --> Mapper[ItemDataMapper]
@@ -565,7 +589,7 @@ abstract interface class HardwarePermissions {
 
 ## 9. Entidades y Modelos de Datos
 
-### 9.1. Entidades de Dominio (`packages/plugins/item_tracker/plugin_item_tracker/lib/src/domain/entities`)
+### 9.1. Entidades de Dominio (`packages/plugins/item_tracker/item_tracker_domain/lib/src/entities`)
 
 #### `HouseholdItem`
 ```dart
@@ -592,8 +616,8 @@ class HouseholdItem extends Equatable {
 
 #### `PhysicalIdentifier`
 ```dart
-/// Enum propio del dominio: el dominio no depende de core_hardware. La capa
-/// data traduce ScanType -> IdentifierType con un mapper.
+/// Enum propio del dominio: el dominio no depende de core_hardware. Quien
+/// escanea (el ScanBloc del plugin) traduce ScanType -> IdentifierType.
 enum IdentifierType { qr, barcode, nfc }
 
 class PhysicalIdentifier {
@@ -639,10 +663,10 @@ class ItemEvent extends Equatable {
 }
 ```
 
-### 9.2. Colecciones Isar para Persistencia Local (`packages/plugins/item_tracker/plugin_item_tracker/lib/src/data/models`)
+### 9.2. Colecciones Isar para Persistencia Local (`packages/plugins/item_tracker/item_tracker_isar/lib/src/models`)
 
 ```dart
-import 'package:core_storage/core_storage.dart'; // Reexporta la API de Isar
+import 'package:storage_isar/adapter.dart'; // Reexporta la API de Isar
 
 part 'isar_household_item.g.dart';
 
@@ -822,14 +846,23 @@ Future<void> saveItemWithIdentifier(
 }
 ```
 
-### 10.2. Registro de Colecciones por Plugin
-Isar exige conocer todos los esquemas al abrir la base de datos, pero las colecciones viven en la capa data de cada plugin y `core_storage` no puede depender de los plugins:
+### 10.2. Adaptadores de Almacenamiento
+El motor de base de datos es una tecnología reemplazable, así que solo lo conocen los adaptadores (reglas 5 y 6 del §5.2). Quien compone (la app o un ejemplo) solo los elige:
 
-1. El plugin implementa `StorageSchemaContributor` (`core_storage`) además de `HomePlugin`, y expone sus esquemas en `storageSchemas`.
-2. Al arrancar, la app reúne los contribuidores de **todos** los plugins registrados, incluidos los desactivados (de lo contrario Isar no abriría sus colecciones y se violaría AC-02), y llama a `LocalDatabase.open(directory:, contributors:)`.
-3. `LocalDatabase` añade siempre los esquemas de infraestructura (`IsarPluginPreference`) y rechaza con `StateError` dos esquemas distintos con el mismo nombre de colección.
+```dart
+const List<DependencyModule> appAdapters = <DependencyModule>[
+  IsarStorage(features: <IsarFeature>[ItemTrackerIsar()]),
+];
+```
 
-La implementación de `PluginPreferenceRepository` es `IsarPluginPreferenceRepository` (`core_storage`).
+1. `DependencyModule` (`core_di`) es el contrato de un paquete que registra implementaciones en el `ServiceLocator`. `bootstrapApp` llama a `register` de cada adaptador antes de crear los plugins.
+2. `IsarStorage` (`storage_isar`) abre la base de datos (por defecto en la carpeta de documentos de la app) y registra `PluginPreferenceRepository` (`IsarPluginPreferenceRepository`). Después llama a `register` de cada `IsarFeature` con la base abierta.
+3. Cada funcionalidad con datos tiene su adaptador Isar (`item_tracker_isar`), que implementa `IsarFeature`: aporta sus esquemas y registra sus repositorios con el tipo del contrato (`HouseholdItemRepository`). Importa la API de Isar desde `package:storage_isar/adapter.dart`.
+4. Isar exige conocer todos los esquemas al abrir la base, así que `IsarStorage` lleva los `IsarFeature` de **todos** los plugins registrados, incluidos los desactivados (si no, Isar no abriría sus colecciones y se violaría AC-02). Añade siempre los esquemas de infraestructura (`IsarPluginPreference`) y rechaza con `StateError` dos esquemas distintos con el mismo nombre de colección.
+5. La base se registra con `dispose`: `ServiceLocator.reset()` la cierra (tests y reinicios).
+6. Los adaptadores conservan los nombres de colección y de base de datos que se usaban antes de separarlos, así que los datos ya guardados se siguen leyendo.
+
+**Cambiar de motor** (p. ej. a SQLite): un `storage_<motor>` en `packages/adapters/` y un `<funcionalidad>_<motor>` por funcionalidad que pase la batería de contrato de su dominio (`householdItemRepositoryContract`). Fuera de ellos solo cambia la lista de adaptadores de quien compone.
 
 ### 10.3. Preparación para Sincronización Remota Futura
 Para garantizar que la adición de un servidor remoto no quiebre la arquitectura:
@@ -913,12 +946,12 @@ graph TD
 - **Entrada manual en `ScanScreen`**: un selector alterna entre **Escanear** y **Escribir código**. En modo escritura se oculta (y se libera) la cámara y se muestra un campo de texto con el selector de tipo (QR, código de barras, NFC); en modo escaneo se oculta el campo. Es la alternativa cuando se deniega la cámara o no hay NFC (§3.1, AC-06).
 
 ### 12.2. Definición del Plugin (`plugin_item_tracker/lib/plugin_definition.dart`)
-`ItemTrackerPlugin implements HomePlugin, StorageSchemaContributor`:
-- **Del scope base de `core_di` toma**: `Isar` (obligatorio), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos).
+`ItemTrackerPlugin implements HomePlugin`:
+- **Del scope base de `core_di` toma**: `HouseholdItemRepository` (obligatorio; lo registra el adaptador que elige la app, p. ej. `ItemTrackerIsar`), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos). No conoce el motor de base de datos.
 - **`initialize()`**: registra su idioma en `LocalizationCoordinator` y crea su scope `item_tracker` con `ItemTrackerDependencies` (casos de uso, factorías de escáner y permisos). **`dispose()`** descarta ese scope.
-- **Inyección por constructor**: factorías de escáner, `HardwarePermissions` y `repositoryFactory`, para poder probarlo con los fakes de `core_hardware/testing.dart` y el `InMemoryHouseholdItemRepository` de `plugin_item_tracker/testing.dart`.
+- **Inyección por constructor**: factorías de escáner y `HardwarePermissions`, para poder probarlo con los fakes de `core_hardware/testing.dart`. En los tests se registra en el locator el `InMemoryHouseholdItemRepository` de `item_tracker_domain/testing.dart`, que `plugin_item_tracker/testing.dart` reexporta.
 - `nameKey` / `descriptionKey` son rutas de slang (`itemTracker.title`). En la Fase 4 hay que decidir cómo resuelve el catálogo esas claves entre paquetes.
-- **App de ejemplo**: `plugin_item_tracker/example` arranca igual que lo hará `apps/app` (servicios base, `LocalDatabase.open` con los esquemas del plugin, idioma del dispositivo) e incluye datos de ejemplo para recorrer AC-03/04/05 a mano.
+- **App de ejemplo**: `plugin_item_tracker/example` arranca igual que `apps/app` (servicios base, sus propios adaptadores, `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])` con una base separada de la de la app, e idioma del dispositivo) e incluye datos de ejemplo para recorrer AC-03/04/05 a mano.
 
 ### 12.3. Manejo de Excepciones de Navegación
 - **Plugin Desactivado**: Si el usuario intenta navegar mediante Deep Link a una ruta de un plugin desactivado (`/item-tracker/...`), `GoRouter` intercepta la ruta en su `redirect` guard y la redirige a `/` mostrando un SnackBar informativo.
@@ -1115,7 +1148,7 @@ gantt
 Antes de dar por completada la implementación de la primera iteración, verifica los siguientes puntos:
 
 - [x] ¿`melos bootstrap` resuelve el workspace (`pubspec.yaml` raíz) vinculando los paquetes locales sin errores de resolución de dependencias?
-- [x] ¿Ningún archivo dentro de `packages/plugins/item_tracker/plugin_item_tracker/lib/src/domain/` importa paquetes de Flutter SDK ni de Isar DB?
+- [x] ¿Ni `packages/plugins/item_tracker/item_tracker_domain` ni `plugin_item_tracker/lib/src/domain/` importan paquetes de Flutter SDK ni de Isar DB?
 - [x] ¿Todos los modelos de dominio generan su identificador primario utilizando la biblioteca `uuid` (UUID v4)?
 - [x] ¿La interfaz `IdentifierScanner` aísla completamente las librerías `mobile_scanner` y `nfc_manager` de la capa de presentación?
 - [x] ¿El catálogo de plugins persiste la preferencia del usuario (`UserPluginPreference`) separada de la definición estática del plugin (`HomePlugin`)?
