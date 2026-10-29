@@ -204,6 +204,73 @@ import 'package:storage_isar/storage_isar.dart';
     expect(rules(), <String>['Regla 7', 'Regla 7', 'Regla 7']);
   });
 
+  group('Regla 8', () {
+    test('un contrato puede importar otros contratos y paquetes comunes, y las funcionalidades lo importan', () {
+      featureFolder();
+      package('packages/core/core_events', 'core_events');
+      package('packages/contracts/item_tracker_contract', 'item_tracker_contract');
+      package('packages/contracts/shopping_list_contract', 'shopping_list_contract');
+      source('packages/contracts/shopping_list_contract/lib/a.dart', '''
+import 'dart:async';
+import 'package:core_events/core_events.dart';
+import 'package:item_tracker_contract/item_tracker_contract.dart';
+''');
+      source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart',
+          "import 'package:shopping_list_contract/shopping_list_contract.dart';\n");
+      source('packages/plugins/item_tracker/item_tracker_domain/lib/a.dart',
+          "import 'package:shopping_list_contract/shopping_list_contract.dart';\n");
+
+      expect(findViolations(root), isEmpty);
+    });
+
+    test('detecta un contrato que importa Flutter, una funcionalidad o una app', () {
+      featureFolder();
+      package('apps/app', 'app');
+      package('packages/plugins/item_tracker/item_tracker_ui', 'item_tracker_ui');
+      package('packages/contracts/shopping_list_contract', 'shopping_list_contract');
+      source('packages/contracts/shopping_list_contract/lib/a.dart', '''
+import 'package:flutter/foundation.dart';
+import 'dart:ui';
+import 'package:plugin_item_tracker/plugin_item_tracker.dart';
+import 'package:item_tracker_domain/item_tracker_domain.dart';
+import 'package:item_tracker_ui/item_tracker_ui.dart';
+import 'package:app/bootstrap.dart';
+''');
+
+      expect(rules(), List<String>.filled(6, 'Regla 8'));
+    });
+
+    test('un contrato que importa un adaptador lo detecta la regla 6', () {
+      featureFolder();
+      package('packages/contracts/shopping_list_contract', 'shopping_list_contract');
+      source('packages/contracts/shopping_list_contract/lib/a.dart', "import 'package:storage_isar/storage_isar.dart';\n");
+
+      expect(rules(), <String>['Regla 6']);
+    });
+  });
+
+  test('Regla 9: solo los adaptadores importan SDKs de plataforma', () {
+    featureFolder();
+    package('packages/adapters/share_native', 'share_native');
+    package('packages/core/core_share', 'core_share');
+    source('packages/adapters/share_native/lib/a.dart', '''
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+''');
+    source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart', '''
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+''');
+    source('packages/core/core_share/lib/a.dart', '''
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+''');
+
+    expect(rules(), <String>['Regla 9', 'Regla 9', 'Regla 9', 'Regla 9']);
+  });
+
   test('ignora enlaces simbólicos, directorios ocultos y build/', () {
     package('packages/core/core_hardware/example', 'example');
     package('third_party/plugin', 'third_party');
