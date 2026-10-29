@@ -1,0 +1,133 @@
+{
+  "shopping_list": {
+    "title": "Shopping list",
+    "description": "What the household needs to buy, with urgency, categories and recurring purchases.",
+    "dashboard": {
+      "to_buy_count(plural)": {
+        "zero": "Nothing to buy",
+        "one": "1 thing to buy",
+        "other": "{n} things to buy"
+      },
+      "urgent_count(plural)": {
+        "one": "1 urgent",
+        "other": "{n} urgent"
+      }
+    },
+    "urgency": {
+      "immediate": "Immediate",
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low"
+    },
+    "states": {
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "waiting": "Waiting",
+      "purchased": "Bought"
+    },
+    "default_categories": {
+      "food": "Food",
+      "hygiene": "Toiletries",
+      "cleaning": "Cleaning",
+      "home": "Home",
+      "pharmacy": "Pharmacy"
+    },
+    "recurrence": {
+      "every(plural)": {
+        "one": "Every day",
+        "other": "Every {n} days"
+      },
+      "between": "Every {min} to {max} days"
+    },
+    "list": {
+      "add": "Add item",
+      "categories": "Categories",
+      "export": "Export",
+      "filters": "Filters and grouping",
+      "filters_active": "Filters are on.",
+      "clear_purchased": "Delete bought items",
+      "clear_purchased_title": "Delete bought items?",
+      "clear_purchased_message": "Bought items and their history will be deleted. Recurring items stay.",
+      "filter_categories": "Categories",
+      "filter_urgency": "Urgency",
+      "filter_state": "Status",
+      "uncategorized": "No category",
+      "group_by": "Group by",
+      "group_by_category": "Category",
+      "group_by_urgency": "Urgency",
+      "empty_title": "The list is empty",
+      "empty_message": "Add whatever needs buying.",
+      "no_matches_title": "Nothing matches the filters",
+      "clear_filters": "Clear filters",
+      "mark_purchased": "Mark “{name}” as bought",
+      "mark_pending": "Move “{name}” back to pending",
+      "purchased_snack": "“{name}” bought",
+      "undo": "Undo"
+    },
+    "form": {
+      "create_title": "New item",
+      "edit_title": "Edit item",
+      "name": "Name",
+      "quantity": "Quantity",
+      "quantity_hint": "E.g. 2 dozen",
+      "notes": "Notes",
+      "urgency": "Urgency",
+      "categories": "Categories",
+      "no_categories": "No categories yet.",
+      "recurrence": "Repeats",
+      "recurrence_none": "No",
+      "recurrence_fixed": "Every N days",
+      "recurrence_range": "Between X and Y days",
+      "every_days": "Every how many days",
+      "min_days": "Minimum days",
+      "max_days": "Maximum days",
+      "recurrence_help": "Once bought, it comes back to the list when it is due.",
+      "delete": "Delete item",
+      "delete_title": "Delete “{name}”?",
+      "delete_message": "It will be deleted along with its purchase history."
+    },
+    "categories": {
+      "title": "Categories",
+      "new_label": "New category",
+      "add": "Add category",
+      "rename": "Rename “{name}”",
+      "rename_title": "Rename category",
+      "name": "Name",
+      "move_up": "Move “{name}” up",
+      "move_down": "Move “{name}” down",
+      "delete": "Delete “{name}”",
+      "delete_title": "Delete “{name}”?",
+      "delete_unused": "No item uses it.",
+      "delete_in_use(plural)": {
+        "one": "1 item uses it and will keep its other categories.",
+        "other": "{n} items use it and will keep their other categories."
+      },
+      "empty": "No categories. Add the first one."
+    },
+    "export": {
+      "title": "Export the list",
+      "scope": "What to export",
+      "scope_all": "Everything pending",
+      "scope_filtered": "Filtered items",
+      "grouping": "Group by",
+      "whatsapp": "Send via WhatsApp",
+      "share_text": "Share text",
+      "share_file": "Share .md file",
+      "save_file": "Save .md file",
+      "document_title": "Shopping list",
+      "file_name": "shopping-list",
+      "footer": "Exported on {date}",
+      "nothing": "Nothing to buy to export.",
+      "whatsapp_missing": "WhatsApp is not installed. Use “Share text”.",
+      "saved": "File saved."
+    },
+    "errors": {
+      "item_not_found": "The item no longer exists.",
+      "category_not_found": "The category no longer exists.",
+      "category_name_taken": "There is already a category “{name}”.",
+      "too_long": "At most {max} characters.",
+      "invalid_days": "Enter a number of days between 1 and 365.",
+      "invalid_range": "The minimum cannot be greater than the maximum."
+    }
+  }
+}

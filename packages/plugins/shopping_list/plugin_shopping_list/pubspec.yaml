@@ -1,0 +1,38 @@
+name: plugin_shopping_list
+description: Plugin de lista de compras - items con urgencia, categorías y recurrencia aproximada, y exportación a WhatsApp o Markdown.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  bloc: ^9.2.0
+  core_contracts: ^0.1.2
+  core_di: ^0.1.1
+  core_events: ^0.1.1
+  core_share: ^0.1.0
+  core_ui: ^0.1.1
+  core_utils: ^0.1.0
+  design_system: ^0.1.2
+  equatable: ^3.0.0
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  go_router: ">=14.0.0 <17.0.0"
+  list_export: ^0.1.0
+  rxdart: ^0.28.0
+  shopping_list_contract: ^0.1.0
+  shopping_list_domain: ^0.1.0
+  slang: ^4.19.0
+  slang_flutter: ^4.19.0
+
+dev_dependencies:
+  async: ^2.13.1
+  bloc_test: ^10.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
