@@ -26,6 +26,19 @@ abstract interface class HouseholdItemRepository {
   /// objeto y en sus contenedores) en una sola transacción.
   Future<void> moveItem(HouseholdItem item, List<ItemEvent> events);
 
+  /// Borra los objetos [itemIds] con borrado lógico (spec §10.3), junto con
+  /// sus identificadores activos, que quedan libres para asociarse a otro
+  /// objeto. En la misma transacción reemplaza [moved] (p. ej. el contenido
+  /// que sale al contenedor) y registra [events]. Desde entonces ningún
+  /// método devuelve los objetos borrados. Los que no existen o ya se
+  /// borraron se ignoran.
+  Future<void> deleteItems(
+    List<String> itemIds, {
+    required DateTime deletedAt,
+    List<HouseholdItem> moved = const <HouseholdItem>[],
+    required List<ItemEvent> events,
+  });
+
   /// Emite el objeto (o `null` si no existe) cada vez que cambia.
   Stream<HouseholdItem?> watchById(String id);
 

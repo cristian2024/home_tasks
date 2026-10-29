@@ -19,6 +19,8 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   /// Identificadores quitados (borrado lógico), con el momento en que se quitaron.
   final List<({PhysicalIdentifier identifier, DateTime deletedAt})> deletedIdentifiers =
       <({PhysicalIdentifier identifier, DateTime deletedAt})>[];
+  /// Objetos borrados (borrado lógico), con el momento en que se borraron.
+  final List<({HouseholdItem item, DateTime deletedAt})> deletedItems = <({HouseholdItem item, DateTime deletedAt})>[];
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
   String _identifierKey(String rawValue, IdentifierType type) => '${type.name}:$rawValue';
@@ -85,6 +87,35 @@ class InMemoryHouseholdItemRepository implements HouseholdItemRepository {
   @override
   Future<void> moveItem(HouseholdItem item, List<ItemEvent> events) async {
     _items[item.id] = item;
+    for (final ItemEvent event in events) {
+      _events[event.id] = event;
+    }
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> deleteItems(
+    List<String> itemIds, {
+    required DateTime deletedAt,
+    List<HouseholdItem> moved = const <HouseholdItem>[],
+    required List<ItemEvent> events,
+  }) async {
+    for (final String id in itemIds) {
+      final HouseholdItem? item = _items.remove(id);
+      if (item == null) {
+        continue;
+      }
+      deletedItems.add((item: item, deletedAt: deletedAt));
+      final List<PhysicalIdentifier> identifiers =
+          _identifiers.values.where((PhysicalIdentifier identifier) => identifier.itemId == id).toList();
+      for (final PhysicalIdentifier identifier in identifiers) {
+        _identifiers.remove(_identifierKey(identifier.rawValue, identifier.type));
+        deletedIdentifiers.add((identifier: identifier, deletedAt: deletedAt));
+      }
+    }
+    for (final HouseholdItem item in moved) {
+      _items[item.id] = item;
+    }
     for (final ItemEvent event in events) {
       _events[event.id] = event;
     }

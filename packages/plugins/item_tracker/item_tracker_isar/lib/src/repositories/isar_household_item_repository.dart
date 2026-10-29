@@ -51,6 +51,20 @@ class IsarHouseholdItemRepository implements HouseholdItemRepository {
       );
 
   @override
+  Future<void> deleteItems(
+    List<String> itemIds, {
+    required DateTime deletedAt,
+    List<HouseholdItem> moved = const <HouseholdItem>[],
+    required List<ItemEvent> events,
+  }) =>
+      _source.softDeleteItems(
+        itemIds,
+        deletedAt.toUtc(),
+        moved: <IsarHouseholdItem>[for (final HouseholdItem item in moved) ItemDataMapper.toIsarItem(item)],
+        events: <IsarItemEvent>[for (final ItemEvent event in events) ItemDataMapper.toIsarEvent(event)],
+      );
+
+  @override
   Stream<HouseholdItem?> watchById(String id) =>
       _source
           .watchItem(id)

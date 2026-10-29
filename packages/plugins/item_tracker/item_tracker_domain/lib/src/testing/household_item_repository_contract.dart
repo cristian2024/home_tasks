@@ -155,6 +155,66 @@ void householdItemRepositoryContract(
         expect(await repository.searchByName(''), hasLength(3));
         expect(await repository.searchByName('sofá'), isEmpty);
       });
+
+      group('borrar objetos', () {
+        setUp(() async {
+          await repository.createItem(
+            item(id: 'box', name: 'Caja'),
+            identifier: ident('i1', 'QR-BOX', IdentifierType.qr, itemId: 'box'),
+            events: const <ItemEvent>[],
+          );
+          await repository.createItem(
+            item(name: 'Destornillador', parentId: 'box'),
+            identifier: ident('i2', 'NFC-1', IdentifierType.nfc),
+            events: const <ItemEvent>[],
+          );
+          await repository.createItem(item(id: 'other', name: 'Mesa'), events: const <ItemEvent>[]);
+        });
+
+        test('dejan de aparecer en consultas, listados y búsquedas', () async {
+          await repository.deleteItems(<String>['box', 'item-1'], deletedAt: t0, events: const <ItemEvent>[]);
+
+          expect(await repository.getById('box'), isNull);
+          expect(await repository.getById('item-1'), isNull);
+          expect(await repository.watchById('box').first, isNull);
+          expect((await repository.getAll()).map((HouseholdItem i) => i.id), <String>['other']);
+          expect((await repository.watchAll().first).map((HouseholdItem i) => i.id), <String>['other']);
+          expect((await repository.searchByName('')).map((HouseholdItem i) => i.id), <String>['other']);
+        });
+
+        test('liberan sus identificadores, que se pueden asociar a otro objeto', () async {
+          await repository.deleteItems(<String>['box'], deletedAt: t0, events: const <ItemEvent>[]);
+
+          expect(await repository.findIdentifier('QR-BOX', IdentifierType.qr), isNull);
+          expect(await repository.getIdentifier('i1'), isNull);
+          expect(await repository.watchIdentifiers('box').first, isEmpty);
+          expect(await repository.getIdentifier('i2'), isNotNull);
+
+          await repository.bindIdentifier(ident('i3', 'QR-BOX', IdentifierType.qr, itemId: 'other'), event('e1'));
+          expect((await repository.findIdentifier('QR-BOX', IdentifierType.qr))?.itemId, 'other');
+        });
+
+        test('guardan los objetos movidos y los eventos en la misma operación', () async {
+          final HouseholdItem lifted = item(name: 'Destornillador', updatedAt: t0.add(const Duration(hours: 1)));
+
+          await repository.deleteItems(
+            <String>['box'],
+            deletedAt: t0,
+            moved: <HouseholdItem>[lifted],
+            events: <ItemEvent>[event('e1', kind: ItemEventKind.moved)],
+          );
+
+          expect(await repository.getById('item-1'), lifted);
+          expect((await repository.watchEvents('item-1').first).single.kind, ItemEventKind.moved);
+        });
+
+        test('ignora los que no existen o ya se borraron', () async {
+          await repository.deleteItems(<String>['other'], deletedAt: t0, events: const <ItemEvent>[]);
+          await repository.deleteItems(<String>['other', 'missing'], deletedAt: t0, events: const <ItemEvent>[]);
+
+          expect((await repository.getAll()).map((HouseholdItem i) => i.id), unorderedEquals(<String>['box', 'item-1']));
+        });
+      });
     });
 
     group('identificadores', () {
@@ -324,6 +384,8 @@ void householdItemRepositoryContract(
         await expectLater(queue, emitsThrough(item()));
         await repository.updateItem(item(name: 'Caja B'), event('e1'));
         await expectLater(queue, emitsThrough(item(name: 'Caja B')));
+        await repository.deleteItems(<String>['item-1'], deletedAt: t0, events: const <ItemEvent>[]);
+        await expectLater(queue, emitsThrough(isNull));
       });
 
       test('watchAll emite el estado actual al suscribirse y la lista completa en cada cambio', () async {

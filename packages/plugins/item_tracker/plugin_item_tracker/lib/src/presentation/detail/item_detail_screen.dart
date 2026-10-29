@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 
+import '../../domain/use_cases/delete_item.dart';
 import '../../i18n/strings.g.dart';
 import '../common/item_tracker_l10n.dart';
 import '../item_tracker_routes.dart';
@@ -28,6 +29,12 @@ class ItemDetailScreen extends StatelessWidget {
                   tooltip: t.edit,
                   onPressed: () => context.push<String>(ItemTrackerRoutes.edit(item.id)),
                 ),
+              if (item != null && state.status == ItemDetailStatus.loaded)
+                AppIconButton(
+                  icon: Icons.delete_outline,
+                  tooltip: t.delete,
+                  onPressed: () => _delete(context, state, item),
+                ),
             ],
           ),
           body: switch (state.status) {
@@ -42,6 +49,53 @@ class ItemDetailScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// Confirma el borrado. Si el objeto contiene otros, pregunta qué hacer con
+  /// ellos. Al borrarlo vuelve a la pantalla anterior (o al listado).
+  Future<void> _delete(BuildContext context, ItemDetailState state, HouseholdItem item) async {
+    final ItemTrackerTranslations$itemTracker$detail$es t = itemTrackerStrings.itemTracker.detail;
+    final ItemDetailCubit cubit = context.read<ItemDetailCubit>();
+    final HouseholdItem? container = state.path.lastOrNull;
+    final DeletedContents? contents = state.children.isEmpty
+        ? (await showAppConfirmDialog(
+            context,
+            title: t.deleteTitle(name: item.name),
+            message: t.deleteMessage,
+            confirmLabel: t.delete,
+            destructive: true,
+          ))
+            ? DeletedContents.deleteAll
+            : null
+        : await showAppChoiceDialog<DeletedContents>(
+            context,
+            title: t.deleteTitle(name: item.name),
+            message: t.deleteContentsMessage(n: state.descendantCount),
+            options: <AppDialogOption<DeletedContents>>[
+              AppDialogOption<DeletedContents>(
+                value: DeletedContents.moveToParent,
+                label: container == null ? t.keepContentsLoose : t.keepContentsIn(container: container.name),
+              ),
+              AppDialogOption<DeletedContents>(value: DeletedContents.deleteAll, label: t.deleteAll, destructive: true),
+            ],
+          );
+    if (contents == null) {
+      return;
+    }
+    final Object? error = await cubit.delete(contents);
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(error == null ? t.deleted(name: item.name) : errorMessage(error))));
+    if (error == null) {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(ItemTrackerRoutes.items);
+      }
+    }
   }
 }
 

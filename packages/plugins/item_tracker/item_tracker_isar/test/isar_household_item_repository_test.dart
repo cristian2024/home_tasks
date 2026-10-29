@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'package:item_tracker_domain/testing.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
+import 'package:item_tracker_isar/src/models/isar_household_item.dart';
 import 'package:item_tracker_isar/src/models/isar_physical_identifier.dart';
 import 'package:item_tracker_isar/src/repositories/isar_household_item_repository.dart';
 import 'package:storage_isar/adapter.dart';
@@ -59,6 +60,19 @@ void main() {
 
         expect(await storage.isar.isarPhysicalIdentifiers.count(), 3);
         expect((await repository.findIdentifier('QR-123', IdentifierType.qr))?.id, 'i3');
+      });
+
+      test('borrar un objeto lo conserva marcado como borrado, con sus identificadores', () async {
+        final DateTime deletedAt = t0.add(const Duration(hours: 1));
+
+        await storage.repository.deleteItems(<String>[item().id], deletedAt: deletedAt, events: const <ItemEvent>[]);
+
+        final IsarHouseholdItem? stored = await storage.isar.isarHouseholdItems.getById(item().id);
+        expect(stored?.isDeleted, isTrue);
+        expect(stored?.deletedAt?.toUtc(), deletedAt);
+        final IsarPhysicalIdentifier? identifier = await storage.isar.isarPhysicalIdentifiers.getById('i1');
+        expect(identifier?.isDeleted, isTrue);
+        expect(identifier?.deletedAt?.toUtc(), deletedAt);
       });
     });
   });

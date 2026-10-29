@@ -37,6 +37,15 @@ void main() {
       expect(tree.isInside('scissors', ancestorId: 'furniture'), isFalse);
     });
 
+    test('descendientes a cualquier profundidad, cada contenedor antes que su contenido', () {
+      expect(
+        tree.descendantsOf('furniture').map((HouseholdItem i) => i.id),
+        <String>['organizer', 'drawer1', 'drawer2'],
+      );
+      expect(tree.descendantsOf('scissors'), isEmpty);
+      expect(tree.descendantsOf('missing'), isEmpty);
+    });
+
     test('tolera contenedores inexistentes y ciclos sin colgarse', () {
       final ItemTree broken = ItemTree(<HouseholdItem>[
         item(id: 'orphan', parentId: 'deleted'),
@@ -47,6 +56,7 @@ void main() {
       expect(broken.depthOf('orphan'), 1);
       expect(broken.pathOf('a').map((HouseholdItem i) => i.id), <String>['b']);
       expect(broken.heightOf('a'), 2);
+      expect(broken.descendantsOf('a').map((HouseholdItem i) => i.id), <String>['b']);
     });
   });
 

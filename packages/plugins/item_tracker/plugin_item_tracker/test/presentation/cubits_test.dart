@@ -51,6 +51,7 @@ void main() {
           watchItemTree: useCases.watchItemTree,
           unbindIdentifier: useCases.unbindIdentifier,
           moveItem: useCases.moveItem,
+          deleteItem: useCases.deleteItem,
           containmentPolicy: useCases.policy,
         );
 
@@ -88,6 +89,25 @@ void main() {
       // El reloj fijo da a todos los eventos el mismo instante: no se compara el orden.
       expect(cubit.state.events.map((ItemEvent event) => event.kind), contains(ItemEventKind.identifierUnbound));
       expect(await cubit.removeIdentifier(identifier), isA<IdentifierNotFoundException>());
+    });
+
+    test('cuenta todo lo que contiene y lo borra; un segundo intento devuelve el error', () async {
+      final HouseholdItem furniture = await useCases.createItem(name: 'Mueble');
+      final HouseholdItem organizer = await useCases.createItem(name: 'Organizador', parentId: furniture.id);
+      await useCases.createItem(name: 'Cajón', parentId: organizer.id);
+      final ItemDetailCubit cubit = build(furniture.id);
+      addTearDown(cubit.close);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.children, <HouseholdItem>[organizer]);
+      expect(cubit.state.descendantCount, 2);
+
+      expect(await cubit.delete(DeletedContents.moveToParent), isNull);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.status, ItemDetailStatus.missing);
+      expect((await useCases.repository.getById(organizer.id))?.parentId, isNull);
+      expect(await cubit.delete(DeletedContents.deleteAll), isA<ItemNotFoundException>());
     });
 
     test('informa missing si el objeto no existe', () async {

@@ -4,6 +4,7 @@ import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'domain/use_cases/add_item_event.dart';
 import 'domain/use_cases/bind_identifier.dart';
 import 'domain/use_cases/create_item.dart';
+import 'domain/use_cases/delete_item.dart';
 import 'domain/use_cases/find_item_by_identifier.dart';
 import 'domain/use_cases/item_queries.dart';
 import 'domain/use_cases/move_item.dart';
@@ -20,6 +21,7 @@ class ItemTrackerDependencies {
     required this.createItem,
     required this.updateItem,
     required this.moveItem,
+    required this.deleteItem,
     required this.bindIdentifier,
     required this.unbindIdentifier,
     required this.addItemEvent,
@@ -40,6 +42,7 @@ class ItemTrackerDependencies {
   final CreateItem createItem;
   final UpdateItem updateItem;
   final MoveItem moveItem;
+  final DeleteItem deleteItem;
   final BindIdentifier bindIdentifier;
   final UnbindIdentifier unbindIdentifier;
   final AddItemEvent addItemEvent;
