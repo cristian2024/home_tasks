@@ -13,3 +13,7 @@
 - Tarjeta de inicio con lo que hay por comprar y lo urgente. Implementa `HomePluginEntryRoute` (`/shopping-list`), así que desde la grilla del inicio la lista se abre directamente.
 - Textos en español e inglés que la app puede reemplazar (`translation_overrides`).
 - App de ejemplo en `example/`, que elige sus adaptadores (`ShoppingListIsar` y `NativeShare`) e inyecta todos los textos.
+
+### Interno
+
+- `WatchShoppingList` combina los streams de items y categorías con `Rx.combineLatest2` (rxdart).
