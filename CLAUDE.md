@@ -28,7 +28,7 @@
 - **Framework:** Flutter (>=3.27.0) / Dart[cite: 1]
 - **Gestión de Estado:** `flutter_bloc` / `Cubit`[cite: 1]
 - **Navegación:** `go_router` (enrutamiento declarativo)[cite: 1]
-- **Base de Datos Local:** `isar` (vía repositorios abstractos)[cite: 1]
+- **Base de Datos Local:** `isar_community`, solo en los adaptadores (`storage_isar`, `<funcionalidad>_isar`); el resto del código usa repositorios abstractos[cite: 1]
 - **Internacionalización:** `slang` (archivos JSON por paquete bajo namespace)[cite: 1]
 - **Inyección de Dependencias:** `get_it` (`core_di`)[cite: 1]
 
@@ -67,8 +67,14 @@
 - **Igualdad por valor:** extender `Equatable` (paquete `equatable`) y declarar `props`; nunca sobrescribir `operator ==`/`hashCode` a mano. Aplica a entidades, value objects y estados de BLoC/Cubit.
 
 ## Fase 2 (persistencia y hardware)
-- **Isar:** usar `isar_community` fijado en 3.3.2 (nunca `isar`). Las capas data importan Isar a través de `package:core_storage/core_storage.dart`, que la reexporta. Un plugin con colecciones implementa `StorageSchemaContributor`; la app abre la base con `LocalDatabase.open(contributors: ...)` incluyendo a **todos** los plugins registrados, también los desactivados.
-- **Tests con Isar:** `setUpAll(() => Isar.initializeIsarCore(download: true))`. Descarga `libisar.dylib` en el paquete (está en `.gitignore`).
+- **Funcionalidades con datos:** cada una es una carpeta `packages/plugins/<funcionalidad>/` (no un paquete) con tres paquetes:
+  - `<funcionalidad>_domain`: Dart puro. Entidades, contrato del repositorio, errores y reglas; en `testing.dart`, la batería de tests de contrato y el repositorio en memoria.
+  - `plugin_<funcionalidad>`: el `HomePlugin`. Casos de uso, UI, rutas e i18n, y su app de `example/`. Nunca importa su adaptador.
+  - `<funcionalidad>_<motor>` (p. ej. `item_tracker_isar`): el adaptador. Modelos del motor, mappers y repositorio, que pasa la batería de contrato.
+- **Adaptadores y composición:** los adaptadores transversales van en `packages/adapters/` (`storage_isar`). Quien compone (la app o un ejemplo) solo elige adaptadores, una lista de `DependencyModule` (`core_di`): `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])`. Cada adaptador abre sus recursos y registra en el `ServiceLocator` sus implementaciones con el tipo del contrato (`PluginPreferenceRepository`, `HouseholdItemRepository`). Plugins y app las piden al locator. Lo que abre lo registra con `dispose`, y `locator.reset()` lo libera.
+- **Cambiar de motor** (p. ej. a SQLite): un `storage_<motor>` y un `<funcionalidad>_<motor>` por funcionalidad que pase su batería de contrato. Fuera de ellos solo cambia la lista de adaptadores de quien compone.
+- **Isar:** usar `isar_community` fijado en 3.3.2 (nunca `isar`). Los adaptadores de funcionalidad importan su API desde `package:storage_isar/adapter.dart`, que la reexporta, e implementan `IsarFeature` (`schemas` y `register`). `IsarStorage` lleva los `IsarFeature` de **todos** los plugins registrados, también los desactivados. Los adaptadores conservan los nombres de colección y de base de datos para que los datos ya guardados se sigan leyendo.
+- **Tests con Isar:** `setUpAll(() => Isar.initializeIsarCore(download: true))`, con `Isar` de `package:storage_isar/adapter.dart`. Descarga `libisar.dylib` en el paquete (está en `.gitignore`).
 - **Hardware:** la presentación usa solo `CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions`. La cámara se muestra con `buildPreview()`. En tests usar los fakes de `package:core_hardware/testing.dart`.
 - **Regla 4 del verificador:** solo `core_hardware` puede importar `mobile_scanner`, `nfc_manager*` o `permission_handler`.
 - **IDs y tiempo:** inyectar `IdGenerator` (`UuidV4Generator`) y `Clock` (`SystemClock`, `FixedClock` en tests) de `core_utils` en lugar de llamar a `Uuid()` o `DateTime.now()` en dominio y data.
@@ -82,8 +88,8 @@
 - **Plugin item_tracker:** las reglas de negocio están en el §9.4 de la spec (validación, rechazo de identificadores ya asociados, eventos técnicos automáticos). Los errores de dominio son el `sealed` `ItemTrackerException`.
 - **Isar nativo:** una violación de índice único llega como `IsarError` con "Unique index violated", no como `IsarUniqueViolationError` (ese es solo para web).
 - **mocktail:** `captureAny` captura los argumentos con nombre en orden alfabético.
-- **Cobertura:** casos de uso y mappers deben quedar al 100 % (`flutter test --coverage`).
-- **Contenedores (item_tracker):** `HouseholdItem.parentId`; la jerarquía se calcula con `ItemTree` y los límites con `ContainmentPolicy` (máx. 5 niveles, `--dart-define=ITEM_TRACKER_MAX_DEPTH`). Detalle en el §9.4 de la spec. La cobertura del 100 % también aplica a `domain/hierarchy`.
+- **Cobertura:** deben quedar al 100 % (`flutter test --coverage`) los casos de uso (plugin), el paquete `<funcionalidad>_domain` (incluida la jerarquía) y los mappers (adaptador, p. ej. `item_tracker_isar`).
+- **Contenedores (item_tracker):** `HouseholdItem.parentId`; la jerarquía se calcula con `ItemTree` y los límites con `ContainmentPolicy` (máx. 5 niveles, `--dart-define=ITEM_TRACKER_MAX_DEPTH`). Ambos viven en `item_tracker_domain`. Detalle en el §9.4 de la spec.
 - **Plugin item_tracker (presentación):** `ScanBloc` para el escaneo y Cubits para el resto. Las pantallas devuelven resultados con `context.pop(itemId)` (ver §12.1). En los tests de widgets usar `PluginHarness` (`test/helpers/presentation_fixtures.dart`), que monta el plugin real con hardware falso y repositorio en memoria.
 
 ## Trampas conocidas en tests
@@ -93,19 +99,22 @@
 - **`pumpAndSettle`:** nunca termina con indicadores de carga animados visibles. Usar `pump()`.
 - **`SnackBar`:** llamar a `hideCurrentSnackBar()` antes de `showSnackBar` para que no se queden en cola.
 - **Isar y el binding de tests:** `TestWidgetsFlutterBinding` responde 400 a todas las peticiones HTTP. En un test que necesite el binding (p. ej. para `rootBundle`), ejecutar `Isar.initializeIsarCore(download: true)` **antes** de `TestWidgetsFlutterBinding.ensureInitialized()`. Si no, en CI (sin `libisar` en caché) la descarga falla. Ver `apps/app/test/ac02_persistence_test.dart`.
+- **`onCancel` de un stream:** en un `StreamController` que reenvía otra suscripción, `onCancel` no debe devolver el futuro de su `cancel()`. `Stream.first` lo espera y, en `testWidgets`, no se completa con el reloj simulado: el test se cuelga. Cancelar sin devolverlo (ver `InMemoryHouseholdItemRepository`).
+- **Streams contra una base real:** esperar la emisión inicial antes de escribir, con `StreamQueue` y `emitsThrough`. Con `take(n).toList()` y una escritura inmediata, la escritura compite con la consulta inicial y el test falla de forma intermitente (pasaba en local y fallaba en la CI de Ubuntu).
 
 ## Fase 4 (apps/app)
 - **Estructura:**
-  - `lib/app_module_registrar.dart`: registro de plugins (`appPluginFactories`).
+  - `lib/app_module_registrar.dart`: adaptadores elegidos (`appAdapters`) y registro de plugins (`appPluginFactories`).
   - `lib/bootstrap.dart`: arranque testeable (`bootstrapApp`).
   - `lib/plugins/plugin_controller.dart`: estado de los plugins para inicio, catálogo y guard.
   - `lib/navigation/`: router y `PluginRouteGuard`.
   - `lib/home/`, `lib/catalog/` y `lib/settings/` (configuración: tema, idioma, acceso al catálogo).
-- **Preferencias de la app** (tema, idioma): `shared_preferences` vía `AppSettingsRepository`, nunca en Isar (la base de datos es de los plugins). `bootstrapApp` recibe `systemLanguageCode` y aplica el idioma guardado si el usuario fijó uno. En tests, `InMemoryAppSettingsRepository` (`test/helpers/`) o `SharedPreferences.setMockInitialValues`.
+- **Preferencias de la app** (tema, idioma): `shared_preferences` vía `AppSettingsRepository`, nunca en la base de datos (es de los plugins). `bootstrapApp` recibe `systemLanguageCode` y aplica el idioma guardado si el usuario fijó uno. En tests, `InMemoryAppSettingsRepository` (`test/helpers/`) o `SharedPreferences.setMockInitialValues`.
 - **Añadir un plugin:**
-  1. Añadir la dependencia en `apps/app/pubspec.yaml`.
-  2. Añadir una `PluginFactory` en `appPluginFactories`. La factoría debe registrar las traducciones del plugin (como `registerLocalization()` de item_tracker).
-  3. Sus rutas deben ser absolutas y compartir un primer segmento propio (el guard lo usa como prefijo).
+  1. Añadir en `apps/app/pubspec.yaml` la dependencia del plugin y la de sus adaptadores (p. ej. `item_tracker_isar`).
+  2. Añadir sus adaptadores en `appAdapters` (p. ej. su `IsarFeature` dentro de `IsarStorage`).
+  3. Añadir una `PluginFactory` en `appPluginFactories`. La factoría debe registrar las traducciones del plugin (como `registerLocalization()` de item_tracker).
+  4. Sus rutas deben ser absolutas y compartir un primer segmento propio (el guard lo usa como prefijo).
 - **Idioma:**
   - Envolver con `LanguageRebuilder` (`core_ui`) el contenido de las rutas. El router de la app ya lo hace con `withLanguageRebuild`.
   - Sin eso, las páginas abiertas no cambian de idioma, porque los textos de slang son globales y GoRouter conserva su `Navigator` con una `GlobalKey`.
@@ -115,7 +124,7 @@
   - **Paquete nuevo con textos:** activa `translation_overrides: true` en su `slang.yaml` y pasa `override:` al registrarse. Cada consumidor lo añade a su `injectedTranslationPackages`, con sus archivos en `assets/i18n/` y su paquete Dart en el test.
 - **Tests de la app:**
   - `AppHarness` (`test/helpers/app_harness.dart`): plugin real con hardware falso, repositorios en memoria y `FakeHomePlugin` configurable.
-  - AC-02 con Isar real en `test/ac02_persistence_test.dart`.
+  - AC-02 con `IsarStorage` real en `test/ac02_persistence_test.dart`.
   - En dispositivo o simulador: `cd apps/app && flutter test integration_test -d <id>`.
 - **`HomeUtilityApp`:** crea su router con el primer `AppEnvironment`. Para simular un reinicio en un test, usar `key: ObjectKey(environment)`.
 - **CI:** `.github/workflows/ci.yml` ejecuta `melos run verify` en Ubuntu. Si se sube la versión de Flutter o Melos, actualizarla también ahí.
