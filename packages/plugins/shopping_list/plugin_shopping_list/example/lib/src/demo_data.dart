@@ -3,19 +3,19 @@ import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 /// Items de ejemplo para recorrer la lista a mano: urgencias, varias
 /// categorías y compras que se repiten.
 class DemoData {
-  const DemoData(this._dependencies, this._categories);
+  const DemoData(this._dependencies, this._repository);
 
   final ShoppingListDependencies _dependencies;
 
-  /// Categorías actuales, para elegir las por defecto por su clave.
-  final Future<List<ShoppingCategory>> Function() _categories;
+  /// Para leer lo que ya hay: items y categorías (las por defecto se eligen
+  /// por su clave).
+  final ShoppingListRepository _repository;
 
   /// Crea los items que falten (por nombre). Devuelve cuántos creó.
   Future<int> load() async {
-    final List<ShoppingCategory> categories = await _categories();
+    final List<ShoppingCategory> categories = await _repository.getCategories();
     final Set<String> existing = <String>{
-      for (final ShoppingListEntry entry in (await _dependencies.watchList().first).entries)
-        ShoppingValidator.normalize(entry.item.name),
+      for (final ShoppingItem item in await _repository.getItems()) ShoppingValidator.normalize(item.name),
     };
     List<String> ids(List<String> keys) => <String>[
           for (final ShoppingCategory category in categories)

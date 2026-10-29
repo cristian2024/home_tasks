@@ -20,6 +20,10 @@ class ShoppingListSnapshot extends Equatable {
 
 /// Items y categorías juntos, al suscribirse y cada vez que cambia algo. El
 /// estado de cada item se calcula con la hora del momento en que se emite.
+///
+/// `combineLatest2` espera a que terminen las cancelaciones al cancelar, así
+/// que en `testWidgets` no hay que usar `first` sobre este stream: con el reloj
+/// simulado no termina. Para leer una vez, usar el repositorio.
 class WatchShoppingList {
   const WatchShoppingList(this._repository, this._clock);
 
