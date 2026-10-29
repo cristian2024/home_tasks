@@ -11,6 +11,9 @@ import '../export/shopping_export_sheet.dart';
 import '../shopping_list_routes.dart';
 import 'shopping_list_cubit.dart';
 
+/// Cuánto se ofrece deshacer una compra.
+const Duration _undoDuration = Duration(seconds: 5);
+
 /// Valor del filtro de categorías que representa «Sin categoría».
 const String _uncategorized = '';
 
@@ -57,9 +60,12 @@ class ShoppingListScreen extends StatelessWidget {
         }
         _showSnackBar(
           context,
+          // Con acción, un SnackBar no se cierra solo salvo que se indique.
           SnackBar(
             content: Text(t.list.purchasedSnack(name: state.lastPurchase!.previous.name)),
             action: SnackBarAction(label: t.list.undo, onPressed: cubit.undoLastPurchase),
+            duration: _undoDuration,
+            persist: false,
           ),
         );
       },

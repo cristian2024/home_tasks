@@ -82,6 +82,22 @@ void main() {
     expect(await harness.repository.getPurchases(bread.id), isEmpty);
   });
 
+  testWidgets('el aviso de compra se cierra solo a los 5 segundos', (WidgetTester tester) async {
+    await harness.initialize();
+    await harness.deps.createItem(name: 'Pan');
+    await harness.pump(tester);
+
+    await tester.tap(find.bySemanticsLabel('Marcar «Pan» como comprado'));
+    await tester.pumpAndSettle();
+    expect(find.text('«Pan» comprado'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 4));
+    expect(find.text('«Pan» comprado'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.text('«Pan» comprado'), findsNothing);
+  });
+
   testWidgets('un item comprado vuelve a pendiente y los comprados se pueden borrar', (WidgetTester tester) async {
     await harness.initialize();
     final ShoppingItem bread = await harness.deps.createItem(name: 'Pan');
