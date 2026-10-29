@@ -39,9 +39,11 @@ class InMemoryPluginPreferenceRepository implements PluginPreferenceRepository {
         controller.add(_store.values.toList());
         changes = _changes.stream.listen(controller.add);
       },
+      // No devuelve el futuro de cancel(): `first` lo esperaría y, con el
+      // reloj simulado de testWidgets, no se completa.
       onCancel: () {
+        unawaited(changes?.cancel());
         unawaited(controller.close());
-        return changes?.cancel();
       },
     );
     return controller.stream;
