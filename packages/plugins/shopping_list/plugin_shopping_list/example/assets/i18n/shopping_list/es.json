@@ -1,0 +1,133 @@
+{
+  "shopping_list": {
+    "title": "Lista de compras",
+    "description": "Lo que hay que comprar en casa, con urgencias, categorías y compras que se repiten.",
+    "dashboard": {
+      "to_buy_count(plural)": {
+        "zero": "No hay nada por comprar",
+        "one": "1 cosa por comprar",
+        "other": "{n} cosas por comprar"
+      },
+      "urgent_count(plural)": {
+        "one": "1 urgente",
+        "other": "{n} urgentes"
+      }
+    },
+    "urgency": {
+      "immediate": "Inmediata",
+      "high": "Alta",
+      "normal": "Normal",
+      "low": "Baja"
+    },
+    "states": {
+      "overdue": "Atrasado",
+      "pending": "Pendiente",
+      "waiting": "En espera",
+      "purchased": "Comprado"
+    },
+    "default_categories": {
+      "food": "Comida",
+      "hygiene": "Aseo",
+      "cleaning": "Limpieza",
+      "home": "Hogar",
+      "pharmacy": "Farmacia"
+    },
+    "recurrence": {
+      "every(plural)": {
+        "one": "Cada día",
+        "other": "Cada {n} días"
+      },
+      "between": "Cada {min} a {max} días"
+    },
+    "list": {
+      "add": "Añadir item",
+      "categories": "Categorías",
+      "export": "Exportar",
+      "filters": "Filtros y agrupación",
+      "filters_active": "Hay filtros activos.",
+      "clear_purchased": "Borrar comprados",
+      "clear_purchased_title": "¿Borrar los comprados?",
+      "clear_purchased_message": "Se borrarán los items comprados y su historial. Los recurrentes se quedan.",
+      "filter_categories": "Categorías",
+      "filter_urgency": "Urgencia",
+      "filter_state": "Estado",
+      "uncategorized": "Sin categoría",
+      "group_by": "Agrupar por",
+      "group_by_category": "Categoría",
+      "group_by_urgency": "Urgencia",
+      "empty_title": "La lista está vacía",
+      "empty_message": "Añade lo que haga falta comprar.",
+      "no_matches_title": "Nada coincide con los filtros",
+      "clear_filters": "Quitar filtros",
+      "mark_purchased": "Marcar «{name}» como comprado",
+      "mark_pending": "Volver «{name}» a pendiente",
+      "purchased_snack": "«{name}» comprado",
+      "undo": "Deshacer"
+    },
+    "form": {
+      "create_title": "Nuevo item",
+      "edit_title": "Editar item",
+      "name": "Nombre",
+      "quantity": "Cantidad",
+      "quantity_hint": "Ej.: 2 docenas",
+      "notes": "Notas",
+      "urgency": "Urgencia",
+      "categories": "Categorías",
+      "no_categories": "Aún no hay categorías.",
+      "recurrence": "Se repite",
+      "recurrence_none": "No",
+      "recurrence_fixed": "Cada N días",
+      "recurrence_range": "Entre X e Y días",
+      "every_days": "Cada cuántos días",
+      "min_days": "Mínimo de días",
+      "max_days": "Máximo de días",
+      "recurrence_help": "Al comprarlo, vuelve a la lista cuando toque.",
+      "delete": "Borrar item",
+      "delete_title": "¿Borrar «{name}»?",
+      "delete_message": "Se borrará junto con su historial de compras."
+    },
+    "categories": {
+      "title": "Categorías",
+      "new_label": "Nueva categoría",
+      "add": "Añadir categoría",
+      "rename": "Renombrar «{name}»",
+      "rename_title": "Renombrar categoría",
+      "name": "Nombre",
+      "move_up": "Subir «{name}»",
+      "move_down": "Bajar «{name}»",
+      "delete": "Borrar «{name}»",
+      "delete_title": "¿Borrar «{name}»?",
+      "delete_unused": "Ningún item la usa.",
+      "delete_in_use(plural)": {
+        "one": "La usa 1 item, que conservará sus demás categorías.",
+        "other": "La usan {n} items, que conservarán sus demás categorías."
+      },
+      "empty": "No hay categorías. Añade la primera."
+    },
+    "export": {
+      "title": "Exportar la lista",
+      "scope": "Qué exportar",
+      "scope_all": "Todo lo pendiente",
+      "scope_filtered": "Lo filtrado",
+      "grouping": "Agrupar por",
+      "whatsapp": "Enviar por WhatsApp",
+      "share_text": "Compartir texto",
+      "share_file": "Compartir archivo .md",
+      "save_file": "Guardar archivo .md",
+      "document_title": "Lista de compras",
+      "file_name": "lista-de-compras",
+      "footer": "Exportada el {date}",
+      "nothing": "No hay nada por comprar para exportar.",
+      "whatsapp_missing": "WhatsApp no está instalado. Usa «Compartir texto».",
+      "saved": "Archivo guardado."
+    },
+    "errors": {
+      "item_not_found": "El item ya no existe.",
+      "category_not_found": "La categoría ya no existe.",
+      "category_name_taken": "Ya hay una categoría «{name}».",
+      "too_long": "Máximo {max} caracteres.",
+      "invalid_days": "Escribe un número de días entre 1 y 365.",
+      "invalid_range": "El mínimo no puede ser mayor que el máximo."
+    }
+  }
+}

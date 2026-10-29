@@ -1,0 +1,37 @@
+name: shopping_list_example
+description: App anfitriona mínima para probar el plugin de lista de compras en un dispositivo real.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.1
+  core_events: ^0.1.1
+  core_ui: ^0.1.1
+  core_utils: ^0.1.0
+  design_system: ^0.1.2
+  flutter:
+    sdk: flutter
+  go_router: ">=14.0.0 <17.0.0"
+  plugin_shopping_list: ^0.1.0
+  share_native: ^0.1.0
+  shopping_list_isar: ^0.1.0
+  storage_isar: ^0.2.0
+
+dev_dependencies:
+  core_share: ^0.1.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  # Todos los textos de cada paquete, inyectados por el ejemplo (lib/src/injected_translations.dart).
+  assets:
+    - assets/i18n/core_ui/
+    - assets/i18n/shopping_list/
