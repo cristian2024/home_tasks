@@ -40,10 +40,12 @@ import 'src/shopping_list_dependencies.dart';
 /// - `ShareService` (opcional, buscado al exportar): sin él no se ofrece
 ///   exportar.
 ///
+/// Su pantalla principal es la lista ([entryRoute]).
+///
 /// Mientras está activo registra en su scope las capacidades públicas
 /// `ShoppingListQuery` y `ShoppingListWriter` (`shopping_list_contract`) y
 /// publica `ShoppingItemPurchased` en el `EventBus`.
-class ShoppingListPlugin implements HomePlugin {
+class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
   ShoppingListPlugin({required ServiceLocator locator, LocalizationCoordinator? localization})
       : _locator = locator,
         _localization = localization ?? LocalizationCoordinator.instance;
@@ -69,6 +71,10 @@ class ShoppingListPlugin implements HomePlugin {
 
   @override
   String get version => '0.1.0';
+
+  /// La lista: desde la grilla del inicio se abre directamente.
+  @override
+  String get entryRoute => ShoppingListRoutes.base;
 
   @override
   Future<bool> isAvailable() async => true;

@@ -10,6 +10,6 @@
 - Items recurrentes: al comprarlos guardan la fecha en el historial y vuelven a la lista cuando se abre su ventana.
 - Exportar la lista completa o la filtrada, agrupada por categoría o por urgencia: por WhatsApp, como texto, o como archivo `.md` (compartir o guardar). Usa el `ShareService` que registre la app; sin él no se ofrece exportar.
 - Capacidades públicas `ShoppingListQuery` y `ShoppingListWriter` (`shopping_list_contract`), registradas en el scope del plugin mientras está activo, y el evento `ShoppingItemPurchased` en el `EventBus`.
-- Tarjeta de inicio con lo que hay por comprar y lo urgente.
+- Tarjeta de inicio con lo que hay por comprar y lo urgente. Implementa `HomePluginEntryRoute` (`/shopping-list`), así que desde la grilla del inicio la lista se abre directamente.
 - Textos en español e inglés que la app puede reemplazar (`translation_overrides`).
 - App de ejemplo en `example/`, que elige sus adaptadores (`ShoppingListIsar` y `NativeShare`) e inyecta todos los textos.

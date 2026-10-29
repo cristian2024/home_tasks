@@ -15,6 +15,7 @@ void main() {
     expect(plugin.descriptionKey, 'shoppingList.description');
     expect(plugin.version, '0.1.0');
     expect(plugin.routes, hasLength(4));
+    expect(plugin.entryRoute, ShoppingListRoutes.base);
   });
 
   test('isAvailable siempre es true', () async {
