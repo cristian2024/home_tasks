@@ -62,7 +62,7 @@
 - Si `melos` falla con "Invalid kernel binary format": `dart pub global activate melos`.
 - **Verificación completa antes de dar algo por terminado:** `melos run verify` (analyze + verify:arch + test).
 - **Reglas de importación (§5.2):** `melos run verify:arch` ejecuta `tool/verify_architecture.dart` (lógica en `tool/src/`, tests en `tool/test/`). Las reglas 8 y 9: un contrato (`packages/contracts/*`) es Dart puro y no importa funcionalidades ni apps; solo los adaptadores importan `share_plus`, `url_launcher`, `file_picker` o `path_provider`.
-- **Plugins:** implementan `HomePlugin` (`core_contracts`), incluido `isAvailable()`. El ciclo de vida lo aplica `PluginLifecycleManager`; las preferencias se persisten vía `PluginPreferenceRepository`.
+- **Plugins:** implementan `HomePlugin` (`core_contracts`), incluido `isAvailable()`. Si tienen una pantalla principal, implementan además `HomePluginEntryRoute` (`entryRoute`): la grilla del inicio la abre directamente en lugar de mostrar su tarjeta en una hoja. El ciclo de vida lo aplica `PluginLifecycleManager`; las preferencias se persisten vía `PluginPreferenceRepository`.
 - **DI:** usar `ServiceLocator` de `core_di`, nunca `get_it` directamente. Cada plugin registra sus dependencias en un scope con su ID (`pushScope`) y lo libera en `dispose()` (`dropScope`).
 - **Igualdad por valor:** extender `Equatable` (paquete `equatable`) y declarar `props`; nunca sobrescribir `operator ==`/`hashCode` a mano. Aplica a entidades, value objects y estados de BLoC/Cubit.
 

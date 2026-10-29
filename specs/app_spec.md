@@ -500,7 +500,7 @@ class UserPluginPreference extends Equatable {
 - **Vista del inicio**: un botón de la barra superior, junto al engranaje, alterna entre la **lista** de tarjetas (la descrita arriba) y los **accesos rápidos**. Esta última es una grilla (`AppShortcutGrid`) con un icono y el título de cada plugin (`AppShortcutTile`, máximo dos líneas). Tiene 4 columnas en móvil y más en pantallas anchas.
   - Los plugins salen en el mismo orden que en la lista. En la grilla no se reordena.
   - Al final siempre hay un acceso **Añadir** que abre el catálogo, también cuando no hay plugins activos.
-  - Al tocar un plugin se abre su tarjeta (`buildDashboardTile`) en una hoja inferior, con todas sus acciones. Así los plugins no necesitan declarar una pantalla de entrada.
+  - Al tocar un plugin con pantalla principal (implementa `HomePluginEntryRoute` de `core_contracts`, p. ej. la lista de compras) se abre esa pantalla (`entryRoute`). Si no la tiene, se abre su tarjeta (`buildDashboardTile`) en una hoja inferior con todas sus acciones (item_tracker, con «Escanear» y «Ver objetos»). La interfaz es opcional, así que añadirla no cambia `HomePlugin`.
   - Un plugin que falló se ve con colores de error y al tocarlo se reintenta.
   - La vista elegida es una preferencia de la app (`AppSettings.homeLayout`, clave `app.home_layout`), separada de las `UserPluginPreference`: cambiarla no modifica qué plugins están activos ni su orden.
 - **Catálogo** (`/plugins-catalog`): un interruptor por plugin con su nombre y descripción traducidos (`LocalizationCoordinator.translate(nameKey)`). Los no disponibles no se pueden activar. Se abre desde Configuración.
