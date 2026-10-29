@@ -1,16 +1,18 @@
-/// Evento publicado en el [EventBus] para comunicar plugins sin acoplarlos.
+/// Evento publicado en el `EventBus` para comunicar plugins sin acoplarlos.
 ///
-/// Los plugins no pueden importarse entre sí, así que todo evento que cruce
-/// fronteras de plugin se define aquí.
+/// Los eventos de cada plugin se definen en su contrato
+/// (`packages/contracts/<funcionalidad>_contract`), nunca en el plugin.
 abstract class CrossPluginEvent {
-  final DateTime emittedAt;
+  /// [emittedAt] debería venir del `Clock` de quien publica; si falta se usa
+  /// la hora actual. Siempre se guarda en UTC.
+  CrossPluginEvent({DateTime? emittedAt}) : emittedAt = (emittedAt ?? DateTime.now()).toUtc();
 
-  CrossPluginEvent() : emittedAt = DateTime.now().toUtc();
+  final DateTime emittedAt;
 }
 
 class ItemCreatedCrossEvent extends CrossPluginEvent {
   final String itemId;
   final String itemName;
 
-  ItemCreatedCrossEvent({required this.itemId, required this.itemName});
+  ItemCreatedCrossEvent({required this.itemId, required this.itemName, super.emittedAt});
 }

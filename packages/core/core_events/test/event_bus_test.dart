@@ -1,44 +1,46 @@
 import 'package:core_events/core_events.dart';
+import 'package:core_events/testing.dart';
 import 'package:test/test.dart';
 
-class OtherEvent extends CrossPluginEvent {}
+class _Event extends CrossPluginEvent {
+  _Event({super.emittedAt});
+}
 
 void main() {
-  late EventBus bus;
+  eventBusContract('StreamEventBus', create: StreamEventBus.new);
+  eventBusContract('EventBus()', create: EventBus.new);
+  eventBusContract('RecordingEventBus', create: RecordingEventBus.new);
 
-  setUp(() => bus = EventBus());
-  tearDown(() => bus.dispose());
+  group('RecordingEventBus', () {
+    test('guarda lo publicado y filtra por tipo', () async {
+      final RecordingEventBus bus = RecordingEventBus();
+      final ItemCreatedCrossEvent created = ItemCreatedCrossEvent(itemId: '1', itemName: 'Caja A');
+      final _Event other = _Event();
 
-  test('on<T> solo emite eventos del tipo pedido', () async {
-    final received = bus.on<ItemCreatedCrossEvent>().toList();
+      bus
+        ..publish(created)
+        ..publish(other);
+      await bus.dispose();
 
-    bus
-      ..publish(ItemCreatedCrossEvent(itemId: '1', itemName: 'Caja A'))
-      ..publish(OtherEvent())
-      ..publish(ItemCreatedCrossEvent(itemId: '2', itemName: 'Cama'));
-    await bus.dispose();
-
-    expect((await received).map((e) => e.itemId), ['1', '2']);
+      expect(bus.published, <CrossPluginEvent>[created, other]);
+      expect(bus.publishedOf<ItemCreatedCrossEvent>(), <ItemCreatedCrossEvent>[created]);
+    });
   });
 
-  test('on<CrossPluginEvent> recibe todos los eventos', () async {
-    final received = bus.on<CrossPluginEvent>().toList();
+  group('CrossPluginEvent', () {
+    test('sin emittedAt usa la hora actual en UTC', () {
+      final DateTime before = DateTime.now().toUtc();
+      final _Event event = _Event();
 
-    bus
-      ..publish(OtherEvent())
-      ..publish(ItemCreatedCrossEvent(itemId: '1', itemName: 'Caja A'));
-    await bus.dispose();
+      expect(event.emittedAt.isUtc, isTrue);
+      expect(event.emittedAt.isBefore(before), isFalse);
+    });
 
-    expect(await received, hasLength(2));
-  });
+    test('convierte a UTC el emittedAt recibido', () {
+      final DateTime local = DateTime(2026, 10, 28, 9);
 
-  test('emittedAt está en UTC', () {
-    expect(OtherEvent().emittedAt.isUtc, isTrue);
-  });
-
-  test('publicar tras dispose no lanza', () async {
-    await bus.dispose();
-
-    expect(() => bus.publish(OtherEvent()), returnsNormally);
+      expect(_Event(emittedAt: local).emittedAt, local.toUtc());
+      expect(ItemCreatedCrossEvent(itemId: '1', itemName: 'A', emittedAt: local).emittedAt.isUtc, isTrue);
+    });
   });
 }
