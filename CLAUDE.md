@@ -61,7 +61,7 @@
 - **Melos 8 + Dart pub workspaces:** no existe `melos.yaml`; la configuración de Melos vive en la sección `melos:` del `pubspec.yaml` raíz. Cada paquete nuevo declara `resolution: workspace` y debe quedar cubierto por la lista `workspace:` de la raíz.
 - Si `melos` falla con "Invalid kernel binary format": `dart pub global activate melos`.
 - **Verificación completa antes de dar algo por terminado:** `melos run verify` (analyze + verify:arch + test).
-- **Reglas de importación (§5.2):** `melos run verify:arch` ejecuta `tool/verify_architecture.dart` (lógica en `tool/src/`, tests en `tool/test/`).
+- **Reglas de importación (§5.2):** `melos run verify:arch` ejecuta `tool/verify_architecture.dart` (lógica en `tool/src/`, tests en `tool/test/`). Las reglas 8 y 9: un contrato (`packages/contracts/*`) es Dart puro y no importa funcionalidades ni apps; solo los adaptadores importan `share_plus`, `url_launcher`, `file_picker` o `path_provider`.
 - **Plugins:** implementan `HomePlugin` (`core_contracts`), incluido `isAvailable()`. El ciclo de vida lo aplica `PluginLifecycleManager`; las preferencias se persisten vía `PluginPreferenceRepository`.
 - **DI:** usar `ServiceLocator` de `core_di`, nunca `get_it` directamente. Cada plugin registra sus dependencias en un scope con su ID (`pushScope`) y lo libera en `dispose()` (`dropScope`).
 - **Igualdad por valor:** extender `Equatable` (paquete `equatable`) y declarar `props`; nunca sobrescribir `operator ==`/`hashCode` a mano. Aplica a entidades, value objects y estados de BLoC/Cubit.
@@ -129,3 +129,16 @@
 - **`HomeUtilityApp`:** crea su router con el primer `AppEnvironment`. Para simular un reinicio en un test, usar `key: ObjectKey(environment)`.
 - **CI:** `.github/workflows/ci.yml` ejecuta `melos run verify` en Ubuntu. Si se sube la versión de Flutter o Melos, actualizarla también ahí.
 - **Archivos del editor:** `.vscode/` no se versiona (es configuración personal). Para que la extensión Dart encuentre los proyectos Flutter anidados, cada desarrollador pone `"dart.projectSearchDepth": 6` en su configuración.
+
+## Fase 5 (comunicación entre plugins y lista de compras)
+- **Comunicación entre plugins (§11.2):** eventos para hechos (`EventBus`) y capacidades para consultas y acciones (interfaces registradas en el `ServiceLocator`). No hay bus de comandos.
+  - **Contratos:** un paquete por funcionalidad que publica, en `packages/contracts/<funcionalidad>_contract`, con todos sus eventos, capacidades y datos que cruzan. Un evento nuevo es una clase más, no un paquete nuevo. Su `testing.dart` trae la batería de las capacidades y un doble en memoria.
+  - **Publicar:** el plugin dueño registra sus capacidades en su scope (`pushScope(pluginId)`), así desaparecen con su `dispose()`. Publica en el `EventBus` del scope raíz, con `emittedAt` de su `Clock`.
+  - **Consumir:** depender solo del contrato. Pedir la capacidad al locator al usarla (`isRegistered<T>()` y `get<T>()`), nunca guardarla en `initialize()`; si falta, ocultar o degradar sin error. Escuchar eventos con un `EventSubscriptions` registrado en el scope propio con `dispose: (EventSubscriptions s) => s.cancelAll()`.
+  - Los eventos no se guardan: lo publicado mientras un plugin está desactivado se pierde. Para el estado actual, una capacidad.
+  - En los tests de la app, `AppHarness(includeShoppingList: true)` monta la lista de compras real. Ejemplo de consumidor: `apps/app/test/cross_plugin_communication_test.dart`.
+- **Paquetes comunes en `packages/shared/`:** `urgency` (niveles), `recurrence` (ventana mínimo–máximo de días y sus estados) y `list_export` (formateadores para WhatsApp y Markdown). Son Dart puro y van al 100 % de cobertura.
+- **Compartir:** contrato `ShareService` (`core_share`, con `FakeShareService` y `shareServiceContract` en `testing.dart`) y adaptador `NativeShare` (`share_native`). Para detectar WhatsApp, la app declara el esquema `whatsapp` en `<queries>` (Android) y en `LSApplicationQueriesSchemes` (iOS).
+- **Plugin lista de compras (§9.5):** ID `shopping_list`, rutas bajo `/shopping-list`. Reglas de negocio, estado derivado (`ShoppingItem.stateAt`) y agrupación (`ShoppingListView`) en `shopping_list_domain`. Las categorías son propias del plugin. En los tests de widgets, `PluginHarness` (`test/helpers/presentation_fixtures.dart`) con repositorio en memoria, `RecordingEventBus` y `FakeShareService`.
+- **Apps de ejemplo de plugins:** el workspace las cubre con el glob `packages/plugins/*/plugin_*/example`.
+- **Workspace y globs:** pub rechaza un glob de `workspace:` que no coincide con ningún paquete. La rama que crea el primer paquete de una carpeta nueva añade su glob.

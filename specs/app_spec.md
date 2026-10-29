@@ -122,7 +122,9 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 | **get_it (>=8.0.0)** | Service Locator | Inyección de dependencias liviana y rápida para resolver contratos de plugins y repositorios. | `packages/core/core_di` | [pub.dev/packages/get_it](https://pub.dev/packages/get_it) |
 | **equatable (>=3.0.0)** | Igualdad por valor | Evita sobrescribir `==`/`hashCode` a mano en entidades, value objects y estados. | `packages/core/*`, `packages/plugins/*` | [pub.dev/packages/equatable](https://pub.dev/packages/equatable) |
 | **uuid (>=4.4.0)** | Generación UUID | Creación de identificadores de dominio RFC4122 v4 independientes de la infraestructura. | `packages/shared/core_utils` | [pub.dev/packages/uuid](https://pub.dev/packages/uuid) |
-| **rxdart (>=0.28.0)** | Programación Reactiva | Utilizado para el Bus de Eventos desacoplado entre módulos independientes. | `packages/core/core_events` | [pub.dev/packages/rxdart](https://pub.dev/packages/rxdart) |
+| **share_plus (>=13.3.0)** | Compartir | Hoja de compartir del sistema para texto y archivos (exportar la lista de compras). | `packages/adapters/share_native` | [pub.dev/packages/share_plus](https://pub.dev/packages/share_plus) |
+| **url_launcher (>=6.3.3)** | Abrir otras apps | Abre WhatsApp con `whatsapp://send` y comprueba si está instalado. | `packages/adapters/share_native` | [pub.dev/packages/url_launcher](https://pub.dev/packages/url_launcher) |
+| **file_picker (>=13.1.0)** | Guardar archivos | Diálogo del sistema para elegir dónde guardar un archivo (`saveFile`). | `packages/adapters/share_native` | [pub.dev/packages/file_picker](https://pub.dev/packages/file_picker) |
 
 ---
 
@@ -152,10 +154,14 @@ home_utility_monorepo/
 │   ├── core/                         # Infraestructura y Contratos Centrales
 │   │   ├── core_contracts/           # Abstracciones de Plugins y Módulos
 │   │   ├── core_di/                  # Service Locator (GetIt) y DependencyModule
-│   │   ├── core_events/              # Bus de Eventos Global (RxDart)
-│   │   └── core_hardware/            # Abstracciones de Cámara, QR y NFC
+│   │   ├── core_events/              # Contrato EventBus, StreamEventBus y EventSubscriptions
+│   │   ├── core_hardware/            # Abstracciones de Cámara, QR y NFC
+│   │   └── core_share/               # Contrato ShareService (compartir, WhatsApp, guardar)
 │   ├── adapters/                     # Adaptadores transversales (tecnologías reemplazables)
+│   │   ├── share_native/             # ShareService con share_plus, url_launcher y file_picker
 │   │   └── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature
+│   ├── contracts/                    # API pública de cada funcionalidad para otras (§11.2)
+│   │   └── shopping_list_contract/   # Eventos y capacidades de la lista de compras
 │   ├── design_system/                # Sistema de Diseño UI Centralizado
 │   │   ├── lib/
 │   │   │   ├── tokens/               # Colores, Tipografía, Espaciados
@@ -163,8 +169,15 @@ home_utility_monorepo/
 │   │   │   └── components/           # Botones, Cards, Inputs, Modales
 │   ├── shared/                       # Código Compartido Neutral
 │   │   ├── core_ui/                  # Slang L10n helpers y componentes base
-│   │   └── core_utils/               # Formatters, Extensions, UUID
+│   │   ├── core_utils/               # Formatters, Extensions, UUID
+│   │   ├── list_export/              # Formateadores de listas para WhatsApp y Markdown
+│   │   ├── recurrence/               # Recurrencia aproximada (entre X e Y días)
+│   │   └── urgency/                  # Niveles de urgencia comunes
 │   └── plugins/                      # Módulos Funcionales Autónomos
+│       ├── shopping_list/            # Lista de compras (misma estructura que item_tracker, §9.5)
+│       │   ├── shopping_list_domain/
+│       │   ├── plugin_shopping_list/ # Con su example/
+│       │   └── shopping_list_isar/
 │       └── item_tracker/             # Carpeta de la funcionalidad (no es un paquete)
 │           ├── item_tracker_domain/  # Dart puro: Entities, ValueObjects, Repository, errores
 │           │   └── lib/testing.dart  # Tests de contrato y repositorio en memoria
@@ -207,9 +220,24 @@ graph TD
     StorageIsar --> CoreContracts
     StorageIsar --> CoreDI
     DesignSystem --> CoreUI
+
+    App --> PluginShoppingList[shopping_list/plugin_shopping_list]
+    App --> ShoppingListIsar[shopping_list/shopping_list_isar]
+    App --> ShareNative[packages/adapters/share_native]
+    PluginShoppingList --> ShoppingListDomain[shopping_list/shopping_list_domain]
+    PluginShoppingList --> ShoppingListContract[packages/contracts/shopping_list_contract]
+    PluginShoppingList --> CoreShare[packages/core/core_share]
+    PluginShoppingList --> ListExport[packages/shared/list_export]
+    ShoppingListDomain --> Recurrence[packages/shared/recurrence]
+    ShoppingListDomain --> Urgency[packages/shared/urgency]
+    ShoppingListContract --> Urgency
+    ShoppingListContract --> CoreEvents
+    ShoppingListIsar --> ShoppingListDomain
+    ShoppingListIsar --> StorageIsar
+    ShareNative --> CoreShare
 ```
 
-`plugin_item_tracker` e `item_tracker_isar` no se conocen: se encuentran en el `ServiceLocator` a través del contrato `HouseholdItemRepository` de `item_tracker_domain`.
+`plugin_item_tracker` e `item_tracker_isar` no se conocen: se encuentran en el `ServiceLocator` a través del contrato `HouseholdItemRepository` de `item_tracker_domain`. Lo mismo con la lista de compras (`ShoppingListRepository`) y con `share_native` (`ShareService` de `core_share`). Otro plugin que quiera usar la lista de compras depende solo de `shopping_list_contract` (§11.2).
 
 #### Roles de los paquetes
 
@@ -219,6 +247,7 @@ El verificador deduce el rol de cada paquete por su ruta y su nombre:
 - **Plugin**: `packages/plugins/<funcionalidad>/plugin_<funcionalidad>`.
 - **Dominio**: `packages/plugins/<funcionalidad>/<funcionalidad>_domain`. Dart puro.
 - **Adaptador**: `packages/adapters/*` y `packages/plugins/<funcionalidad>/<funcionalidad>_<motor>` (`isar`, `sqflite`, `sqlite`, `drift`, `hive`, `objectbox`, `realm`, `sembast`).
+- **Contrato**: `packages/contracts/*`. La API pública de una funcionalidad para las demás (§11.2). Dart puro.
 - **Otros**: `core`, `shared` y `design_system`.
 
 #### Reglas de Importación Strict:
@@ -229,8 +258,10 @@ El verificador deduce el rol de cada paquete por su ruta y su nombre:
 5. **Regla 5**: Solo los adaptadores importan motores de base de datos (`isar*`, `sqflite*`, `sqlite3*`, `drift*`, `hive*`, `objectbox*`, `realm*`, `sembast*`).
 6. **Regla 6**: Solo los hosts y otros adaptadores importan adaptadores. Un plugin nunca conoce su adaptador: pide el contrato al `ServiceLocator`.
 7. **Regla 7**: Un adaptador o un dominio **NUNCA** importa el plugin.
+8. **Regla 8**: Un contrato es Dart puro (sin `package:flutter*` ni `dart:ui`) y **NUNCA** importa plugins, dominios, otros paquetes de funcionalidades ni apps. Solo otros contratos y paquetes comunes (`core_events`, `urgency`…). Los adaptadores ya los prohíbe la regla 6.
+9. **Regla 9**: Solo los adaptadores importan SDKs de plataforma: `share_plus*`, `url_launcher*`, `file_picker` y `path_provider*`.
 
-Las siete reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
+Las nueve reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
 
 ### 5.3. Archivos de Configuración del Monorepo
 
@@ -828,6 +859,55 @@ Isar devuelve las fechas en hora local: `ItemDataMapper` las convierte a UTC al 
 
 ---
 
+### 9.5. Lista de Compras (`packages/plugins/shopping_list`)
+
+Plugin `ShoppingListPlugin`: ID `shopping_list` (scope DI, preferencia y namespace i18n) y rutas bajo `/shopping-list` (`/item/new`, `/item/:id/edit`, `/categories`). Sigue la estructura del §10.2: `shopping_list_domain`, `plugin_shopping_list` (con `example/`) y `shopping_list_isar`. Su API pública es `shopping_list_contract` (§11.2). La lista de tareas seguirá el mismo patrón (`task_list`, `/task-list`).
+
+**Piezas compartidas** (paquetes Dart puros en `packages/shared/`, para compras y tareas):
+
+- `urgency`: `Urgency.immediate` (hoy), `high` (la próxima vez), `normal` (por defecto) y `low` (cuando se pueda). `isUrgent` = inmediata o alta. El orden natural pone primero lo más urgente.
+- `recurrence`: `Recurrence.between(min, max)` o `Recurrence.fixed(días)`, de 1 a 365. La ventana se abre a los `min` días de la última vez y se cierra al terminar el día `max`. Estados: `waiting`, `due` («toca») y `overdue` (atrasado). Si nunca se hizo, toca.
+- `list_export`: modelo neutro `ExportDocument` y formateadores `WhatsAppFormatter` (`*negrita*`, viñetas) y `MarkdownFormatter` (escapa los caracteres especiales). Los textos los pone quien exporta.
+- Las categorías **no** se comparten: cada plugin tiene las suyas. Se extraerán a un paquete común si tareas repite la misma lógica.
+
+**Entidades**:
+
+| Entidad | Campos |
+| :--- | :--- |
+| `ShoppingItem` | `id`, `name`, `notes`, `quantity` (texto libre, p. ej. «2 docenas»), `urgency`, `status` (`pending`/`purchased`), `categoryIds`, `recurrence?`, `lastPurchasedAt?`, `createdAt`, `updatedAt` |
+| `ShoppingCategory` | `id`, `name?` (el del usuario), `defaultKey?` (las por defecto), `sortOrder` |
+| `ShoppingPurchase` | `id`, `itemId`, `purchasedAt`: historial de compras |
+
+**Validación** (`ShoppingValidator`; errores `ShoppingValidationException` con `field` y `reason`):
+
+| Campo | Regla |
+| :--- | :--- |
+| `name` | Obligatorio tras recortar espacios; máx. 120 caracteres. |
+| `notes` | Opcional; máx. 2000. |
+| `quantity` | Opcional; máx. 40. |
+| Nombre de categoría | Obligatorio; máx. 40; único sin distinguir mayúsculas (también frente al nombre traducido de las por defecto). |
+| Recurrencia | Días entre 1 y 365; el mínimo no puede ser mayor que el máximo. |
+
+**Estado que se muestra** (`ShoppingItem.stateAt(now)`): `overdue` (recurrente pasado su máximo), `pending` (normal pendiente o recurrente con la ventana abierta), `waiting` (recurrente que todavía no toca) y `purchased` (normal comprado). «Por comprar» = `overdue` + `pending`.
+
+**Reglas**:
+
+- **Categorías por defecto**: Comida, Aseo, Limpieza, Hogar y Farmacia. Se crean una sola vez (una marca evita volver a crearlas si el usuario las borra). Se pueden renombrar, reordenar y borrar; su nombre se traduce por `defaultKey` hasta que el usuario lo cambia.
+- **Varias categorías**: un item puede tener varias. Al agrupar por categoría sale **una sola vez**, bajo la primera según el orden de las categorías, y las demás se muestran aparte (badges en la lista, entre paréntesis en el export). Sin categorías va a «Sin categoría», al final.
+- **Borrar una categoría en uso**: se confirma indicando cuántos items la usan. Se quita de esos items (con `updatedAt` nuevo) en la misma transacción; conservan sus demás categorías.
+- **Marcar como comprado** (`MarkShoppingItemPurchased`): guarda un `ShoppingPurchase` y `lastPurchasedAt`, y publica `ShoppingItemPurchased`. Un item normal pasa a `purchased`; uno recurrente sigue `pending` y espera a su ventana. Se puede deshacer (borra esa compra y restaura el item). Un item ya comprado no se vuelve a comprar.
+- **Comprados**: se pueden volver a pendiente o borrar en bloque (con su historial). Los recurrentes nunca están comprados.
+- **Historial**: se guarda para deshacer y, más adelante, para calcular cada cuánto se compra de verdad.
+- **Filtrar y agrupar**: por categorías («cualquiera de», con o sin «Sin categoría»), urgencias y estados; agrupado por categoría o por urgencia. Dentro de un grupo: atrasado, pendiente, en espera y comprado; luego lo más urgente, y por nombre.
+- **Exportar**: lo que hay que comprar (todo o lo filtrado), agrupado por categoría o por urgencia, con lo urgente resaltado y la fecha al pie. Por WhatsApp (avisa si no está instalado), como texto, o como `lista-de-compras.md` (compartir o guardar). Usa el `ShareService` de `core_share` que registre la app (`NativeShare` de `share_native`); sin él no se ofrece exportar.
+- **Capacidades públicas** (`shopping_list_contract`): `ShoppingListQuery` (lo pendiente, lo más urgente primero) y `ShoppingListWriter.addItem`. `addItem` no duplica: reutiliza un pendiente con el mismo nombre (sin distinguir mayúsculas ni espacios) subiéndole la urgencia si hace falta, y vuelve a pendiente uno normal comprado.
+
+**Casos de uso** (`lib/src/domain/use_cases`): `CreateShoppingItem`, `UpdateShoppingItem`, `GetShoppingItem`, `DeleteShoppingItems`, `MarkShoppingItemPurchased`, `UndoShoppingPurchase`, `MarkShoppingItemPending`, `ClearPurchasedShoppingItems`, `CreateShoppingCategory`, `RenameShoppingCategory`, `CountShoppingCategoryUsage`, `DeleteShoppingCategory`, `ReorderShoppingCategories`, `EnsureDefaultShoppingCategories`, `WatchShoppingList`, `WatchShoppingCategories` y `BuildShoppingExport`. `ShoppingListApi` implementa las capacidades públicas.
+
+**Errores de dominio** (`sealed ShoppingListException`): `ShoppingItemNotFoundException`, `ShoppingCategoryNotFoundException`, `ShoppingCategoryNameTakenException` y `ShoppingValidationException`.
+
+---
+
 ## 10. Persistencia Local y Evolución Futura hacia la Nube
 
 ### 10.1. Mapeo y Transacciones en Isar
@@ -878,36 +958,54 @@ Para garantizar que la adición de un servidor remoto no quiebre la arquitectura
 - **Usar Cubit**: Para flujos de estado simples, lineales o de solo lectura (ej. Carga de detalles de un objeto, cambio de tema, edición de un formulario de texto).
 - **Usar BLoC**: Para flujos asíncronos complejos, basados en eventos continuos, transiciones de escaneo en tiempo real (Cámara/NFC) o con necesidad de operadores de transformación (`debounceTime`, `switchMap`, `distinctUntilChanged`).
 
-### 11.2. Bus de Eventos Inter-Módulo (`packages/core/core_events`)
+### 11.2. Comunicación entre Plugins
+
+Un plugin no puede importar otro (regla 1 del §5.2), pero pueden colaborar de forma indirecta: uno publica un hecho o expone una capacidad, y el otro la usa sin saber quién está al otro lado. Todo sigue funcionando si el otro plugin no está instalado o está desactivado.
+
+| Necesidad | Mecanismo | Ejemplo |
+| :--- | :--- | :--- |
+| Avisar de un hecho que ya pasó, sin esperar respuesta, a cero o más oyentes | **Evento** en el `EventBus` | `ShoppingItemPurchased` |
+| Pedir datos o una acción con un solo responsable, sabiendo si está disponible | **Capacidad**: interfaz del contrato registrada en el `ServiceLocator` | `ShoppingListQuery`, `ShoppingListWriter` |
+
+No hay un bus de comandos aparte: un comando es una capacidad. Así la UI puede ocultar la acción («añadir a la compra») cuando el otro plugin no está, y la acción no se pierde.
+
+#### Contratos (`packages/contracts/<funcionalidad>_contract`)
+
+- Un paquete por funcionalidad que publica, con **todos** sus eventos, capacidades y los datos que cruzan la frontera (p. ej. `ShoppingItemSummary`, una vista mínima, nunca la entidad del dominio). Es Dart puro (regla 8).
+- El plugin dueño publica sus eventos e implementa sus capacidades. Quien los usa depende solo del contrato, nunca del plugin.
+- **Versionado**: SemVer del paquete de contrato. Un evento o una capacidad nuevos son una clase más (cambio compatible). Cambiar uno existente es un cambio incompatible y actualiza a sus consumidores en la misma rama. No hace falta `EventV2`: los eventos no se guardan ni viajan por red, y todo se compila junto.
+- Un concepto que no es de ningún plugin («algo hace falta») irá a un paquete común de vocabulario de la casa cuando aparezca, no al contrato de un plugin.
+- `testing.dart` del contrato trae la batería de las capacidades y un doble en memoria (`InMemoryShoppingList`) para los tests de quien lo usa.
+
+#### Bus de eventos (`packages/core/core_events`)
+
+- `EventBus` es un contrato (`publish`, `on<T>()`, `dispose`). `EventBus()` crea `StreamEventBus`, en memoria sobre un `StreamController` broadcast. Los eventos llegan de forma asíncrona y en orden, y solo a quien ya estaba suscrito: no se guardan ni se repiten.
+- Los eventos extienden `CrossPluginEvent`, cuyo `emittedAt` viene del `Clock` de quien publica (en UTC).
+- `testing.dart`: batería `eventBusContract` y `RecordingEventBus`, que guarda lo publicado.
+
+#### Scopes y ciclo de vida
+
+1. El `EventBus` va en el **scope raíz** y lo registra la app (`bootstrapApp`). Un plugin solo crea uno propio si no lo encuentra (tests).
+2. Las capacidades las registra el plugin dueño en **su scope** (`pushScope(pluginId)`) dentro de `initialize()`. El `dropScope` de su `dispose()` las quita: un plugin desactivado deja de ofrecerlas sin hacer nada más.
+3. **Resolver al usar**: el consumidor pide la capacidad al locator en el momento de usarla (`isRegistered<T>()` y después `get<T>()`), nunca la guarda en su `initialize()`. Así da igual el orden de inicialización y nada queda colgado si el otro se desactiva. Si falta, oculta la función o la degrada sin error.
+4. **Suscripciones**: cada plugin las junta en un `EventSubscriptions` registrado en su scope con `dispose: (EventSubscriptions s) => s.cancelAll()`. `cancelAll` no espera los futuros de `cancel()` (bloquearían con el reloj simulado de `testWidgets`).
+5. Un plugin desactivado se pierde los eventos de ese tiempo. Si necesita el estado actual, lo consulta con una capacidad al reinicializarse.
+6. `PluginLifecycleManager` no cambia: las reglas 2 y 3 bastan.
+7. Varios proveedores de la misma capacidad (p. ej. un export conjunto de compras y tareas) quedan para cuando exista el segundo: `ServiceLocator.getAll<T>()` con un registro por `pluginId`.
 
 ```dart
-import 'package:rxdart/rxdart.dart';
-
-abstract class CrossPluginEvent {
-  final DateTime emittedAt;
-  CrossPluginEvent() : emittedAt = DateTime.now().toUtc();
+// Consumidor: «se acabó» → a la lista de compras, si está.
+if (locator.isRegistered<ShoppingListWriter>()) {
+  await locator.get<ShoppingListWriter>().addItem(ShoppingItemRequest(name: 'Pilas', urgency: Urgency.high));
 }
 
-class ItemCreatedCrossEvent extends CrossPluginEvent {
-  final String itemId;
-  final String itemName;
-
-  ItemCreatedCrossEvent({required this.itemId, required this.itemName});
-}
-
-class EventBus {
-  final PublishSubject<CrossPluginEvent> _subject = PublishSubject<CrossPluginEvent>();
-
-  void publish(CrossPluginEvent event) {
-    _subject.add(event);
-  }
-
-  // ofType(TypeToken) ya no existe en rxdart 0.28; whereType es el equivalente.
-  Stream<T> on<T extends CrossPluginEvent>() => _subject.whereType<T>();
-
-  Future<void> dispose() => _subject.close(); // publish() tras dispose se descarta
-}
+// En initialize(), dentro de pushScope(id, init: ...):
+final EventSubscriptions subscriptions = EventSubscriptions()
+  ..listen<ShoppingItemPurchased>(locator.get<EventBus>(), onPurchased);
+locator.registerSingleton(subscriptions, dispose: (EventSubscriptions s) => s.cancelAll());
 ```
+
+La validación está en `apps/app/test/cross_plugin_communication_test.dart`: un plugin falso que solo conoce `shopping_list_contract` añade, consulta y escucha compras con la lista activa, sigue funcionando con ella desactivada y pierde sus suscripciones al desactivarse.
 
 ---
 
@@ -1175,4 +1273,4 @@ Antes de dar por completada la implementación de la primera iteración, verific
 
 1. **Cifrado de Base de Datos Local**: Evaluar en la versión `v1.1.0` la inclusión de la clave de cifrado Isar mediante `flutter_secure_storage` si se añaden datos con nivel alto de sensibilidad personal.
 2. **Sincronización Cloud**: La arquitectura de repositorios actual admite la futura adición de un paquete `core_network` con soporte Dio / GraphQL sin requerir cambios estructurales en los plugins funcionales existentes.
-3. **Exportar / importar datos**: la entrada ya está en Configuración, desactivada. Falta decidir el formato, qué incluye (datos de los plugins, preferencias de módulos y de la app) y cómo participa cada plugin.
+3. **Exportar / importar datos**: la entrada ya está en Configuración, desactivada. Falta decidir el formato, qué incluye (datos de los plugins, preferencias de módulos y de la app) y cómo participa cada plugin. La lista de compras ya exporta su contenido como texto o Markdown (§9.5); un export de copia de seguridad es otra cosa.
