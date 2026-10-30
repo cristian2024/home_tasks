@@ -1,6 +1,6 @@
 name: urgency
 description: Niveles de urgencia comunes para lo pendiente de la casa (compras, tareas), en Dart puro.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
