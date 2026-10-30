@@ -254,7 +254,7 @@ El verificador deduce el rol de cada paquete por su ruta y su nombre:
 1. **Regla 1**: Un paquete de una funcionalidad (`packages/plugins/<funcionalidad>/*`) **NUNCA** importa paquetes de otra funcionalidad. Los hosts sí, porque componen varias.
 2. **Regla 2**: El dominio (los paquetes `<funcionalidad>_domain` y las carpetas `lib/src/domain/` o `lib/domain/` de cualquier paquete) **NUNCA** importa código de Flutter (`package:flutter*/...`, `dart:ui`) ni motores de base de datos.
 3. **Regla 3**: `packages/design_system` **SOLO** depende de Flutter SDK y de `packages/shared/core_ui`. Prohibido importar paquetes de infraestructura o plugins.
-4. **Regla 4**: Solo `packages/core/core_hardware` importa `mobile_scanner`, `nfc_manager*` o `permission_handler`.
+4. **Regla 4**: Solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`. `core_hardware` se admite mientras sus implementaciones pasan a esos adaptadores.
 5. **Regla 5**: Solo los adaptadores importan motores de base de datos (`isar*`, `sqflite*`, `sqlite3*`, `drift*`, `hive*`, `objectbox*`, `realm*`, `sembast*`).
 6. **Regla 6**: Solo los hosts y otros adaptadores importan adaptadores. Un plugin nunca conoce su adaptador: pide el contrato al `ServiceLocator`.
 7. **Regla 7**: Un adaptador o un dominio **NUNCA** importa el plugin.
@@ -1269,7 +1269,7 @@ Antes de dar por completada la implementación de la primera iteración, verific
 | `melos bootstrap` | Lo ejecuta la CI en cada PR. |
 | Dominio sin Flutter ni Isar | Regla 2 de `verify:arch`. |
 | UUID v4 | `UuidV4Generator` (`core_utils`), inyectado como `IdGenerator`; `isUuidV4` en sus tests. |
-| Aislamiento de hardware | Regla 4 de `verify:arch` (solo `core_hardware` importa los SDK nativos). |
+| Aislamiento de hardware | Regla 4 de `verify:arch` (solo los adaptadores `hardware_*` importan los SDK nativos). |
 | Preferencias separadas | `PluginPreferenceRepository` frente a `HomePlugin`; AC-02 con Isar real. |
 | Fechas en UTC | `ItemDataMapper` convierte al leer y al escribir; tests con fechas en hora local. |
 | Accesibilidad | `AppIconButton` exige `tooltip`; `labeledTapTargetGuideline`, `androidTapTargetGuideline` y `textContrastGuideline` en el design system, el escáner, el inicio y el catálogo. |
