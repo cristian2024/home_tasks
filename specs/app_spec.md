@@ -1009,18 +1009,20 @@ La regla 10 del §5.2 impide importar `bonsoir`, `cryptography` o `flutter_secur
 #### 10.4.2. Modelo de cambios
 
 - **Registro de cambio** (inmutable):
-  - `opId` (UUID v4), `householdId`, `deviceId`;
+  - `opId` (UUID v4) y `deviceId`;
   - `seq`: contador del dispositivo, sin huecos;
   - colección y `entityId`;
   - los campos cambiados, cada uno con su valor;
   - el `Hlc`.
   - Puede incluir referencias a binarios por `sha256` (`BlobRef`), reservadas y sin implementar.
+  - No lleva el hogar: se registra también antes de pertenecer a uno. El `householdId` va en los datos asociados del cifrado al enviarlo (§10.4.6).
 - **HLC:** orden total; el desempate final es por `deviceId`. Cada dispositivo avanza su reloj con los HLC que recibe.
 - **Vector de versiones:** `{deviceId: último seq}`. Dice qué cambios tiene un dispositivo de cada autor, sirve para el gossip y, en la fase 2, como cursor del buzón remoto.
 - **Metadatos en las entidades** (`SyncMetadata`, value object con `Equatable`):
   - un mapa campo → HLC;
   - para los campos que son conjuntos (p. ej. `categoryIds`), un HLC por elemento añadido o quitado;
-  - `deletedAt` (tombstone) y `originDeviceId`.
+  - la menor marca aplicada (`createdHlc`), de la que sale `originDeviceId`.
+- **Tombstone:** `deletedAt` es un campo más de la entidad. Como nadie lo vuelve a poner a `null`, el borrado gana a cualquier edición.
 - **Escritura local:** el repositorio estampa el HLC de los campos que cambian y escribe el registro de cambio **en la misma transacción** que la entidad. Los casos de uso no cambian. Se registra todo lo local, aunque el dispositivo aún no pertenezca a un hogar.
 - **Aplicar cambios remotos** (`applyRemote`, atómico) es **idempotente y conmutativo**: el mismo conjunto de cambios, en cualquier orden y con duplicados, da el mismo estado. No genera registros nuevos (sin eco), salvo las resoluciones provisionales de conflictos (§10.4.4).
 - **El formato permite:**
