@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.0+7 - 2026-10-29
+
+### Añadido
+
+- Borrar objetos en el seguimiento de objetos (`plugin_item_tracker` 2.1.0): desde el detalle, con confirmación. Si el objeto contiene otros, se elige entre pasarlos a su contenedor o borrar todo. Sus textos están en `assets/i18n/item_tracker/`.
+- README de la app: funcionalidades, estructura, cómo añadir un plugin, ejecución y tests.
+
+### Cambiado
+
+- item_tracker_isar 0.1.1: los objetos borrados se guardan marcados (`deletedAt`). Los datos ya guardados se siguen leyendo.
+
 ## 1.4.0+6 - 2026-10-28
 
 ### Añadido
