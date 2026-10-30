@@ -20,7 +20,7 @@
    - Usar **UUID v4** obligatoriamente para todas las entidades de dominio (prohibido usar IDs autoincrementales numéricos para dominio)[cite: 1].
    - Todas las estampas de tiempo (`DateTime`) deben almacenarse y manipularse estrictamente en **UTC** (`DateTime.now().toUtc()`)[cite: 1].
 4. **Hardware e Infraestructura:**
-   - La lógica de hardware (Cámara/NFC) debe aislarse detrás de las abstracciones de `packages/core/core_hardware`. La capa de presentación o dominio no debe invocar SDKs nativos directamente[cite: 1].
+   - La lógica de hardware (Cámara/NFC) debe aislarse detrás de los contratos de `packages/core/core_hardware`; las implementaciones están en los adaptadores `packages/adapters/hardware_*`. La capa de presentación o dominio no debe invocar SDKs nativos directamente[cite: 1].
 
 ---
 
@@ -38,7 +38,7 @@
 - Nombres de archivos y carpetas en **snake_case**[cite: 1].
 - Excluir archivos generados (`*.g.dart`, `*.i18n.json`) del linter según `analysis_options.yaml`[cite: 1].
 - Todo componente interactivo de UI debe incluir accesibilidad (`Semantics` o `tooltip`)[cite: 1].
-- **Tipos explícitos:** tipar siempre las variables (`final String name = …`, no `final name = …`). La regla `always_specify_types` está como warning mientras se tipa el código existente: aplicarla en todo archivo nuevo o que se modifique, sin reescribir código ajeno solo por esto. Cuando queden pocos casos se quitará de `toleratedCodes` en `tool/analyze.dart` y será obligatoria.
+- **Tipos explícitos:** tipar siempre las variables (`final String name = …`, no `final name = …`). La regla `always_specify_types` es obligatoria: `melos run analyze` falla con cualquier caso. `toleratedCodes` (`tool/analyze.dart`) queda vacío; sirve para adoptar poco a poco una regla nueva.
 - **Sin funciones que devuelven widgets:** evitar métodos como `Widget _buildX()` o `List<Widget> _section()`; extraer una clase de widget (privada si solo divide una pantalla). No hay lint de Dart para esto: se revisa a mano.
 - **Widgets reutilizables agnósticos:** un widget con una función concreta que pueda usarse en otro sitio recibe por parámetros todo lo que necesita y devuelve resultados con callbacks. No usa cubits ni blocs, navegación, diálogos ni snackbars: eso lo hace la screen, que los conecta. Las partes privadas en que se divide una screen para leerla mejor (`_DetailBody`, `_CameraView`…) son parte de la screen.
 - **Una rama por proyecto:** cada rama (y su PR) cambia un solo proyecto: un paquete de `packages/`, una app de `apps/` o la raíz (`pubspec.yaml`, `tool/`, `.github/`, CLAUDE.md, specs). Los paquetes de una misma funcionalidad (`packages/plugins/<funcionalidad>/`: `_domain`, `plugin_` con su `example/` y sus adaptadores) cuentan como un solo proyecto y se cambian en la misma rama. Cada uno sigue subiendo su versión y su CHANGELOG.
@@ -76,11 +76,11 @@
 - **Cambiar de motor** (p. ej. a SQLite): un `storage_<motor>` y un `<funcionalidad>_<motor>` por funcionalidad que pase su batería de contrato. Fuera de ellos solo cambia la lista de adaptadores de quien compone.
 - **Isar:** usar `isar_community` fijado en 3.3.2 (nunca `isar`). Los adaptadores de funcionalidad importan su API desde `package:storage_isar/adapter.dart`, que la reexporta, e implementan `IsarFeature` (`schemas` y `register`). `IsarStorage` lleva los `IsarFeature` de **todos** los plugins registrados, también los desactivados. Los adaptadores conservan los nombres de colección y de base de datos para que los datos ya guardados se sigan leyendo.
 - **Tests con Isar:** `setUpAll(() => Isar.initializeIsarCore(download: true))`, con `Isar` de `package:storage_isar/adapter.dart`. Descarga `libisar.dylib` en el paquete (está en `.gitignore`).
-- **Hardware:** la presentación usa solo `CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions`. La cámara se muestra con `buildPreview()`. En tests usar los fakes de `package:core_hardware/testing.dart`.
-- **Regla 4 del verificador:** solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`. `core_hardware` también se admite mientras sus implementaciones pasan a esos adaptadores.
+- **Hardware:** la presentación usa solo `CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions`. La cámara se muestra con `buildPreview()`. Las implementaciones están en los adaptadores `hardware_mobile_scanner`, `hardware_nfc_manager` y `hardware_permission_handler`. Quien compone los elige y registran los contratos en el `ServiceLocator`; los escáneres, como factorías (un escáner nuevo en cada `get`). Los plugins los piden al locator, y sus constructores aceptan sustitutos. En tests usar los fakes de `package:core_hardware/testing.dart`.
+- **Regla 4 del verificador:** solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`.
 - **IDs y tiempo:** inyectar `IdGenerator` (`UuidV4Generator`) y `Clock` (`SystemClock`, `FixedClock` en tests) de `core_utils` en lugar de llamar a `Uuid()` o `DateTime.now()` en dominio y data.
 - **ID del plugin de objetos:** `item_tracker` (scope DI, preferencia y namespace i18n); su ruta base es `/item-tracker`.
-- **App de ejemplo de hardware:** `packages/core/core_hardware/example`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** escribir un Podfile a mano. Si un plugin no admite SPM (p. ej. `isar_community_flutter_libs`), Flutter genera el Podfile solo para él y se versionan `Podfile` y `Podfile.lock`.
+- **App de ejemplo de hardware:** `packages/core/core_hardware/example`, que elige los adaptadores `hardware_*`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** escribir un Podfile a mano. Si un plugin no admite SPM (p. ej. `isar_community_flutter_libs`), Flutter genera el Podfile solo para él y se versionan `Podfile` y `Podfile.lock`.
 - **Widget tests con streams:** después de emitir desde un fake, usar `await tester.pumpAndSettle()`. Con un solo `pump()` el evento llega después del frame.
 
 ## Fase 3 (UI base y plugin item_tracker)

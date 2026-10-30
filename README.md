@@ -11,7 +11,7 @@ App de utilidades del hogar hecha con Flutter y organizada por plugins: cada fun
 | `packages/shared/` | Paquetes comunes en Dart puro o de UI base: `core_ui`, `core_utils`, `urgency`, `recurrence`, `list_export`. |
 | `packages/design_system` | Tokens, temas y componentes accesibles. |
 | `packages/contracts/` | Lo que un plugin expone a otros (eventos y capacidades), en Dart puro. |
-| `packages/adapters/` | Tecnologías reemplazables: `storage_isar` (base de datos) y `share_native` (compartir). |
+| `packages/adapters/` | Tecnologías reemplazables: `storage_isar` (base de datos), `share_native` (compartir) y `hardware_mobile_scanner`, `hardware_nfc_manager` y `hardware_permission_handler` (cámara, NFC y permisos). |
 | `packages/plugins/<funcionalidad>/` | Una funcionalidad con datos, en tres paquetes: `<funcionalidad>_domain` (Dart puro), `plugin_<funcionalidad>` (casos de uso, UI y su app de `example/`) y su adaptador (p. ej. `item_tracker_isar`). |
 
 Los paquetes dependen de contratos, no de implementaciones. Cambiar de tecnología (p. ej. de Isar a SQLite) solo requiere adaptadores nuevos que pasen la batería de tests de contrato, y cambiar la lista de adaptadores de la app.
