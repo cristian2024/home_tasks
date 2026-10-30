@@ -1,0 +1,22 @@
+name: hardware_mobile_scanner
+description: Adaptador de core_hardware con mobile_scanner - escaneo de QR y códigos de barras con la cámara.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.1
+  core_hardware: ^0.1.0
+  flutter:
+    sdk: flutter
+  mobile_scanner: ^7.4.2
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter

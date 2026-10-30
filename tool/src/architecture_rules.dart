@@ -19,7 +19,7 @@ class ArchitectureViolation {
 const String _rule1 = 'Regla 1: una funcionalidad no puede importar paquetes de otra';
 const String _rule2 = 'Regla 2: Domain no puede importar Flutter ni motores de base de datos';
 const String _rule3 = 'Regla 3: design_system solo depende de Flutter y core_ui';
-const String _rule4 = 'Regla 4: solo core_hardware importa SDKs nativos de hardware';
+const String _rule4 = 'Regla 4: solo los adaptadores importan SDKs nativos de hardware';
 const String _rule5 = 'Regla 5: solo los adaptadores importan motores de base de datos';
 const String _rule6 = 'Regla 6: solo las apps, los ejemplos y otros adaptadores importan adaptadores';
 const String _rule7 = 'Regla 7: un adaptador o un dominio no importa el plugin';
@@ -132,7 +132,12 @@ List<ArchitectureViolation> findViolations(Directory root) {
             !_allowedInDesignSystem.contains(importedName)) {
           report(_rule3);
         }
-        if (!package.isCoreHardware && importedName != null && _nativeHardwarePackage.hasMatch(importedName)) {
+        // core_hardware se admite mientras sus implementaciones pasan a los
+        // adaptadores `hardware_*`.
+        if (package.role != _Role.adapter &&
+            !package.isCoreHardware &&
+            importedName != null &&
+            _nativeHardwarePackage.hasMatch(importedName)) {
           report(_rule4);
         }
         if (importsEngine && package.role != _Role.adapter) {

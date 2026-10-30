@@ -77,7 +77,7 @@
 - **Isar:** usar `isar_community` fijado en 3.3.2 (nunca `isar`). Los adaptadores de funcionalidad importan su API desde `package:storage_isar/adapter.dart`, que la reexporta, e implementan `IsarFeature` (`schemas` y `register`). `IsarStorage` lleva los `IsarFeature` de **todos** los plugins registrados, también los desactivados. Los adaptadores conservan los nombres de colección y de base de datos para que los datos ya guardados se sigan leyendo.
 - **Tests con Isar:** `setUpAll(() => Isar.initializeIsarCore(download: true))`, con `Isar` de `package:storage_isar/adapter.dart`. Descarga `libisar.dylib` en el paquete (está en `.gitignore`).
 - **Hardware:** la presentación usa solo `CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions`. La cámara se muestra con `buildPreview()`. En tests usar los fakes de `package:core_hardware/testing.dart`.
-- **Regla 4 del verificador:** solo `core_hardware` puede importar `mobile_scanner`, `nfc_manager*` o `permission_handler`.
+- **Regla 4 del verificador:** solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`. `core_hardware` también se admite mientras sus implementaciones pasan a esos adaptadores.
 - **IDs y tiempo:** inyectar `IdGenerator` (`UuidV4Generator`) y `Clock` (`SystemClock`, `FixedClock` en tests) de `core_utils` en lugar de llamar a `Uuid()` o `DateTime.now()` en dominio y data.
 - **ID del plugin de objetos:** `item_tracker` (scope DI, preferencia y namespace i18n); su ruta base es `/item-tracker`.
 - **App de ejemplo de hardware:** `packages/core/core_hardware/example`. Sirve de referencia para la configuración nativa de `apps/app`: Android minSdk 24 y compileSdk 37; en iOS, `Info.plist` y `Runner.entitlements`. Los plugins de iOS usan Swift Package Manager: **no** escribir un Podfile a mano. Si un plugin no admite SPM (p. ej. `isar_community_flutter_libs`), Flutter genera el Podfile solo para él y se versionan `Podfile` y `Podfile.lock`.
@@ -129,7 +129,7 @@
   - AC-02 con `IsarStorage` real en `test/ac02_persistence_test.dart`.
   - En dispositivo o simulador: `cd apps/app && flutter test integration_test -d <id>`.
 - **`HomeUtilityApp`:** crea su router con el primer `AppEnvironment`. Para simular un reinicio en un test, usar `key: ObjectKey(environment)`.
-- **CI:** `.github/workflows/ci.yml` ejecuta `melos run verify` en Ubuntu. Si se sube la versión de Flutter o Melos, actualizarla también ahí.
+- **CI:** `.github/workflows/ci.yml`, en Ubuntu. En `main` ejecuta `melos run verify`. En un PR, `analyze` y `verify:arch` de todo el workspace y `test:changed` (`tool/test_changed.sh`): los paquetes cambiados respecto a `origin/main` y sus dependientes, o todo si cambia algo fuera de `packages/` y `apps/` que no sea documentación. Los dependientes cuentan: un cambio en un paquete ejecuta también los tests de la app (p. ej. `injected_translations_test`). Si se sube la versión de Flutter o Melos, actualizarla también ahí.
 - **Archivos del editor:** `.vscode/` no se versiona (es configuración personal). Para que la extensión Dart encuentre los proyectos Flutter anidados, cada desarrollador pone `"dart.projectSearchDepth": 6` en su configuración.
 
 ## Fase 5 (comunicación entre plugins y lista de compras)

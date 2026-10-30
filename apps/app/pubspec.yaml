@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.5.0+7
+version: 1.5.1+8
 
 environment:
   sdk: ^3.11.0
@@ -22,6 +22,9 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^9.1.1
   go_router: ">=14.0.0 <17.0.0"
+  hardware_mobile_scanner: ^0.1.0
+  hardware_nfc_manager: ^0.1.0
+  hardware_permission_handler: ^0.1.0
   item_tracker_isar: ^0.1.1
   plugin_item_tracker: ^2.1.0
   plugin_shopping_list: ^0.1.0

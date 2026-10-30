@@ -16,6 +16,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          # El historial completo permite comparar el PR con su rama base.
+          fetch-depth: 0
 
       - uses: subosito/flutter-action@v2
         with:
@@ -29,8 +32,25 @@ jobs:
       - name: Resolver el workspace
         run: melos bootstrap
 
-      # analyze + verify:arch + test. Los tests de Isar descargan su librería
-      # nativa la primera vez; los integration_test de apps/app no se ejecutan
-      # aquí (necesitan dispositivo).
-      - name: Verificar
+      # En main, la verificación completa: analyze + verify:arch + test. Los
+      # tests de Isar descargan su librería nativa la primera vez; los
+      # integration_test de apps/app no se ejecutan aquí (necesitan
+      # dispositivo).
+      - name: Verificar todo
+        if: github.event_name != 'pull_request'
         run: melos run verify
+
+      # En un PR, el análisis y las reglas de arquitectura de todo el
+      # workspace, y las pruebas de los paquetes cambiados y de los que
+      # dependen de ellos (todas si cambia algo fuera de packages/ y apps/).
+      - name: Analizar
+        if: github.event_name == 'pull_request'
+        run: melos run analyze
+
+      - name: Reglas de arquitectura
+        if: github.event_name == 'pull_request'
+        run: melos run verify:arch
+
+      - name: Pruebas de lo que cambia
+        if: github.event_name == 'pull_request'
+        run: melos run test:changed

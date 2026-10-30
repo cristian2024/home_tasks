@@ -1,6 +1,9 @@
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:hardware_mobile_scanner/hardware_mobile_scanner.dart';
+import 'package:hardware_nfc_manager/hardware_nfc_manager.dart';
+import 'package:hardware_permission_handler/hardware_permission_handler.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
@@ -15,6 +18,9 @@ import 'package:storage_isar/storage_isar.dart';
 const List<DependencyModule> appAdapters = <DependencyModule>[
   IsarStorage(features: <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()]),
   NativeShare(),
+  MobileScannerHardware(),
+  NfcManagerHardware(),
+  PermissionHandlerHardware(),
 ];
 
 /// Crea un plugin con los servicios de la app. Además de construirlo, debe
