@@ -2,7 +2,7 @@
 
 App anfitriona mínima para probar el plugin `item_tracker` en un dispositivo real. Arranca igual que `apps/app`:
 1. Registra en `core_di` los servicios base: `EventBus`, `IdGenerator` y `Clock`.
-2. Registra el adaptador de almacenamiento que elige: `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])`. El adaptador abre la base (su propio archivo, separado del de `apps/app`) y registra el repositorio del plugin.
+2. Registra los adaptadores que elige: `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])`, que abre la base (su propio archivo, separado del de `apps/app`) y registra el repositorio del plugin, y los de hardware (`MobileScannerHardware`, `NfcManagerHardware` y `PermissionHandlerHardware`).
 3. Aplica el idioma del dispositivo.
 4. Llama a `plugin.initialize()`.
 

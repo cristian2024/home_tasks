@@ -26,7 +26,7 @@ dependencies:
   hardware_nfc_manager: ^0.1.0
   hardware_permission_handler: ^0.1.0
   item_tracker_isar: ^0.1.1
-  plugin_item_tracker: ^2.1.0
+  plugin_item_tracker: ^3.0.0
   plugin_shopping_list: ^0.1.0
   share_native: ^0.1.0
   shared_preferences: ^2.5.6

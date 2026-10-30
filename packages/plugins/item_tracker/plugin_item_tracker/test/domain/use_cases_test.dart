@@ -68,7 +68,9 @@ void main() {
       expect(captured[1], <ItemEvent>[
         ItemEvent(id: 'id-2', itemId: 'id-1', kind: ItemEventKind.created, title: 'Caja A', description: '', timestamp: t0),
       ]);
-      expect((await published).itemId, 'id-1');
+      final ItemCreatedCrossEvent event = await published;
+      expect(event.itemId, 'id-1');
+      expect(event.emittedAt, t0);
     });
 
     test('asocia el identificador inicial y registra su evento', () async {
