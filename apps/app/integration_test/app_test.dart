@@ -4,6 +4,9 @@ import 'package:core_di/core_di.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hardware_mobile_scanner/hardware_mobile_scanner.dart';
+import 'package:hardware_nfc_manager/hardware_nfc_manager.dart';
+import 'package:hardware_permission_handler/hardware_permission_handler.dart';
 import 'package:home_utility_app/app.dart';
 import 'package:home_utility_app/bootstrap.dart';
 import 'package:integration_test/integration_test.dart';
@@ -37,6 +40,9 @@ void main() {
           directory: directory.path,
           features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()],
         ),
+        const MobileScannerHardware(),
+        const NfcManagerHardware(),
+        const PermissionHandlerHardware(),
       ],
       systemLanguageCode: 'es',
       locator: ServiceLocator(),
