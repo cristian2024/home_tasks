@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.2 - 2026-10-29
+
+### Añadido
+
+- README del paquete.
+
+### Cambiado
+
+- La documentación de `CrossPluginEvent` pide pasar siempre `emittedAt` desde el `Clock` de quien publica. Sin él se sigue usando la hora actual.
+
 ## 0.1.1 - 2026-10-28
 
 ### Añadido
