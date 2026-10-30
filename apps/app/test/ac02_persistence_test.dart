@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
+import 'package:core_hardware/core_hardware.dart';
+import 'package:core_hardware/testing.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/bootstrap.dart';
@@ -14,6 +16,18 @@ import 'package:storage_isar/adapter.dart' show Isar;
 import 'package:storage_isar/storage_isar.dart';
 
 import 'helpers/in_memory_app_settings_repository.dart';
+
+/// Hardware falso en lugar de los adaptadores nativos, que necesitan un
+/// dispositivo.
+class _FakeHardware implements DependencyModule {
+  const _FakeHardware();
+
+  @override
+  Future<void> register(ServiceLocator services) async => services
+    ..registerFactory<CameraIdentifierScanner>(FakeCameraScanner.new)
+    ..registerFactory<NfcIdentifierScanner>(FakeNfcScanner.new)
+    ..registerSingleton<HardwarePermissions>(FakeHardwarePermissions());
+}
 
 /// AC-02 de extremo a extremo con Isar real y el arranque real de la app:
 /// desactivar, "reiniciar" (cerrar todo y volver a arrancar sobre el mismo
@@ -43,6 +57,7 @@ void main() {
             directory: directory.path,
             features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()],
           ),
+          const _FakeHardware(),
         ],
         systemLanguageCode: 'es',
         settingsRepository: settings,
