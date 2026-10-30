@@ -276,7 +276,7 @@ El verificador deduce el rol de cada paquete por su ruta y su nombre:
 9. **Regla 9**: Solo los adaptadores importan SDKs de plataforma: `share_plus*`, `url_launcher*`, `file_picker` y `path_provider*`.
 10. **Regla 10**: Solo los adaptadores importan las librerías de la sincronización: descubrimiento en red (`bonsoir*`), criptografía (`cryptography*`) y almacén seguro (`flutter_secure_storage*`) (§10.4).
 
-Las nueve reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
+Las diez reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
 
 ### 5.3. Archivos de Configuración del Monorepo
 
