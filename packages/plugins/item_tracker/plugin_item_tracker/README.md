@@ -15,7 +15,9 @@ Plugin de identificación y seguimiento de objetos de la casa (ID `item_tracker`
 
 Quien compone la app:
 
-1. Elige el adaptador de almacenamiento, p. ej. `ItemTrackerIsar` de `item_tracker_isar` dentro de `IsarStorage`. El plugin pide `HouseholdItemRepository` al `ServiceLocator` y nunca importa su adaptador.
+1. Elige los adaptadores. El plugin pide sus dependencias al `ServiceLocator` y nunca importa los adaptadores:
+   - almacenamiento: p. ej. `ItemTrackerIsar` de `item_tracker_isar` dentro de `IsarStorage` (`HouseholdItemRepository`);
+   - hardware: `MobileScannerHardware`, `NfcManagerHardware` y `PermissionHandlerHardware` (`CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions`). Si falta alguno, `initialize()` falla.
 2. Registra el plugin con `ItemTrackerPlugin(locator: locator)`. `EventBus`, `IdGenerator` y `Clock` son opcionales: si faltan en el locator, usa los suyos.
 3. Inyecta los textos del plugin desde sus archivos (`assets/i18n/item_tracker/<idioma>.json`). Los de `lib/src/i18n/` son el contrato y el respaldo.
 
@@ -24,7 +26,7 @@ El plugin registra sus dependencias en el scope `item_tracker` y lo libera en `d
 ## Tests
 
 - Casos de uso al 100 % (`test/domain/`).
-- `PluginHarness` (`test/helpers/presentation_fixtures.dart`) monta el plugin real con hardware falso (`package:core_hardware/testing.dart`) y repositorio en memoria.
+- `PluginHarness` (`test/helpers/presentation_fixtures.dart`) monta el plugin real con hardware falso (`package:core_hardware/testing.dart`, pasado por constructor) y repositorio en memoria.
 
 ## App de ejemplo
 

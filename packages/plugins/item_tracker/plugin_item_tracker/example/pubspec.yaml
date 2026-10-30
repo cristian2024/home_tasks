@@ -18,8 +18,11 @@ dependencies:
   flutter:
     sdk: flutter
   go_router: ">=14.0.0 <17.0.0"
+  hardware_mobile_scanner: ^0.1.0
+  hardware_nfc_manager: ^0.1.0
+  hardware_permission_handler: ^0.1.0
   item_tracker_isar: ^0.1.0
-  plugin_item_tracker: ^2.0.0
+  plugin_item_tracker: ^3.0.0
   storage_isar: ^0.2.0
 
 dev_dependencies:

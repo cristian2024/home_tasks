@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0 - 2026-10-29
+
+### Cambiado
+
+- **Incompatible:** la cámara, el NFC y los permisos se piden al `ServiceLocator`: `CameraIdentifierScanner` y `NfcIdentifierScanner` (factorías) y `HardwarePermissions`. Los registran los adaptadores de hardware que elige la app (`MobileScannerHardware`, `NfcManagerHardware`, `PermissionHandlerHardware`). Si falta alguno, `initialize()` falla. Los parámetros `cameraScannerFactory`, `nfcScannerFactory` y `permissions` del constructor los siguen sustituyendo (p. ej. en tests).
+- `ItemCreatedCrossEvent` lleva como `emittedAt` el momento de creación, que viene del `Clock` del plugin.
+- La app de ejemplo elige los adaptadores de hardware.
+
+### Eliminado
+
+- **Incompatible:** el plugin ya no usa por defecto las implementaciones nativas de `core_hardware`.
+
 ## 2.1.0 - 2026-10-29
 
 ### Añadido
