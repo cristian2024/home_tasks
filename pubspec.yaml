@@ -71,6 +71,10 @@ melos:
       description: Pruebas del verificador de arquitectura.
       run: dart test tool/test
 
+    test:changed:
+      description: Pruebas de los paquetes que cambian respecto a origin/main y de los que dependen de ellos (todas si cambia algo fuera de packages/ y apps/). Es lo que ejecuta la CI en un PR.
+      run: bash tool/test_changed.sh origin/main
+
     verify:arch:
       description: Verifica las reglas de importación del §5.2 de la spec.
       run: dart run tool/verify_architecture.dart
