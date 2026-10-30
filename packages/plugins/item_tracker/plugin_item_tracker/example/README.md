@@ -28,4 +28,5 @@ La configuración nativa (permisos, minSdk 24 y compileSdk 37, entitlements NFC)
 | AC-05 | Modo NFC → leer una etiqueta nueva → Asociar → «Cama» | El detalle de «Cama» muestra el QR y la etiqueta NFC; leer cualquiera de los dos abre «Cama» |
 | AC-06 | Modo NFC en un dispositivo sin NFC (o con NFC apagado) | Mensaje explicativo con alternativas, sin crash |
 | Código manual | Selector **Código** | La cámara se apaga y se oculta; al volver a **Cámara** desaparece el campo |
+| Borrar | Detalle de un objeto → «Borrar objeto» | Pide confirmación; si contiene otros, pregunta si pasarlos a su contenedor o borrar todo. Sus identificadores quedan libres |
 | Idioma | Selector ES/EN | Todo el plugin cambia de idioma |

@@ -5,6 +5,7 @@
 ### Añadido
 
 - `deleteItems` con borrado lógico: el objeto y sus identificadores activos quedan marcados como borrados (`deletedAt`) en una sola transacción, con los objetos movidos y los eventos. Las consultas y los streams solo devuelven objetos activos.
+- README del paquete.
 
 ### Cambiado
 

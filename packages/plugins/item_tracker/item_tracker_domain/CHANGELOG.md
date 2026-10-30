@@ -8,6 +8,7 @@
 - `householdItemRepositoryContract` comprueba el borrado: los objetos borrados no aparecen en ninguna consulta ni stream, sus identificadores se pueden asociar a otro objeto y los ID inexistentes se ignoran.
 - `ItemTree.descendantsOf`: todo lo que contiene un objeto a cualquier profundidad.
 - `InMemoryHouseholdItemRepository.deletedItems`: los objetos borrados con el momento en que se borraron.
+- README del paquete.
 
 ## 0.1.1 - 2026-10-27
 

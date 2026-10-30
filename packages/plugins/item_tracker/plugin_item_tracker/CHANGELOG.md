@@ -8,6 +8,7 @@
 - Si el objeto contiene otros, el diálogo pregunta qué hacer con ellos: pasarlos a su contenedor (o dejarlos sueltos si no estaba dentro de ninguno) o borrar todo, a cualquier profundidad. Su contenedor registra la salida y los objetos que se mueven, su movimiento.
 - Caso de uso `DeleteItem` con `DeletedContents` (`moveToParent`, `deleteAll`).
 - Textos nuevos en `item_tracker.detail`: `delete`, `delete_title`, `delete_message`, `delete_contents_message`, `keep_contents_in`, `keep_contents_loose`, `delete_all` y `deleted`. Quien inyecta los textos debe añadirlos.
+- README del paquete; el de la app de ejemplo incluye el borrado en su recorrido.
 
 ### Cambiado
 
