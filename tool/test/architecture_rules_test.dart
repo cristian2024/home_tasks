@@ -270,6 +270,32 @@ import 'package:path_provider/path_provider.dart';
     expect(rules(), <String>['Regla 9', 'Regla 9', 'Regla 9', 'Regla 9']);
   });
 
+  test('Regla 10: solo los adaptadores importan las librerías de la sincronización', () {
+    featureFolder();
+    package('packages/adapters/sync_lan', 'sync_lan');
+    package('packages/adapters/sync_crypto_cryptography', 'sync_crypto_cryptography');
+    package('packages/adapters/secret_store_secure_storage', 'secret_store_secure_storage');
+    package('packages/core/core_sync', 'core_sync');
+    package('packages/core/sync_engine', 'sync_engine');
+    source('packages/adapters/sync_lan/lib/a.dart', "import 'package:bonsoir/bonsoir.dart';\n");
+    source('packages/adapters/sync_crypto_cryptography/lib/a.dart', "import 'package:cryptography/cryptography.dart';\n");
+    source(
+      'packages/adapters/secret_store_secure_storage/lib/a.dart',
+      "import 'package:flutter_secure_storage/flutter_secure_storage.dart';\n",
+    );
+    source('packages/core/core_sync/lib/a.dart', '''
+import 'package:cryptography/cryptography.dart';
+import 'package:cryptography_flutter/cryptography_flutter.dart';
+''');
+    source('packages/core/sync_engine/lib/a.dart', "import 'package:bonsoir_platform_interface/bonsoir_platform_interface.dart';\n");
+    source(
+      'packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart',
+      "import 'package:flutter_secure_storage/flutter_secure_storage.dart';\n",
+    );
+
+    expect(rules(), List<String>.filled(4, 'Regla 10'));
+  });
+
   test('ignora enlaces simbólicos, directorios ocultos y build/', () {
     package('packages/core/core_hardware/example', 'example');
     package('third_party/plugin', 'third_party');

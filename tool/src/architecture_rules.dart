@@ -25,6 +25,7 @@ const String _rule6 = 'Regla 6: solo las apps, los ejemplos y otros adaptadores 
 const String _rule7 = 'Regla 7: un adaptador o un dominio no importa el plugin';
 const String _rule8 = 'Regla 8: un contrato es Dart puro y no importa funcionalidades ni apps';
 const String _rule9 = 'Regla 9: solo los adaptadores importan SDKs de plataforma';
+const String _rule10 = 'Regla 10: solo los adaptadores importan las librerías de la sincronización';
 
 final RegExp _directive = RegExp(r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''', multiLine: true);
 final RegExp _pubspecName = RegExp(r'^name:\s*(\S+)', multiLine: true);
@@ -35,6 +36,10 @@ final RegExp _nativeHardwarePackage = RegExp(r'^(mobile_scanner|nfc_manager\w*|p
 /// SDKs de plataforma que solo usan los adaptadores (compartir, abrir
 /// enlaces, archivos).
 final RegExp _platformSdkPackage = RegExp(r'^(share_plus\w*|url_launcher\w*|file_picker|path_provider\w*)$');
+
+/// Librerías de la sincronización que solo usan los adaptadores
+/// (descubrimiento en red, criptografía y almacén seguro).
+final RegExp _syncLibraryPackage = RegExp(r'^(bonsoir\w*|cryptography\w*|flutter_secure_storage\w*)$');
 
 /// Paquetes de motores de base de datos.
 final RegExp _storageEnginePackage =
@@ -149,6 +154,9 @@ List<ArchitectureViolation> findViolations(Directory root) {
         }
         if (package.role != _Role.adapter && importedName != null && _platformSdkPackage.hasMatch(importedName)) {
           report(_rule9);
+        }
+        if (package.role != _Role.adapter && importedName != null && _syncLibraryPackage.hasMatch(importedName)) {
+          report(_rule10);
         }
       }
     }
