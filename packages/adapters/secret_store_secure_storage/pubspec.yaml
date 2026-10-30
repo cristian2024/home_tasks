@@ -1,0 +1,23 @@
+name: secret_store_secure_storage
+description: Adaptador de SecretStore (core_secrets) con flutter_secure_storage - Keychain en iOS y macOS, Keystore en Android.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.2
+  core_secrets: ^0.1.0
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^11.2.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_secure_storage_platform_interface: ^2.1.1
+  flutter_test:
+    sdk: flutter
