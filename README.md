@@ -44,7 +44,7 @@ El código generado (`*.g.dart`) no se versiona. Después de cambiar de rama o d
 
 1. `melos run verify` debe terminar sin errores. La CI (`.github/workflows/ci.yml`) ejecuta lo mismo en Ubuntu y bloquea el PR si falla.
 2. La cobertura debe quedar al 100 % en los casos de uso, en los paquetes `<funcionalidad>_domain` y en los mappers de los adaptadores (`flutter test --coverage` en el paquete).
-3. Una rama cambia un solo proyecto: un paquete, una app o la raíz. Los paquetes de una misma funcionalidad (`packages/plugins/<funcionalidad>/`) cuentan como uno.
+3. Una rama cambia un solo proyecto: un paquete, una app o la raíz. Los paquetes de una misma funcionalidad (`packages/plugins/<funcionalidad>/`) cuentan como uno. Excepciones: un cambio incompatible actualiza la restricción en todos los dependientes, y una clave de traducción nueva se añade en la misma rama a todos los consumidores (`apps/app` y los ejemplos).
 4. Cada paquete que cambia sube su `version:` (SemVer) y añade una entrada a su `CHANGELOG.md`.
 
 Las convenciones de código y las trampas conocidas están en [`CLAUDE.md`](CLAUDE.md).
