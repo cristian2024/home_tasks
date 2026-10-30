@@ -1,6 +1,6 @@
 name: shopping_list_domain
 description: Dominio de la lista de compras en Dart puro - items, categorías, compras, reglas de estado y agrupación, y el contrato del repositorio.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:

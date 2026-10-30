@@ -13,7 +13,7 @@ void main() {
     expect(plugin.id, 'shopping_list');
     expect(plugin.nameKey, 'shoppingList.title');
     expect(plugin.descriptionKey, 'shoppingList.description');
-    expect(plugin.version, '0.1.0');
+    expect(plugin.version, '0.1.1');
     expect(plugin.routes, hasLength(4));
     expect(plugin.entryRoute, ShoppingListRoutes.base);
   });

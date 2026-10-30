@@ -1,6 +1,6 @@
 name: plugin_shopping_list
 description: Plugin de lista de compras - items con urgencia, categorías y recurrencia aproximada, y exportación a WhatsApp o Markdown.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
