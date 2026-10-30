@@ -1,6 +1,6 @@
 name: recurrence
 description: Recurrencia aproximada (entre un mínimo y un máximo de días) y su estado, en Dart puro.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
