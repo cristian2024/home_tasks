@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.2+9 - 2026-10-29
+
+### Interno
+
+- AC-02 arranca con un módulo de hardware falso, y los `integration_test` con los adaptadores de hardware reales, igual que `appAdapters`. Así los tests no dependen de que el plugin tenga sus propias implementaciones.
+
 ## 1.5.1+8 - 2026-10-29
 
 ### Añadido
