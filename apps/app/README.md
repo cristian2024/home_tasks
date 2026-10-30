@@ -13,7 +13,7 @@ App de utilidades del hogar. Es el punto de composición del monorepo: elige los
 
 ## Estructura
 
-- `lib/app_module_registrar.dart`: adaptadores elegidos (`appAdapters`) y plugins registrados (`appPluginFactories`).
+- `lib/app_module_registrar.dart`: adaptadores elegidos (`appAdapters`: almacenamiento Isar, compartir y hardware) y plugins registrados (`appPluginFactories`).
 - `lib/bootstrap.dart`: arranque testeable (`bootstrapApp`).
 - `lib/plugins/plugin_controller.dart`: estado de los plugins para el inicio, el catálogo y el guard.
 - `lib/navigation/`: router y `PluginRouteGuard`.
