@@ -10,6 +10,10 @@
 
 - item_tracker_isar 0.1.1: los objetos borrados se guardan marcados (`deletedAt`). Los datos ya guardados se siguen leyendo.
 
+### Interno
+
+- README de la app: funcionalidades, estructura, cómo añadir un plugin, ejecución y tests.
+
 ## 1.4.0+6 - 2026-10-28
 
 ### Añadido
