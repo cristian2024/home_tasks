@@ -6,6 +6,7 @@
 
 - `showAppChoiceDialog<T>` con `AppDialogOption<T>`: diálogo que pregunta entre varias acciones además de cancelar (p. ej. «Sacar el contenido» o «Borrar todo»). Devuelve el valor elegido o `null` si se cancela. Las opciones `destructive` usan el color de error.
 - La galería del ejemplo lo muestra en la sección «Diálogos».
+- README del paquete y de la galería: tokens, componentes, diálogos y accesibilidad.
 
 ## 0.1.2 - 2026-10-28
 
