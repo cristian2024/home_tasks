@@ -16,7 +16,7 @@ class FakeIdentifierScanner implements IdentifierScanner {
   bool isScanning = false;
   bool isDisposed = false;
 
-  final StreamController<PhysicalScanResult> _results = StreamController.broadcast();
+  final StreamController<PhysicalScanResult> _results = StreamController<PhysicalScanResult>.broadcast();
 
   @override
   Stream<PhysicalScanResult> get scanStream => _results.stream;
@@ -63,7 +63,7 @@ class FakeIdentifierScanner implements IdentifierScanner {
 class FakeCameraScanner extends FakeIdentifierScanner implements CameraIdentifierScanner {
   FakeCameraScanner({super.type, super.hardwareStatus});
 
-  static const previewKey = Key('fake_camera_preview');
+  static const Key previewKey = Key('fake_camera_preview');
 
   @override
   Widget buildPreview(
@@ -77,12 +77,12 @@ class FakeCameraScanner extends FakeIdentifierScanner implements CameraIdentifie
 class FakeNfcScanner extends FakeIdentifierScanner implements NfcIdentifierScanner {
   FakeNfcScanner({super.hardwareStatus}) : super(type: ScanType.nfc);
 
-  final List<String> writtenValues = [];
+  final List<String> writtenValues = <String>[];
   ScanException? writeError;
 
   @override
   Future<void> writeTag(String value) async {
-    final error = writeError;
+    final ScanException? error = writeError;
     if (error != null) {
       throw error;
     }

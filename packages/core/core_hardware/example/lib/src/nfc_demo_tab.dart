@@ -19,7 +19,7 @@ enum _Session { idle, reading, writing }
 class _NfcDemoTabState extends State<NfcDemoTab> {
   late final NfcIdentifierScanner _scanner = widget.scannerFactory();
   StreamSubscription<PhysicalScanResult>? _subscription;
-  final List<PhysicalScanResult> _results = [];
+  final List<PhysicalScanResult> _results = <PhysicalScanResult>[];
   final TextEditingController _writeController = TextEditingController(
     text: 'NFC-DEMO-001',
   );
@@ -31,7 +31,7 @@ class _NfcDemoTabState extends State<NfcDemoTab> {
   void initState() {
     super.initState();
     _subscription = _scanner.scanStream.listen(
-      (result) {
+      (PhysicalScanResult result) {
         if (!mounted) {
           return;
         }
@@ -65,7 +65,7 @@ class _NfcDemoTabState extends State<NfcDemoTab> {
   }
 
   Future<void> _checkHardware() async {
-    final status = await _scanner.checkHardware();
+    final HardwareStatus status = await _scanner.checkHardware();
     if (mounted) {
       setState(() => _status = status);
     }
@@ -129,15 +129,15 @@ class _NfcDemoTabState extends State<NfcDemoTab> {
   }
 
   Widget _buildControls(BuildContext context) {
-    final busy = _session != _Session.idle;
+    final bool busy = _session != _Session.idle;
     return Column(
-      children: [
+      children: <Widget>[
         Flexible(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+              children: <Widget>[
                 if (busy)
                   // En Android no hay diálogo del sistema: la app muestra el suyo.
                   Card(

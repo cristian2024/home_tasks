@@ -1,6 +1,6 @@
 name: core_hardware
-description: Abstracciones de hardware (cámara QR/barras, NFC y permisos) y sus adaptadores nativos.
-version: 0.1.0
+description: Contratos de hardware (cámara QR/barras, NFC y permisos). Las implementaciones nativas están en los adaptadores hardware_*.
+version: 0.2.0
 publish_to: none
 
 environment:
@@ -14,10 +14,6 @@ dependencies:
   flutter:
     sdk: flutter
   meta: ^1.19.0
-  mobile_scanner: ^7.4.2
-  nfc_manager: ^4.2.1
-  nfc_manager_ndef: ^1.1.0
-  permission_handler: ^13.0.2
 
 dev_dependencies:
   flutter_lints: ^6.0.0

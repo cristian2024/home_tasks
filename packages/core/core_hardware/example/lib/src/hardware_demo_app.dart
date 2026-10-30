@@ -59,8 +59,8 @@ class _HomePageState extends State<_HomePage> {
       },
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
-        onDestinationSelected: (index) => setState(() => _tab = index),
-        destinations: const [
+        onDestinationSelected: (int index) => setState(() => _tab = index),
+        destinations: const <NavigationDestination>[
           NavigationDestination(
             icon: Icon(Icons.qr_code_scanner),
             label: 'Cámara',

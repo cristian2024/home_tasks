@@ -4,7 +4,7 @@ import '../contracts/scan_exception.dart';
 abstract final class ScannedValueSanitizer {
   static const int maxLength = 2048;
 
-  static final _controlCharacters = RegExp(r'[\x00-\x1F\x7F]');
+  static final RegExp _controlCharacters = RegExp(r'[\x00-\x1F\x7F]');
 
   /// Elimina los caracteres de control y valida la longitud. Lanza
   /// [ScanException] con [ScanErrorCode.invalidValue] si el resultado está
@@ -12,7 +12,7 @@ abstract final class ScannedValueSanitizer {
   ///
   /// Las URLs se devuelven como texto literal: nunca se abren.
   static String sanitize(String raw) {
-    final value = raw.replaceAll(_controlCharacters, '');
+    final String value = raw.replaceAll(_controlCharacters, '');
     if (value.isEmpty) {
       throw const ScanException(ScanErrorCode.invalidValue, message: 'Valor vacío');
     }

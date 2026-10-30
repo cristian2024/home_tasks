@@ -16,7 +16,7 @@ class PhysicalScanResult extends Equatable {
   }) : scannedAt = (scannedAt ?? DateTime.now()).toUtc();
 
   @override
-  List<Object?> get props => [rawValue, type, scannedAt];
+  List<Object?> get props => <Object?>[rawValue, type, scannedAt];
 
   @override
   bool get stringify => true;

@@ -43,8 +43,8 @@ class ScanResultsList extends StatelessWidget {
     return ListView.separated(
       itemCount: results.length,
       separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final result = results[index];
+      itemBuilder: (BuildContext context, int index) {
+        final PhysicalScanResult result = results[index];
         return ListTile(
           leading: Icon(
             result.type == ScanType.nfc ? Icons.nfc : Icons.qr_code,
@@ -79,11 +79,11 @@ class StatusMessage extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             Icon(icon, size: 48),
             const SizedBox(height: 16),
             Text(message, textAlign: TextAlign.center),
-            if (action != null) ...[const SizedBox(height: 16), action!],
+            if (action != null) ...<Widget>[const SizedBox(height: 16), action!],
           ],
         ),
       ),

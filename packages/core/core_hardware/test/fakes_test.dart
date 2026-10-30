@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('FakeIdentifierScanner emite lecturas saneadas y errores de validación', () async {
-    final scanner = FakeIdentifierScanner();
-    final events = <Object>[];
+    final FakeIdentifierScanner scanner = FakeIdentifierScanner();
+    final List<Object> events = <Object>[];
     scanner.scanStream.listen(events.add, onError: events.add);
 
     scanner
@@ -18,10 +18,10 @@ void main() {
   });
 
   test('AC-06: un FakeNfcScanner sin hardware emite hardwareUnsupported al iniciar', () async {
-    final scanner = FakeNfcScanner(hardwareStatus: HardwareStatus.unsupported);
-    final expectation = expectLater(
+    final FakeNfcScanner scanner = FakeNfcScanner(hardwareStatus: HardwareStatus.unsupported);
+    final Future<void> expectation = expectLater(
       scanner.scanStream.first,
-      throwsA(isA<ScanException>().having((e) => e.code, 'code', ScanErrorCode.hardwareUnsupported)),
+      throwsA(isA<ScanException>().having((ScanException e) => e.code, 'code', ScanErrorCode.hardwareUnsupported)),
     );
 
     await scanner.startScanning();

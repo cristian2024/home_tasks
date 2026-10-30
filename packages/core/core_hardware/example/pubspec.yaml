@@ -10,9 +10,12 @@ environment:
 resolution: workspace
 
 dependencies:
-  core_hardware: ^0.1.0
+  core_hardware: ^0.2.0
   flutter:
     sdk: flutter
+  hardware_mobile_scanner: ^0.1.0
+  hardware_nfc_manager: ^0.1.0
+  hardware_permission_handler: ^0.1.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
