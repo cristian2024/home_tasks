@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.5.1+8
+version: 1.5.2+9
 
 environment:
   sdk: ^3.11.0
