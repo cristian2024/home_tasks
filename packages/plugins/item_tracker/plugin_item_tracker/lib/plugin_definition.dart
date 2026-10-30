@@ -44,11 +44,14 @@ import 'src/presentation/scan/scan_screen.dart';
 /// - `HouseholdItemRepository` (obligatorio), que registra el adaptador de
 ///   almacenamiento que elige la app (p. ej. `ItemTrackerIsar`). En tests,
 ///   `InMemoryHouseholdItemRepository` de `package:plugin_item_tracker/testing.dart`.
+/// - `CameraIdentifierScanner` y `NfcIdentifierScanner` (factorías: un
+///   escáner nuevo en cada `get`) y `HardwarePermissions` (obligatorios),
+///   que registran los adaptadores de hardware que elige la app (p. ej.
+///   `MobileScannerHardware`, `NfcManagerHardware` y
+///   `PermissionHandlerHardware`). Los parámetros del constructor los
+///   sustituyen, p. ej. por los fakes de `package:core_hardware/testing.dart`.
 /// - `EventBus`, `IdGenerator` y `Clock` (opcionales: si faltan usa los
 ///   suyos).
-///
-/// Los escáneres y los permisos se inyectan por constructor para poder usar
-/// los fakes de `package:core_hardware/testing.dart`.
 ///
 /// El nivel máximo de anidamiento de objetos se configura al compilar con
 /// `--dart-define=ITEM_TRACKER_MAX_DEPTH=<n>` (por defecto
@@ -63,9 +66,9 @@ class ItemTrackerPlugin implements HomePlugin {
     int? maxContainmentDepth,
   })  : _locator = locator,
         _containmentPolicy = ContainmentPolicy.fromConfiguredDepth(maxContainmentDepth ?? configuredMaxDepth),
-        _cameraScannerFactory = cameraScannerFactory ?? MobileScannerCameraScanner.new,
-        _nfcScannerFactory = nfcScannerFactory ?? NfcManagerScanner.new,
-        _permissions = permissions ?? const PermissionHandlerPermissions(),
+        _cameraScannerFactory = cameraScannerFactory,
+        _nfcScannerFactory = nfcScannerFactory,
+        _permissions = permissions,
         _localization = localization ?? LocalizationCoordinator.instance;
 
   static const String pluginId = 'item_tracker';
@@ -75,9 +78,9 @@ class ItemTrackerPlugin implements HomePlugin {
       int.fromEnvironment('ITEM_TRACKER_MAX_DEPTH', defaultValue: ContainmentPolicy.defaultMaxDepth);
 
   final ServiceLocator _locator;
-  final CameraScannerFactory _cameraScannerFactory;
-  final NfcScannerFactory _nfcScannerFactory;
-  final HardwarePermissions _permissions;
+  final CameraScannerFactory? _cameraScannerFactory;
+  final NfcScannerFactory? _nfcScannerFactory;
+  final HardwarePermissions? _permissions;
   final LocalizationCoordinator _localization;
   final ContainmentPolicy _containmentPolicy;
 
@@ -96,7 +99,7 @@ class ItemTrackerPlugin implements HomePlugin {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '2.1.0';
+  String get version => '3.0.0';
 
   /// Siempre disponible: sin cámara ni NFC queda la entrada manual. Cada modo
   /// de escaneo comprueba su propio hardware.
@@ -133,6 +136,11 @@ class ItemTrackerPlugin implements HomePlugin {
       pluginId,
       init: (ServiceLocator locator) {
         final HouseholdItemRepository repository = locator.get<HouseholdItemRepository>();
+        final CameraScannerFactory cameraScannerFactory =
+            _cameraScannerFactory ?? _registeredFactory<CameraIdentifierScanner>(locator);
+        final NfcScannerFactory nfcScannerFactory =
+            _nfcScannerFactory ?? _registeredFactory<NfcIdentifierScanner>(locator);
+        final HardwarePermissions permissions = _permissions ?? locator.get<HardwarePermissions>();
         final IdGenerator ids =
             locator.isRegistered<IdGenerator>() ? locator.get<IdGenerator>() : const UuidV4Generator();
         final Clock clock = locator.isRegistered<Clock>() ? locator.get<Clock>() : const SystemClock();
@@ -160,14 +168,23 @@ class ItemTrackerPlugin implements HomePlugin {
             searchItems: SearchItems(repository),
             watchItemIdentifiers: WatchItemIdentifiers(repository),
             watchItemEvents: WatchItemEvents(repository),
-            cameraScannerFactory: _cameraScannerFactory,
-            nfcScannerFactory: _nfcScannerFactory,
-            permissions: _permissions,
+            cameraScannerFactory: cameraScannerFactory,
+            nfcScannerFactory: nfcScannerFactory,
+            permissions: permissions,
             containmentPolicy: _containmentPolicy,
           ),
         );
       },
     );
+  }
+
+  /// Factoría que pide al locator un escáner nuevo cada vez. Falla al
+  /// inicializar, no al escanear, si ningún adaptador lo registró.
+  static T Function() _registeredFactory<T extends Object>(ServiceLocator locator) {
+    if (!locator.isRegistered<T>()) {
+      throw StateError('Falta $T en el ServiceLocator: la app debe elegir su adaptador de hardware.');
+    }
+    return () => locator.get<T>();
   }
 
   @override

@@ -95,7 +95,7 @@ class CreateItem {
           ),
       ],
     );
-    _eventBus.publish(ItemCreatedCrossEvent(itemId: item.id, itemName: item.name));
+    _eventBus.publish(ItemCreatedCrossEvent(itemId: item.id, itemName: item.name, emittedAt: item.createdAt));
     return item;
   }
 }
