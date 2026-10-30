@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 
+import '../../domain/use_cases/delete_item.dart';
 import '../../domain/use_cases/item_queries.dart';
 import '../../domain/use_cases/move_item.dart';
 import '../../domain/use_cases/unbind_identifier.dart';
@@ -18,6 +19,7 @@ class ItemDetailState extends Equatable {
     this.events = const <ItemEvent>[],
     this.path = const <HouseholdItem>[],
     this.children = const <HouseholdItem>[],
+    this.descendantCount = 0,
     this.depth = 1,
     this.maxDepth = ContainmentPolicy.defaultMaxDepth,
   });
@@ -33,6 +35,9 @@ class ItemDetailState extends Equatable {
   /// Contenido directo, ordenado por nombre.
   final List<HouseholdItem> children;
 
+  /// Cuántos objetos contiene a cualquier profundidad.
+  final int descendantCount;
+
   /// Nivel del objeto (1 si no está dentro de nada) y máximo permitido.
   final int depth;
   final int maxDepth;
@@ -44,7 +49,7 @@ class ItemDetailState extends Equatable {
   bool get isOverflowing => depth >= maxDepth && children.isNotEmpty;
 
   @override
-  List<Object?> get props => <Object?>[status, item, identifiers, events, path, children, depth, maxDepth];
+  List<Object?> get props => <Object?>[status, item, identifiers, events, path, children, descendantCount, depth, maxDepth];
 }
 
 /// Detalle reactivo de un objeto: datos, ubicación, contenido,
@@ -60,9 +65,11 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
     required WatchItemTree watchItemTree,
     required UnbindIdentifier unbindIdentifier,
     required MoveItem moveItem,
+    required DeleteItem deleteItem,
     required ContainmentPolicy containmentPolicy,
   })  : _unbindIdentifier = unbindIdentifier,
         _moveItem = moveItem,
+        _deleteItem = deleteItem,
         _policy = containmentPolicy,
         super(ItemDetailState(maxDepth: containmentPolicy.maxDepth)) {
     _subscriptions = <StreamSubscription<Object?>>[
@@ -89,6 +96,7 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
   final String itemId;
   final UnbindIdentifier _unbindIdentifier;
   final MoveItem _moveItem;
+  final DeleteItem _deleteItem;
   final ContainmentPolicy _policy;
   late final List<StreamSubscription<Object?>> _subscriptions;
   bool _itemLoaded = false;
@@ -108,6 +116,7 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
         events: _events,
         path: _tree?.pathOf(itemId) ?? const <HouseholdItem>[],
         children: _tree?.childrenOf(itemId) ?? const <HouseholdItem>[],
+        descendantCount: _tree?.descendantsOf(itemId).length ?? 0,
         depth: _tree?.depthOf(itemId) ?? 1,
         maxDepth: _policy.maxDepth,
       ),
@@ -129,6 +138,17 @@ class ItemDetailCubit extends Cubit<ItemDetailState> {
   Future<Object?> moveOut() async {
     try {
       await _moveItem(itemId, parentId: null);
+      return null;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  /// Borra el objeto y decide qué pasa con lo que contiene. Devuelve el
+  /// error, o `null` si se borró.
+  Future<Object?> delete(DeletedContents contents) async {
+    try {
+      await _deleteItem(itemId, contents: contents);
       return null;
     } catch (error) {
       return error;

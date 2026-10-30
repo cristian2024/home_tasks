@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 - 2026-10-29
+
+### Añadido
+
+- **Incompatible:** `HouseholdItemRepository.deleteItems` borra objetos con borrado lógico, junto con sus identificadores activos, que quedan libres. En la misma transacción guarda los objetos movidos (`moved`) y los eventos. Toda implementación debe añadirlo.
+- `householdItemRepositoryContract` comprueba el borrado: los objetos borrados no aparecen en ninguna consulta ni stream, sus identificadores se pueden asociar a otro objeto y los ID inexistentes se ignoran.
+- `ItemTree.descendantsOf`: todo lo que contiene un objeto a cualquier profundidad.
+- `InMemoryHouseholdItemRepository.deletedItems`: los objetos borrados con el momento en que se borraron.
+- README del paquete.
+
 ## 0.1.1 - 2026-10-27
 
 ### Corregido

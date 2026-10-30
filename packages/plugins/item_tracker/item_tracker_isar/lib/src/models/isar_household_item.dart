@@ -25,4 +25,10 @@ class IsarHouseholdItem {
   /// como `null` (sin contenedor).
   @Index()
   String? parentId;
+
+  /// Borrado lógico (spec §10.3): momento en que se borró (UTC), o `null` si
+  /// está activo. Los registros anteriores a este campo se leen como activos.
+  DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
 }

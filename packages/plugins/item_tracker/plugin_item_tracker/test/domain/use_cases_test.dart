@@ -32,6 +32,14 @@ void main() {
     when(() => repository.getById(any())).thenAnswer((_) async => null);
     when(() => repository.getAll()).thenAnswer((_) async => const <HouseholdItem>[]);
     when(() => repository.moveItem(any(), any())).thenAnswer((_) async {});
+    when(
+      () => repository.deleteItems(
+        any(),
+        deletedAt: any(named: 'deletedAt'),
+        moved: any(named: 'moved'),
+        events: any(named: 'events'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   tearDown(() => eventBus.dispose());
@@ -436,6 +444,106 @@ void main() {
       );
       verifyNever(
         () => repository.unbindIdentifier(any(), deletedAt: any(named: 'deletedAt'), event: any(named: 'event')),
+      );
+    });
+  });
+
+  group('DeleteItem', () {
+    late DeleteItem deleteItem;
+
+    // Mueble › Caja › (Destornillador › Puntas) y Llave.
+    final HouseholdItem furniture = item(id: 'furniture', name: 'Mueble');
+    final HouseholdItem box = item(id: 'box', name: 'Caja', parentId: 'furniture');
+    final HouseholdItem screwdriver = item(id: 'screwdriver', name: 'Destornillador', parentId: 'box');
+    final HouseholdItem bits = item(id: 'bits', name: 'Puntas', parentId: 'screwdriver');
+    final HouseholdItem wrench = item(id: 'wrench', name: 'Llave', parentId: 'box');
+
+    ItemEvent technical(String id, String itemId, ItemEventKind kind, HouseholdItem? subject) => ItemEvent(
+          id: id,
+          itemId: itemId,
+          kind: kind,
+          title: subject?.name ?? '',
+          description: subject?.id ?? '',
+          timestamp: t0,
+        );
+
+    setUp(() {
+      deleteItem = DeleteItem(repository, ids, clock);
+      when(() => repository.getAll())
+          .thenAnswer((_) async => <HouseholdItem>[furniture, box, screwdriver, bits, wrench]);
+    });
+
+    test('sacar el contenido lo deja en el contenedor del borrado, con sus eventos', () async {
+      await deleteItem('box', contents: DeletedContents.moveToParent);
+
+      verify(
+        () => repository.deleteItems(
+          <String>['box'],
+          deletedAt: t0,
+          moved: <HouseholdItem>[
+            screwdriver.copyWith(parentId: () => 'furniture', updatedAt: t0),
+            wrench.copyWith(parentId: () => 'furniture', updatedAt: t0),
+          ],
+          events: <ItemEvent>[
+            technical('id-1', 'furniture', ItemEventKind.childRemoved, box),
+            technical('id-2', 'screwdriver', ItemEventKind.moved, furniture),
+            technical('id-3', 'furniture', ItemEventKind.childAdded, screwdriver),
+            technical('id-4', 'wrench', ItemEventKind.moved, furniture),
+            technical('id-5', 'furniture', ItemEventKind.childAdded, wrench),
+          ],
+        ),
+      ).called(1);
+    });
+
+    test('sin contenedor, el contenido queda suelto', () async {
+      await deleteItem('furniture', contents: DeletedContents.moveToParent);
+
+      verify(
+        () => repository.deleteItems(
+          <String>['furniture'],
+          deletedAt: t0,
+          moved: <HouseholdItem>[box.copyWith(parentId: () => null, updatedAt: t0)],
+          events: <ItemEvent>[technical('id-1', 'box', ItemEventKind.moved, null)],
+        ),
+      ).called(1);
+    });
+
+    test('borrar todo incluye el contenido a cualquier profundidad', () async {
+      await deleteItem('box', contents: DeletedContents.deleteAll);
+
+      verify(
+        () => repository.deleteItems(
+          <String>['box', 'screwdriver', 'bits', 'wrench'],
+          deletedAt: t0,
+          events: <ItemEvent>[technical('id-1', 'furniture', ItemEventKind.childRemoved, box)],
+        ),
+      ).called(1);
+    });
+
+    test('un objeto sin contenido se borra solo, con la salida en su contenedor', () async {
+      await deleteItem('bits', contents: DeletedContents.deleteAll);
+
+      verify(
+        () => repository.deleteItems(
+          <String>['bits'],
+          deletedAt: t0,
+          events: <ItemEvent>[technical('id-1', 'screwdriver', ItemEventKind.childRemoved, bits)],
+        ),
+      ).called(1);
+    });
+
+    test('lanza ItemNotFoundException si el objeto no existe', () async {
+      await expectLater(
+        deleteItem('missing', contents: DeletedContents.deleteAll),
+        throwsA(isA<ItemNotFoundException>()),
+      );
+      verifyNever(
+        () => repository.deleteItems(
+          any(),
+          deletedAt: any(named: 'deletedAt'),
+          moved: any(named: 'moved'),
+          events: any(named: 'events'),
+        ),
       );
     });
   });

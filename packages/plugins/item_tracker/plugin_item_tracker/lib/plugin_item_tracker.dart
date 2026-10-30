@@ -7,6 +7,7 @@ export 'plugin_definition.dart';
 export 'src/domain/use_cases/add_item_event.dart';
 export 'src/domain/use_cases/bind_identifier.dart';
 export 'src/domain/use_cases/create_item.dart';
+export 'src/domain/use_cases/delete_item.dart';
 export 'src/domain/use_cases/find_item_by_identifier.dart';
 export 'src/domain/use_cases/item_queries.dart';
 export 'src/domain/use_cases/move_item.dart';

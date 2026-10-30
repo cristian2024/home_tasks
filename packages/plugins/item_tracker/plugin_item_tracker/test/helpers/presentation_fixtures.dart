@@ -52,6 +52,7 @@ class TestUseCases {
 
   CreateItem get createItem => CreateItem(repository, ids, clock, eventBus, policy);
   MoveItem get moveItem => MoveItem(repository, ids, clock, policy);
+  DeleteItem get deleteItem => DeleteItem(repository, ids, clock);
   WatchItemTree get watchItemTree => WatchItemTree(repository);
   UpdateItem get updateItem => UpdateItem(repository, ids, clock);
   BindIdentifier get bindIdentifier => BindIdentifier(repository, ids, clock);

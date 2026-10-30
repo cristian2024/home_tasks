@@ -323,6 +323,70 @@ void main() {
     expect((await harness.repository.findIdentifier('QR-BED', IdentifierType.qr))?.itemId, other.id);
   });
 
+  group('borrar un objeto', () {
+    testWidgets('pide confirmación, vuelve al listado y deja libres sus identificadores', (WidgetTester tester) async {
+      await harness.createItem('Cama', qr: 'QR-BED');
+      await harness.createItem('Mesa');
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.items);
+      await tester.tap(find.text('Cama'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Borrar objeto'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Borrar «Cama»?'), findsOneWidget);
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'Cama'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Borrar objeto'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Borrar objeto'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('«Cama» borrado.'), findsOneWidget);
+      expect(find.text('Mesa'), findsOneWidget);
+      expect(find.text('Cama'), findsNothing);
+      expect(await harness.repository.findIdentifier('QR-BED', IdentifierType.qr), isNull);
+    });
+
+    testWidgets('un contenedor pregunta qué hacer con su contenido y puede pasarlo a su contenedor', (
+      WidgetTester tester,
+    ) async {
+      final HouseholdItem furniture = await harness.createItem('Mueble');
+      final HouseholdItem organizer = await harness.createItem('Organizador', parentId: furniture.id);
+      final HouseholdItem drawer = await harness.createItem('Cajón', parentId: organizer.id);
+      await harness.createItem('Tijeras', parentId: drawer.id);
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(organizer.id));
+
+      await tester.tap(find.byTooltip('Borrar objeto'));
+      await tester.pumpAndSettle();
+      expect(find.text('Contiene 2 objetos. ¿Qué hacemos con ellos?'), findsOneWidget);
+      await tester.tap(find.text('Pasarlo a «Mueble»'));
+      await tester.pumpAndSettle();
+
+      // Sin pantalla anterior, vuelve al listado.
+      expect(find.text('«Organizador» borrado.'), findsOneWidget);
+      expect(await harness.repository.getById(organizer.id), isNull);
+      expect((await harness.repository.getById(drawer.id))?.parentId, furniture.id);
+    });
+
+    testWidgets('"Borrar todo" borra el contenido a cualquier profundidad', (WidgetTester tester) async {
+      final HouseholdItem box = await harness.createItem('Caja');
+      final HouseholdItem pouch = await harness.createItem('Estuche', parentId: box.id);
+      await harness.createItem('Tijeras', parentId: pouch.id);
+      await harness.pump(tester, initialLocation: ItemTrackerRoutes.detail(box.id));
+
+      await tester.tap(find.byTooltip('Borrar objeto'));
+      await tester.pumpAndSettle();
+      expect(find.text('Dejarlo suelto'), findsOneWidget);
+      await tester.tap(find.text('Borrar todo'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('«Caja» borrado.'), findsOneWidget);
+      expect(await harness.repository.getAll(), isEmpty);
+    });
+  });
+
   group('contenedores', () {
     Finder scrollable() => find.byType(Scrollable).first;
 

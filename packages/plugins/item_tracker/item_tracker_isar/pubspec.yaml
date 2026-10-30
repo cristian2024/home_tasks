@@ -1,6 +1,6 @@
 name: item_tracker_isar
 description: Adaptador Isar de item_tracker - registra HouseholdItemRepository sobre storage_isar.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
   core_di: ^0.1.1
   flutter:
     sdk: flutter
-  item_tracker_domain: ^0.1.0
+  item_tracker_domain: ^0.2.0
   storage_isar: ^0.2.0
 
 dev_dependencies:

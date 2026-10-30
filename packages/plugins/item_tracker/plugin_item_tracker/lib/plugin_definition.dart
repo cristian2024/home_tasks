@@ -12,6 +12,7 @@ import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'src/domain/use_cases/add_item_event.dart';
 import 'src/domain/use_cases/bind_identifier.dart';
 import 'src/domain/use_cases/create_item.dart';
+import 'src/domain/use_cases/delete_item.dart';
 import 'src/domain/use_cases/find_item_by_identifier.dart';
 import 'src/domain/use_cases/item_queries.dart';
 import 'src/domain/use_cases/move_item.dart';
@@ -95,7 +96,7 @@ class ItemTrackerPlugin implements HomePlugin {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '2.0.0';
+  String get version => '2.1.0';
 
   /// Siempre disponible: sin cámara ni NFC queda la entrada manual. Cada modo
   /// de escaneo comprueba su propio hardware.
@@ -147,6 +148,7 @@ class ItemTrackerPlugin implements HomePlugin {
             createItem: CreateItem(repository, ids, clock, eventBus, _containmentPolicy),
             updateItem: UpdateItem(repository, ids, clock),
             moveItem: MoveItem(repository, ids, clock, _containmentPolicy),
+            deleteItem: DeleteItem(repository, ids, clock),
             bindIdentifier: BindIdentifier(repository, ids, clock),
             unbindIdentifier: UnbindIdentifier(repository, ids, clock),
             addItemEvent: AddItemEvent(repository, ids, clock),
@@ -249,6 +251,7 @@ class ItemTrackerPlugin implements HomePlugin {
                 watchItemTree: deps.watchItemTree,
                 unbindIdentifier: deps.unbindIdentifier,
                 moveItem: deps.moveItem,
+                deleteItem: deps.deleteItem,
                 containmentPolicy: deps.containmentPolicy,
               ),
               child: const ItemDetailScreen(),

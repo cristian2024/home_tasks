@@ -38,6 +38,29 @@ void main() {
     expect(repository.deletedIdentifiers.single, (identifier: identifier, deletedAt: deletedAt));
   });
 
+  test('guarda los objetos borrados y sus identificadores con el momento en que se borraron', () async {
+    final InMemoryHouseholdItemRepository repository = InMemoryHouseholdItemRepository();
+    addTearDown(repository.close);
+    final DateTime t0 = DateTime.utc(2026, 10, 21);
+    final HouseholdItem item = HouseholdItem(
+      id: 'item-1',
+      name: 'Caja',
+      description: '',
+      metadata: const ItemMetadata.empty(),
+      createdAt: t0,
+      updatedAt: t0,
+    );
+    final PhysicalIdentifier identifier =
+        PhysicalIdentifier(id: 'i1', rawValue: 'QR-1', type: IdentifierType.qr, itemId: 'item-1', boundAt: t0);
+    await repository.createItem(item, identifier: identifier, events: const <ItemEvent>[]);
+
+    final DateTime deletedAt = t0.add(const Duration(hours: 1));
+    await repository.deleteItems(<String>['item-1'], deletedAt: deletedAt, events: const <ItemEvent>[]);
+
+    expect(repository.deletedItems.single, (item: item, deletedAt: deletedAt));
+    expect(repository.deletedIdentifiers.single, (identifier: identifier, deletedAt: deletedAt));
+  });
+
   // Los widget tests corren con un reloj simulado: si cancelar la suscripción
   // devolviera un futuro que ese reloj no completa, `first` no terminaría.
   test('first termina dentro de un reloj simulado, como en los widget tests', () {

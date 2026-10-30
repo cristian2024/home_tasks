@@ -57,25 +57,67 @@ class IsarLocalDataSource {
     });
   }
 
+  /// Marca los objetos [itemIds] y sus identificadores activos como borrados,
+  /// guarda [moved] y [events], todo en una sola transacción. Ignora los
+  /// objetos que no existen o ya se borraron.
+  Future<void> softDeleteItems(
+    List<String> itemIds,
+    DateTime deletedAt, {
+    required List<IsarHouseholdItem> moved,
+    required List<IsarItemEvent> events,
+  }) async {
+    await _isar.writeTxn(() async {
+      for (final String id in itemIds) {
+        final IsarHouseholdItem? item = await _items.getById(id);
+        if (item == null || item.isDeleted) {
+          continue;
+        }
+        item.deletedAt = deletedAt;
+        await _items.putById(item);
+        final List<IsarPhysicalIdentifier> identifiers =
+            await _identifiers.where().itemIdEqualTo(id).filter().deletedIdIsNull().findAll();
+        for (final IsarPhysicalIdentifier identifier in identifiers) {
+          identifier
+            ..deletedId = identifier.id
+            ..deletedAt = deletedAt;
+        }
+        await _identifiers.putAllById(identifiers);
+      }
+      await _items.putAllById(moved);
+      await _events.putAllById(events);
+    });
+  }
+
   Future<void> saveEvent(IsarItemEvent event) async {
     await _isar.writeTxn(() => _events.putById(event));
   }
 
-  Future<IsarHouseholdItem?> getItem(String id) => _items.getById(id);
+  /// Objeto activo con ese [id].
+  Future<IsarHouseholdItem?> getItem(String id) async {
+    final IsarHouseholdItem? item = await _items.getById(id);
+    return item == null || item.isDeleted ? null : item;
+  }
 
-  Future<List<IsarHouseholdItem>> getItems() => _items.where().findAll();
+  /// Objetos activos.
+  Future<List<IsarHouseholdItem>> getItems() => _items.filter().deletedAtIsNull().findAll();
 
   Stream<IsarHouseholdItem?> watchItem(String id) => _items
       .where()
       .idEqualTo(id)
+      .filter()
+      .deletedAtIsNull()
       .watch(fireImmediately: true)
       .map((List<IsarHouseholdItem> rows) => rows.isEmpty ? null : rows.first);
 
   Stream<List<IsarHouseholdItem>> watchItems() =>
-      _items.where().sortByUpdatedAtDesc().watch(fireImmediately: true);
+      _items.filter().deletedAtIsNull().sortByUpdatedAtDesc().watch(fireImmediately: true);
 
-  Future<List<IsarHouseholdItem>> searchItems(String query) =>
-      _items.filter().nameContains(query, caseSensitive: false).sortByUpdatedAtDesc().findAll();
+  Future<List<IsarHouseholdItem>> searchItems(String query) => _items
+      .filter()
+      .deletedAtIsNull()
+      .nameContains(query, caseSensitive: false)
+      .sortByUpdatedAtDesc()
+      .findAll();
 
   /// Identificador activo con ese valor y tipo.
   Future<IsarPhysicalIdentifier?> findIdentifier(String rawValue, IdentifierType type) =>

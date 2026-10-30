@@ -104,7 +104,18 @@
       "no_contents": "Holds no items.",
       "add_inside": "Add item here",
       "full": "No more levels fit inside this item (maximum {max}).",
-      "overflowing": "This item is at level {depth} and the maximum is {max}: what it holds exceeds the limit. Move it or take it out."
+      "overflowing": "This item is at level {depth} and the maximum is {max}: what it holds exceeds the limit. Move it or take it out.",
+      "delete": "Delete item",
+      "delete_title": "Delete “{name}”?",
+      "delete_message": "It will be deleted with its history. Its identifiers will be free to bind to another item.",
+      "delete_contents_message(plural)": {
+        "one": "It holds 1 item. What should happen to it?",
+        "other": "It holds {n} items. What should happen to them?"
+      },
+      "keep_contents_in": "Move to “{container}”",
+      "keep_contents_loose": "Leave loose",
+      "delete_all": "Delete everything",
+      "deleted": "“{name}” deleted."
     },
     "events": {
       "created": "Item created as “{name}”",

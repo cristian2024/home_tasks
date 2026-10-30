@@ -31,6 +31,24 @@ class ItemTree {
   List<HouseholdItem> childrenOf(String id) =>
       List<HouseholdItem>.unmodifiable(_children[id] ?? const <HouseholdItem>[]);
 
+  /// Todo lo que contiene [id] a cualquier profundidad (sin incluirlo), con
+  /// cada contenedor antes que su contenido.
+  List<HouseholdItem> descendantsOf(String id) {
+    final List<HouseholdItem> descendants = <HouseholdItem>[];
+    final Set<String> visited = <String>{id};
+    void collect(String parentId) {
+      for (final HouseholdItem child in _children[parentId] ?? const <HouseholdItem>[]) {
+        if (visited.add(child.id)) {
+          descendants.add(child);
+          collect(child.id);
+        }
+      }
+    }
+
+    collect(id);
+    return descendants;
+  }
+
   /// Contenedores de [id], del más externo al más interno (sin incluirlo).
   List<HouseholdItem> pathOf(String id) {
     final List<HouseholdItem> path = <HouseholdItem>[];
