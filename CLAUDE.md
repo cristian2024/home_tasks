@@ -129,7 +129,7 @@
   - AC-02 con `IsarStorage` real en `test/ac02_persistence_test.dart`.
   - En dispositivo o simulador: `cd apps/app && flutter test integration_test -d <id>`.
 - **`HomeUtilityApp`:** crea su router con el primer `AppEnvironment`. Para simular un reinicio en un test, usar `key: ObjectKey(environment)`.
-- **CI:** `.github/workflows/ci.yml` ejecuta `melos run verify` en Ubuntu. Si se sube la versión de Flutter o Melos, actualizarla también ahí.
+- **CI:** `.github/workflows/ci.yml`, en Ubuntu. En `main` ejecuta `melos run verify`. En un PR, `analyze` y `verify:arch` de todo el workspace y `test:changed` (`tool/test_changed.sh`): los paquetes cambiados respecto a `origin/main` y sus dependientes, o todo si cambia algo fuera de `packages/` y `apps/` que no sea documentación. Los dependientes cuentan: un cambio en un paquete ejecuta también los tests de la app (p. ej. `injected_translations_test`). Si se sube la versión de Flutter o Melos, actualizarla también ahí.
 - **Archivos del editor:** `.vscode/` no se versiona (es configuración personal). Para que la extensión Dart encuentre los proyectos Flutter anidados, cada desarrollador pone `"dart.projectSearchDepth": 6` en su configuración.
 
 ## Fase 5 (comunicación entre plugins y lista de compras)

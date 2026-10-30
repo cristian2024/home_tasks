@@ -37,12 +37,15 @@ El código generado (`*.g.dart`) no se versiona. Después de cambiar de rama o d
 | `melos run analyze` | Análisis estático de todo el workspace. |
 | `melos run verify:arch` | Reglas de importación entre paquetes (§5.2 de la spec). |
 | `melos run test` | Pruebas de todos los paquetes y del tooling. |
+| `melos run test:changed` | Pruebas de los paquetes que cambian respecto a `origin/main` y de los que dependen de ellos. |
 | `melos run gen` | Genera el código de Isar y de Slang. |
 | `melos run build:apk` | APK de release de `apps/app`. |
 
 ## Antes de abrir un PR
 
-1. `melos run verify` debe terminar sin errores. La CI (`.github/workflows/ci.yml`) ejecuta lo mismo en Ubuntu y bloquea el PR si falla.
+1. `melos run verify` debe terminar sin errores (o, para ir más rápido, `melos run analyze`, `melos run verify:arch` y `melos run test:changed`). La CI (`.github/workflows/ci.yml`) bloquea el PR si falla:
+   - en un PR, analiza todo el workspace, comprueba las reglas de arquitectura y prueba los paquetes cambiados y los que dependen de ellos. Si cambia algo fuera de `packages/` y `apps/` (salvo documentación), prueba todo;
+   - en `main`, después de cada merge, ejecuta `melos run verify` completo.
 2. La cobertura debe quedar al 100 % en los casos de uso, en los paquetes `<funcionalidad>_domain` y en los mappers de los adaptadores (`flutter test --coverage` en el paquete).
 3. Una rama cambia un solo proyecto: un paquete, una app o la raíz. Los paquetes de una misma funcionalidad (`packages/plugins/<funcionalidad>/`) cuentan como uno. Excepciones: un cambio incompatible actualiza la restricción en todos los dependientes, y una clave de traducción nueva se añade en la misma rama a todos los consumidores (`apps/app` y los ejemplos).
 4. Cada paquete que cambia sube su `version:` (SemVer) y añade una entrada a su `CHANGELOG.md`.
