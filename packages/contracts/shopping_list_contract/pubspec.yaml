@@ -1,6 +1,6 @@
 name: shopping_list_contract
 description: API pública de la lista de compras para otros plugins - eventos y capacidades, en Dart puro.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
