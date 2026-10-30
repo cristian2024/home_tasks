@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1+8 - 2026-10-29
+
+### Añadido
+
+- Adaptadores de hardware en `appAdapters`: `MobileScannerHardware` (cámara), `NfcManagerHardware` (NFC) y `PermissionHandlerHardware` (permisos). Registran `CameraIdentifierScanner`, `NfcIdentifierScanner` y `HardwarePermissions` en el `ServiceLocator`, para que los plugins los pidan de ahí.
+
 ## 1.5.0+7 - 2026-10-29
 
 ### Añadido
