@@ -1,6 +1,6 @@
 name: storage_isar
 description: Adaptador de almacenamiento sobre Isar (isar_community) - abre la base y registra sus repositorios en el ServiceLocator.
-version: 0.2.0
+version: 0.2.1
 publish_to: none
 
 environment:
