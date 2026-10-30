@@ -1,6 +1,6 @@
 name: share_native
 description: Adaptador de core_share con share_plus, url_launcher y file_picker - comparte, abre WhatsApp y guarda archivos.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
