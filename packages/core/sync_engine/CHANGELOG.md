@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-10-30
+
+### Interno
+
+- El test de `HouseholdKeys` comprueba que el anuncio en la red no contiene el id completo del hogar, en lugar de una sola letra que a veces aparecía por azar.
+
 ## 0.1.0 - 2026-10-30
 
 ### Añadido
