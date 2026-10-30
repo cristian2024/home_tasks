@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 - 2026-10-29
+
+### Añadido
+
+- README del paquete.
+
+### Cambiado
+
+- **Incompatible:** `CrossPluginEvent` exige `emittedAt`, que viene del `Clock` de quien publica. Ya no usa la hora actual por su cuenta. `ItemCreatedCrossEvent` también lo exige.
+
 ## 0.1.1 - 2026-10-28
 
 ### Añadido

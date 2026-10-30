@@ -3,7 +3,7 @@ import 'package:core_events/testing.dart';
 import 'package:test/test.dart';
 
 class _Event extends CrossPluginEvent {
-  _Event({super.emittedAt});
+  _Event({DateTime? emittedAt}) : super(emittedAt: emittedAt ?? DateTime.utc(2026, 10, 29));
 }
 
 void main() {
@@ -14,7 +14,7 @@ void main() {
   group('RecordingEventBus', () {
     test('guarda lo publicado y filtra por tipo', () async {
       final RecordingEventBus bus = RecordingEventBus();
-      final ItemCreatedCrossEvent created = ItemCreatedCrossEvent(itemId: '1', itemName: 'Caja A');
+      final ItemCreatedCrossEvent created = ItemCreatedCrossEvent(itemId: '1', itemName: 'Caja A', emittedAt: DateTime.utc(2026, 10, 29));
       final _Event other = _Event();
 
       bus
@@ -28,14 +28,6 @@ void main() {
   });
 
   group('CrossPluginEvent', () {
-    test('sin emittedAt usa la hora actual en UTC', () {
-      final DateTime before = DateTime.now().toUtc();
-      final _Event event = _Event();
-
-      expect(event.emittedAt.isUtc, isTrue);
-      expect(event.emittedAt.isBefore(before), isFalse);
-    });
-
     test('convierte a UTC el emittedAt recibido', () {
       final DateTime local = DateTime(2026, 10, 28, 9);
 

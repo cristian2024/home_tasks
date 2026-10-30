@@ -11,7 +11,7 @@ resolution: workspace
 dependencies:
   # Solo para los tests de contrato (StreamQueue).
   async: ^2.13.1
-  core_events: ^0.1.1
+  core_events: ^0.2.0
   equatable: ^3.0.0
   # Solo para los tests de contrato de `package:shopping_list_contract/testing.dart`.
   test: ^1.28.0
