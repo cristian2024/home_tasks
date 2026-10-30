@@ -22,7 +22,7 @@ class CameraDemoTab extends StatefulWidget {
 class _CameraDemoTabState extends State<CameraDemoTab> {
   late final CameraIdentifierScanner _scanner = widget.scannerFactory();
   StreamSubscription<PhysicalScanResult>? _subscription;
-  final List<PhysicalScanResult> _results = [];
+  final List<PhysicalScanResult> _results = <PhysicalScanResult>[];
 
   HardwarePermissionStatus? _permission;
   bool _scanning = false;
@@ -32,7 +32,7 @@ class _CameraDemoTabState extends State<CameraDemoTab> {
   void initState() {
     super.initState();
     _subscription = _scanner.scanStream.listen(
-      (result) {
+      (PhysicalScanResult result) {
         if (!mounted) {
           return;
         }
@@ -56,7 +56,7 @@ class _CameraDemoTabState extends State<CameraDemoTab> {
   }
 
   Future<void> _checkPermission({bool request = false}) async {
-    final status = request
+    final HardwarePermissionStatus status = request
         ? await widget.permissions.requestCamera()
         : await widget.permissions.cameraStatus();
     if (!mounted) {
@@ -114,16 +114,16 @@ class _CameraDemoTabState extends State<CameraDemoTab> {
   }
 
   Widget _buildScanner(BuildContext context) {
-    final error = _error;
+    final ScanException? error = _error;
     return Column(
-      children: [
+      children: <Widget>[
         // Proporciones flexibles: una relación fija desborda en horizontal.
         Expanded(
           flex: 3,
           child: ClipRect(
             child: _scanner.buildPreview(
               context,
-              errorBuilder: (context, error) => StatusMessage(
+              errorBuilder: (BuildContext context, ScanException error) => StatusMessage(
                 icon: Icons.videocam_off,
                 message: describeScanError(error),
               ),
@@ -133,7 +133,7 @@ class _CameraDemoTabState extends State<CameraDemoTab> {
         if (error != null)
           MaterialBanner(
             content: Text(describeScanError(error)),
-            actions: [
+            actions: <Widget>[
               TextButton(
                 onPressed: () => setState(() => _error = null),
                 child: const Text('Cerrar'),
@@ -143,7 +143,7 @@ class _CameraDemoTabState extends State<CameraDemoTab> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
-            children: [
+            children: <Widget>[
               Expanded(
                 child: Text(
                   _scanning

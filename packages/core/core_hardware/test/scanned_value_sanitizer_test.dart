@@ -2,7 +2,7 @@ import 'package:core_hardware/core_hardware.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Matcher throwsScan(ScanErrorCode code) =>
-    throwsA(isA<ScanException>().having((e) => e.code, 'code', code));
+    throwsA(isA<ScanException>().having((ScanException e) => e.code, 'code', code));
 
 void main() {
   test('elimina caracteres de control', () {
@@ -29,7 +29,7 @@ void main() {
   });
 
   test('PhysicalScanResult normaliza scannedAt a UTC', () {
-    final result = PhysicalScanResult(rawValue: 'x', type: ScanType.qr, scannedAt: DateTime(2026));
+    final PhysicalScanResult result = PhysicalScanResult(rawValue: 'x', type: ScanType.qr, scannedAt: DateTime(2026));
 
     expect(result.scannedAt.isUtc, isTrue);
     expect(PhysicalScanResult(rawValue: 'x', type: ScanType.nfc).scannedAt.isUtc, isTrue);

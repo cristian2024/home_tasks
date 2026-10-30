@@ -29,7 +29,7 @@ void main() {
   group('Cámara', () {
     testWidgets(
       'con permiso muestra la previsualización, escanea y lista lecturas',
-      (tester) async {
+      (WidgetTester tester) async {
         await pumpApp(tester);
 
         expect(find.byKey(FakeCameraScanner.previewKey), findsOneWidget);
@@ -43,7 +43,7 @@ void main() {
       },
     );
 
-    testWidgets('pide el permiso cuando está denegado', (tester) async {
+    testWidgets('pide el permiso cuando está denegado', (WidgetTester tester) async {
       permissions
         ..status = HardwarePermissionStatus.denied
         ..statusAfterRequest = HardwarePermissionStatus.granted;
@@ -59,7 +59,7 @@ void main() {
     });
 
     testWidgets('con denegación permanente ofrece abrir Ajustes', (
-      tester,
+      WidgetTester tester,
     ) async {
       permissions.status = HardwarePermissionStatus.permanentlyDenied;
       await pumpApp(tester);
@@ -69,7 +69,7 @@ void main() {
       expect(permissions.openSettingsCalls, 1);
     });
 
-    testWidgets('libera el escáner al cambiar de pestaña', (tester) async {
+    testWidgets('libera el escáner al cambiar de pestaña', (WidgetTester tester) async {
       await pumpApp(tester);
 
       await tester.tap(find.text('NFC'));
@@ -87,7 +87,7 @@ void main() {
     }
 
     testWidgets('AC-06: sin NFC desactiva la opción con un mensaje', (
-      tester,
+      WidgetTester tester,
     ) async {
       nfc.hardwareStatus = HardwareStatus.unsupported;
       await openNfcTab(tester);
@@ -96,7 +96,7 @@ void main() {
       expect(find.text('Leer tag'), findsNothing);
     });
 
-    testWidgets('lee un tag y lo muestra', (tester) async {
+    testWidgets('lee un tag y lo muestra', (WidgetTester tester) async {
       await openNfcTab(tester);
 
       await tester.tap(find.text('Leer tag'));
@@ -110,18 +110,18 @@ void main() {
       expect(find.text('Acerca un tag NFC para leerlo…'), findsNothing);
     });
 
-    testWidgets('escribe el texto indicado', (tester) async {
+    testWidgets('escribe el texto indicado', (WidgetTester tester) async {
       await openNfcTab(tester);
 
       await tester.enterText(find.byType(TextField), 'NFC-CAMA');
       await tester.tap(find.text('Escribir tag'));
       await tester.pumpAndSettle();
 
-      expect(nfc.writtenValues, ['NFC-CAMA']);
+      expect(nfc.writtenValues, <String>['NFC-CAMA']);
       expect(find.text('Tag escrito correctamente.'), findsOneWidget);
     });
 
-    testWidgets('informa si el tag no admite escritura', (tester) async {
+    testWidgets('informa si el tag no admite escritura', (WidgetTester tester) async {
       nfc.writeError = const ScanException(ScanErrorCode.tagNotWritable);
       await openNfcTab(tester);
 
