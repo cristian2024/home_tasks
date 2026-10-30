@@ -37,7 +37,7 @@ dependencies:
 
 dev_dependencies:
   bloc_test: ^10.0.0
-  core_hardware: ^0.1.0
+  core_hardware: ^0.2.0
   core_share: ^0.1.0
   flutter_lints: ^6.0.0
   flutter_test:

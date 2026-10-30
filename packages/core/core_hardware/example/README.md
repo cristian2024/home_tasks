@@ -1,8 +1,8 @@
 # core_hardware_example
 
-App mínima para probar `core_hardware` en un dispositivo real: escaneo de QR y códigos de barras con la cámara, lectura y escritura de tags NFC y el flujo de permisos.
+App mínima para probar en un dispositivo real los adaptadores de hardware (`hardware_mobile_scanner`, `hardware_nfc_manager` y `hardware_permission_handler`): escaneo de QR y códigos de barras con la cámara, lectura y escritura de tags NFC y el flujo de permisos.
 
-Solo usa los contratos públicos (`CameraIdentifierScanner`, `NfcIdentifierScanner`, `HardwarePermissions`), igual que lo hará la presentación de los plugins. El verificador de arquitectura lo comprueba con la Regla 4.
+`main.dart` elige los adaptadores; las pantallas solo usan los contratos de `core_hardware` (`CameraIdentifierScanner`, `NfcIdentifierScanner`, `HardwarePermissions`), igual que la presentación de los plugins.
 
 ## Ejecutar
 
@@ -12,7 +12,7 @@ flutter run            # con un dispositivo conectado
 flutter test           # widget tests con los fakes de package:core_hardware/testing.dart
 ```
 
-## Configuración nativa que necesita cualquier app que use core_hardware
+## Configuración nativa que necesita cualquier app que use los adaptadores de hardware
 
 **Android** (`android/app`)
 - `minSdk = 24`: lo exige `nfc_manager` 4.x.

@@ -14,7 +14,7 @@ dependencies:
   core_contracts: ^0.1.0
   core_di: ^0.1.0
   core_events: ^0.1.0
-  core_hardware: ^0.1.0
+  core_hardware: ^0.2.0
   core_ui: ^0.1.0
   core_utils: ^0.1.0
   design_system: ^0.1.3
