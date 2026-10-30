@@ -11,6 +11,7 @@ resolution: workspace
 dependencies:
   # Solo para los tests de contrato (StreamQueue).
   async: ^2.13.1
+  core_di: ^0.1.2
   equatable: ^3.0.0
   hlc: ^0.1.0
   # Solo para los tests de contrato de `package:core_sync/testing.dart`.

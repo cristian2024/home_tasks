@@ -32,6 +32,15 @@ Contratos y modelo de la sincronización entre dispositivos (§10.4 de la spec).
 | `SyncTransport` / `SyncChannel` | Anunciarse, ver a los del mismo `discoveryId`, conectar e intercambiar mensajes binarios. |
 | `SyncParticipant` | Una funcionalidad que se sincroniza: `applyRemote` (atómico, idempotente y conmutativo) y `resolveConflict`. |
 
+El `ServiceLocator` no lista todas las instancias de un tipo, así que los participantes y los transportes se apuntan en un registro. Cada adaptador lo hace en su `DependencyModule.register`, en el scope raíz:
+
+```dart
+SyncParticipants.of(services).add(ItemTrackerSyncParticipant(repository));
+SyncTransports.of(services).add(lanTransport);
+```
+
+El motor los consulta con `all` y `forCollection`.
+
 ## Tests
 
 `package:core_sync/testing.dart` trae:

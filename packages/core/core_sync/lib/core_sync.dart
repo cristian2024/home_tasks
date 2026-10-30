@@ -10,6 +10,7 @@ export 'src/contracts/change_log.dart';
 export 'src/contracts/conflict_repository.dart';
 export 'src/contracts/sync_cipher.dart';
 export 'src/contracts/sync_participant.dart';
+export 'src/contracts/sync_registries.dart';
 export 'src/contracts/sync_state_repository.dart';
 export 'src/contracts/sync_transport.dart';
 export 'src/model/blob_ref.dart';
