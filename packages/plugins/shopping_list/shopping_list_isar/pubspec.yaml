@@ -1,6 +1,6 @@
 name: shopping_list_isar
 description: Adaptador Isar de la lista de compras - registra ShoppingListRepository sobre storage_isar.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
