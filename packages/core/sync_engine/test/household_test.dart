@@ -194,7 +194,7 @@ void main() {
     test('los dispositivos del hogar derivan lo mismo; otra época u otro hogar, no', () async {
       final FakeSyncCipher cipher = FakeSyncCipher();
       final Uint8List key = await cipher.newKey();
-      final Household household = Household(id: 'h', epoch: 1, creatorDeviceId: 'a');
+      final Household household = Household(id: 'household-secret-id', epoch: 1, creatorDeviceId: 'a');
       final HouseholdKeys keys = HouseholdKeys(household, key, cipher);
       final HouseholdKeys same = HouseholdKeys(household, Uint8List.fromList(key), cipher);
       final HouseholdKeys nextEpoch = HouseholdKeys(household.nextEpoch(), key, cipher);
@@ -204,7 +204,7 @@ void main() {
       expect(await nextEpoch.discoveryId(), isNot(await keys.discoveryId()));
       expect(await nextEpoch.recordsKey(), isNot(await keys.recordsKey()));
       expect(await keys.authKey(), isNot(await keys.recordsKey()));
-      expect(await keys.discoveryId(), isNot(contains('h')));
+      expect(await keys.discoveryId(), isNot(contains(household.id)));
       expect(keys.recordAssociatedData('a', 1), isNot(keys.recordAssociatedData('a', 2)));
     });
   });
