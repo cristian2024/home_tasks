@@ -1,6 +1,6 @@
 name: list_export
 description: Exporta listas (compras, tareas) como texto para WhatsApp o Markdown, en Dart puro.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
