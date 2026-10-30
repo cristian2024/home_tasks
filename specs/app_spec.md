@@ -50,7 +50,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
   - Android sube de API 21 a **24** porque lo exige `nfc_manager` 4.x (`mobile_scanner` 7.x exige 23). Además hay que compilar contra la **API 37** (`compileSdk = 37`), que exige `permission_handler_android` 14.x.
   - iOS 15.0 es el mínimo de la plantilla de Flutter 3.47.
 - **Configuración nativa de referencia**: `packages/core/core_hardware/example` (ver su README). En iOS los plugins se integran con **Swift Package Manager**; `isar_community_flutter_libs` aún no lo admite, así que en las apps que usan Isar Flutter genera un Podfile solo para él (modo mixto). En cualquier caso: `permission_handler` activa el permiso de cámara solo porque detecta `NSCameraUsageDescription` en el `Info.plist`. La lectura NFC requiere el entitlement `com.apple.developer.nfc.readersession.formats` (NDEF, TAG) y `NFCReaderUsageDescription`.
-- **Abstracción de Hardware**: La invocación a hardware (Cámara y NFC) debe estar aislada detrás de contratos abstractos (`IdentifierScanner`) ubicados en `packages/core/core_hardware`. La capa de presentación y dominio **nunca** importará paquetes nativos directos (`mobile_scanner` o `nfc_manager`).
+- **Abstracción de Hardware**: La invocación a hardware (Cámara y NFC) debe estar aislada detrás de contratos abstractos (`IdentifierScanner`) ubicados en `packages/core/core_hardware`. Las implementaciones nativas están en los adaptadores `packages/adapters/hardware_*`. La capa de presentación y dominio **nunca** importará paquetes nativos directos (`mobile_scanner` o `nfc_manager`).
 - **Diferencias y Limitaciones de Plataforma**:
   
 | Capacidad / Escenario | Android | iOS | Comportamiento del Sistema |
@@ -115,9 +115,9 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 | **flutter_bloc (>=8.1.3)** | Gestión de Estado | Predicibilidad de estados, separación entre eventos/UI, facilidad de pruebas unitarias. | `packages/plugins/*`, `apps/app` | [bloclibrary.dev](https://bloclibrary.dev) |
 | **isar_community (3.3.2)** | Persistencia Local | Fork mantenido de Isar: NoSQL nativa de alto rendimiento con reactividad por `Streams`. Versión fijada: `isar_community_generator` 3.3.2 exige `analyzer` <11, lo que limita `build_runner` a 2.15.x. | Solo adaptadores: `packages/adapters/storage_isar` (reexporta la API) e `item_tracker_isar` | [pub.dev/packages/isar_community](https://pub.dev/packages/isar_community) |
 | **go_router (>=14.0.0)** | Navegación Declarativa | Integración declarativa basada en URLs, soporte nativo para sub-rutas de plugins y `ShellRoute`. | `apps/app`, `packages/core/core_contracts` | [pub.dev/packages/go_router](https://pub.dev/packages/go_router) |
-| **mobile_scanner (>=7.4.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/core/core_hardware` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
-| **nfc_manager (>=4.2.0)** + **nfc_manager_ndef (>=1.1.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). En 4.x la lectura/escritura NDEF vive en `nfc_manager_ndef`. | `packages/core/core_hardware` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
-| **permission_handler (>=13.0.0)** | Permisos en runtime | Distingue denegación temporal y permanente y abre los Ajustes de la app (§3.1, AC-06). | `packages/core/core_hardware` | [pub.dev/packages/permission_handler](https://pub.dev/packages/permission_handler) |
+| **mobile_scanner (>=7.4.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/adapters/hardware_mobile_scanner` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
+| **nfc_manager (>=4.2.0)** + **nfc_manager_ndef (>=1.1.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). En 4.x la lectura/escritura NDEF vive en `nfc_manager_ndef`. | `packages/adapters/hardware_nfc_manager` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
+| **permission_handler (>=13.0.0)** | Permisos en runtime | Distingue denegación temporal y permanente y abre los Ajustes de la app (§3.1, AC-06). | `packages/adapters/hardware_permission_handler` | [pub.dev/packages/permission_handler](https://pub.dev/packages/permission_handler) |
 | **slang (>=4.0.0)** | Internacionalización | Tipo-seguro, soporta múltiples archivos JSON por paquete independientemente de `BuildContext`. | `packages/shared/core_ui` | [pub.dev/packages/slang](https://pub.dev/packages/slang) |
 | **get_it (>=8.0.0)** | Service Locator | Inyección de dependencias liviana y rápida para resolver contratos de plugins y repositorios. | `packages/core/core_di` | [pub.dev/packages/get_it](https://pub.dev/packages/get_it) |
 | **equatable (>=3.0.0)** | Igualdad por valor | Evita sobrescribir `==`/`hashCode` a mano en entidades, value objects y estados. | `packages/core/*`, `packages/plugins/*` | [pub.dev/packages/equatable](https://pub.dev/packages/equatable) |
@@ -155,9 +155,12 @@ home_utility_monorepo/
 │   │   ├── core_contracts/           # Abstracciones de Plugins y Módulos
 │   │   ├── core_di/                  # Service Locator (GetIt) y DependencyModule
 │   │   ├── core_events/              # Contrato EventBus, StreamEventBus y EventSubscriptions
-│   │   ├── core_hardware/            # Abstracciones de Cámara, QR y NFC
+│   │   ├── core_hardware/            # Contratos de Cámara, QR, NFC y permisos
 │   │   └── core_share/               # Contrato ShareService (compartir, WhatsApp, guardar)
 │   ├── adapters/                     # Adaptadores transversales (tecnologías reemplazables)
+│   │   ├── hardware_mobile_scanner/  # CameraIdentifierScanner con mobile_scanner
+│   │   ├── hardware_nfc_manager/     # NfcIdentifierScanner con nfc_manager
+│   │   ├── hardware_permission_handler/ # HardwarePermissions con permission_handler
 │   │   ├── share_native/             # ShareService con share_plus, url_launcher y file_picker
 │   │   └── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature
 │   ├── contracts/                    # API pública de cada funcionalidad para otras (§11.2)
@@ -254,7 +257,7 @@ El verificador deduce el rol de cada paquete por su ruta y su nombre:
 1. **Regla 1**: Un paquete de una funcionalidad (`packages/plugins/<funcionalidad>/*`) **NUNCA** importa paquetes de otra funcionalidad. Los hosts sí, porque componen varias.
 2. **Regla 2**: El dominio (los paquetes `<funcionalidad>_domain` y las carpetas `lib/src/domain/` o `lib/domain/` de cualquier paquete) **NUNCA** importa código de Flutter (`package:flutter*/...`, `dart:ui`) ni motores de base de datos.
 3. **Regla 3**: `packages/design_system` **SOLO** depende de Flutter SDK y de `packages/shared/core_ui`. Prohibido importar paquetes de infraestructura o plugins.
-4. **Regla 4**: Solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`. `core_hardware` se admite mientras sus implementaciones pasan a esos adaptadores.
+4. **Regla 4**: Solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`.
 5. **Regla 5**: Solo los adaptadores importan motores de base de datos (`isar*`, `sqflite*`, `sqlite3*`, `drift*`, `hive*`, `objectbox*`, `realm*`, `sembast*`).
 6. **Regla 6**: Solo los hosts y otros adaptadores importan adaptadores. Un plugin nunca conoce su adaptador: pide el contrato al `ServiceLocator`.
 7. **Regla 7**: Un adaptador o un dominio **NUNCA** importa el plugin.
@@ -310,7 +313,7 @@ melos:
 
 - **Código generado**: los `*.g.dart` (Isar y slang) no se versionan. `melos bs` los genera al terminar, y `melos run gen` los regenera tras cambiar un modelo o un JSON de traducciones.
 - **`build_runner` y apps de ejemplo**: un paquete con `build_runner` y `example/` necesita un `build.yaml` que excluya `example/**`. Si no, build_runner sigue `example/ios/.symlinks` hasta `~/.pub-cache` y borra archivos generados de otros paquetes.
-- **`tool/analyze.dart`**: ejecuta `dart analyze` y falla con cualquier diagnóstico (como `--fatal-infos`) salvo los de las reglas en adopción gradual (`toleratedCodes`), que solo cuenta por proyecto. Hoy es `always_specify_types`; cuando queden pocos casos se quita de la lista y pasa a ser obligatoria.
+- **`tool/analyze.dart`**: ejecuta `dart analyze` y falla con cualquier diagnóstico (como `--fatal-infos`) salvo los de las reglas en adopción gradual (`toleratedCodes`), que solo cuenta por proyecto. Hoy la lista está vacía: `always_specify_types` ya es obligatoria.
 - **Versiones y CHANGELOG**: cada paquete y `apps/app` siguen [SemVer](https://semver.org/lang/es/) en la `version:` de su `pubspec.yaml` y llevan un `CHANGELOG.md` en su raíz (las apps de `example/`, `tool/` y la raíz no). Toda rama que cambie un paquete sube su versión y añade una entrada; el primer cambio a un paquete sin CHANGELOG lo crea. En `0.x.y`, un cambio incompatible sube el minor y cualquier otro el patch; en `apps/app` también sube el build (`+n`). Entre paquetes del workspace se usa `^x.y.z` (nunca `any`); si una subida deja fuera la restricción de un dependiente, la misma rama la actualiza en todos los `pubspec.yaml` que dependen del paquete. En un plugin, `HomePlugin.version` coincide con la versión del `pubspec.yaml`. Formato, basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), con los tipos en este orden y omitiendo los vacíos:
 
 ```markdown
@@ -345,7 +348,7 @@ analyzer:
     missing_required_param: error
     body_might_complete_normally: error # sustituye a missing_return (inexistente con null-safety)
     todo: ignore
-    always_specify_types: warning # en adopción gradual (ver tool/analyze.dart)
+    always_specify_types: warning # obligatoria: tool/analyze.dart falla con cualquier diagnóstico
   exclude:
     - "**/*.g.dart"
     - "**/*.i18n.json"
@@ -546,7 +549,7 @@ graph LR
 
 ## 8. Primera Funcionalidad: Identificación de Objetos (`plugin_item_tracker`)
 
-### 8.1. Abstracciones de Hardware (`packages/core/core_hardware`)
+### 8.1. Abstracciones de Hardware (`packages/core/core_hardware` y adaptadores `hardware_*`)
 
 La cámara y el NFC tienen disponibilidad, permisos y UI distintos (un iPad tiene cámara pero no NFC), así que se modelan como dos escáneres más un servicio de permisos. Cada escáner pertenece a una pantalla: se crea al entrar y se libera con `dispose()` al salir (§16).
 
@@ -1053,9 +1056,9 @@ graph TD
 
 ### 12.2. Definición del Plugin (`plugin_item_tracker/lib/plugin_definition.dart`)
 `ItemTrackerPlugin implements HomePlugin`:
-- **Del scope base de `core_di` toma**: `HouseholdItemRepository` (obligatorio; lo registra el adaptador que elige la app, p. ej. `ItemTrackerIsar`), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos). No conoce el motor de base de datos.
+- **Del scope base de `core_di` toma**: `HouseholdItemRepository` (obligatorio; lo registra el adaptador que elige la app, p. ej. `ItemTrackerIsar`), `CameraIdentifierScanner` y `NfcIdentifierScanner` (factorías) y `HardwarePermissions` (obligatorios; los registran los adaptadores `hardware_*`; si falta alguno, `initialize()` falla), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos). No conoce el motor de base de datos ni los SDK de hardware.
 - **`initialize()`**: registra su idioma en `LocalizationCoordinator` y crea su scope `item_tracker` con `ItemTrackerDependencies` (casos de uso, factorías de escáner y permisos). **`dispose()`** descarta ese scope.
-- **Inyección por constructor**: factorías de escáner y `HardwarePermissions`, para poder probarlo con los fakes de `core_hardware/testing.dart`. En los tests se registra en el locator el `InMemoryHouseholdItemRepository` de `item_tracker_domain/testing.dart`, que `plugin_item_tracker/testing.dart` reexporta.
+- **Sustitutos por constructor**: factorías de escáner y `HardwarePermissions`, que reemplazan a los del locator, p. ej. por los fakes de `core_hardware/testing.dart`. En los tests se registra en el locator el `InMemoryHouseholdItemRepository` de `item_tracker_domain/testing.dart`, que `plugin_item_tracker/testing.dart` reexporta.
 - `nameKey` / `descriptionKey` son rutas de slang (`itemTracker.title`). En la Fase 4 hay que decidir cómo resuelve el catálogo esas claves entre paquetes.
 - **App de ejemplo**: `plugin_item_tracker/example` arranca igual que `apps/app` (servicios base, sus propios adaptadores, `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])` con una base separada de la de la app, e idioma del dispositivo) e incluye datos de ejemplo para recorrer AC-03/04/05 a mano.
 

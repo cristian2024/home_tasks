@@ -84,7 +84,6 @@ class _Package {
   final String? feature;
 
   bool get isDesignSystem => path == 'packages/design_system';
-  bool get isCoreHardware => path == 'packages/core/core_hardware';
 }
 
 /// Recorre `lib/` de cada paquete bajo `apps/` y `packages/` en [root] y
@@ -132,12 +131,7 @@ List<ArchitectureViolation> findViolations(Directory root) {
             !_allowedInDesignSystem.contains(importedName)) {
           report(_rule3);
         }
-        // core_hardware se admite mientras sus implementaciones pasan a los
-        // adaptadores `hardware_*`.
-        if (package.role != _Role.adapter &&
-            !package.isCoreHardware &&
-            importedName != null &&
-            _nativeHardwarePackage.hasMatch(importedName)) {
+        if (package.role != _Role.adapter && importedName != null && _nativeHardwarePackage.hasMatch(importedName)) {
           report(_rule4);
         }
         if (importsEngine && package.role != _Role.adapter) {
