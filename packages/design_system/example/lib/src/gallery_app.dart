@@ -217,6 +217,27 @@ class _GalleryPage extends StatelessWidget {
               },
             ),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          Builder(
+            builder: (BuildContext context) => AppButton(
+              label: 'Mostrar opciones',
+              variant: AppButtonVariant.secondary,
+              onPressed: () async {
+                final String? choice = await showAppChoiceDialog<String>(
+                  context,
+                  title: '¿Borrar la caja?',
+                  message: 'Contiene 3 objetos.',
+                  options: const <AppDialogOption<String>>[
+                    AppDialogOption<String>(value: 'Sacar el contenido', label: 'Sacar el contenido'),
+                    AppDialogOption<String>(value: 'Borrar todo', label: 'Borrar todo', destructive: true),
+                  ],
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(choice ?? 'Cancelado')));
+                }
+              },
+            ),
+          ),
           const AppSectionHeader('Estados'),
           SizedBox(
             height: 320,

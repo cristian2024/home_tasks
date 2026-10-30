@@ -427,4 +427,47 @@ void main() {
 
     expect(results, <bool>[true, false]);
   });
+
+  testWidgets('showAppChoiceDialog devuelve la opción elegida y null al cancelar', (WidgetTester tester) async {
+    final List<String?> results = <String?>[];
+    await tester.pumpWidget(
+      host(
+        Builder(
+          builder: (BuildContext context) => AppButton(
+            label: 'Abrir',
+            onPressed: () async => results.add(
+              await showAppChoiceDialog<String>(
+                context,
+                title: 'T',
+                message: 'M',
+                options: const <AppDialogOption<String>>[
+                  AppDialogOption<String>(value: 'a', label: 'Opción A'),
+                  AppDialogOption<String>(value: 'b', label: 'Opción B', destructive: true),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+    final FilledButton destructive = tester.widget(find.widgetWithText(FilledButton, 'Opción B'));
+    expect(destructive.style, isNotNull);
+    await tester.tap(find.text('Opción B'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Opción A'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    expect(results, <String?>['b', 'a', null]);
+  });
 }
