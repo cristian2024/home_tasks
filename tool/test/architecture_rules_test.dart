@@ -148,8 +148,10 @@ import 'package:sqflite/sqflite.dart';
     expect(rules(), <String>['Regla 3']);
   });
 
-  test('Regla 4: solo core_hardware importa SDKs nativos de hardware', () {
+  test('Regla 4: solo los adaptadores (y core_hardware) importan SDKs nativos de hardware', () {
     package('packages/core/core_hardware', 'core_hardware');
+    package('packages/adapters/hardware_mobile_scanner', 'hardware_mobile_scanner');
+    source('packages/adapters/hardware_mobile_scanner/lib/a.dart', "import 'package:mobile_scanner/mobile_scanner.dart';\n");
     package('packages/plugins/plugin_a', 'plugin_a');
     source('packages/core/core_hardware/lib/a.dart', '''
 import 'package:mobile_scanner/mobile_scanner.dart';
