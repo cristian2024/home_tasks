@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_contracts/testing.dart';
 import 'package:core_di/core_di.dart';
+import 'package:core_spaces/core_spaces.dart';
+import 'package:core_spaces/testing.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -159,5 +161,67 @@ void main() {
     test('collectSchemas incluye los esquemas core y elimina duplicados idénticos', () {
       expect(IsarDatabase.collectSchemas(<IsarFeature>[_Feature(), _Feature()]), IsarDatabase.coreSchemas);
     });
+  });
+
+  group('IsarSpaceStorage', () {
+    dataSpaceStorageContract('IsarSpaceStorage', create: () {
+      final Directory folder = Directory.systemTemp.createTempSync('isar_space_storage_test');
+      addTearDown(() => folder.deleteSync(recursive: true));
+      final Map<String, Isar> open = <String, Isar>{};
+      addTearDown(() async {
+        for (final Isar isar in open.values) {
+          if (isar.isOpen) {
+            await isar.close();
+          }
+        }
+      });
+      Future<Isar> openDatabase(String name) async =>
+          open[name] = await IsarDatabase.open(directory: folder.path, name: name);
+      return DataSpaceStorageHarness(
+        storage: IsarSpaceStorage(directory: folder.path),
+        create: (String name) async {
+          final Isar isar = await openDatabase(name);
+          await IsarPluginPreferenceRepository(isar)
+              .saveAll(const <UserPluginPreference>[UserPluginPreference(pluginId: 'a', isEnabled: true, sortOrder: 0)]);
+          await isar.close();
+        },
+        open: (String name) async => openDatabase(name),
+        close: (String name) async => open[name]!.close(),
+      );
+    });
+
+    test('databaseNames de una carpeta que no existe está vacío', () async {
+      expect(await IsarSpaceStorage(directory: '${directory.path}/nada').databaseNames(), isEmpty);
+    });
+
+    test('una base borrada se vuelve a abrir vacía', () async {
+      final IsarSpaceStorage storage = IsarSpaceStorage(directory: directory.path);
+      final Isar isar = await IsarDatabase.open(directory: directory.path, name: 'space_a');
+      await IsarPluginPreferenceRepository(isar)
+          .saveAll(const <UserPluginPreference>[UserPluginPreference(pluginId: 'a', isEnabled: true, sortOrder: 0)]);
+      await isar.close();
+
+      await storage.delete('space_a');
+      final Isar reopened = await IsarDatabase.open(directory: directory.path, name: 'space_a');
+      addTearDown(reopened.close);
+
+      expect(await IsarPluginPreferenceRepository(reopened).getAll(), isEmpty);
+    });
+  });
+
+  test('dos espacios (bases con otro nombre) no comparten datos ni preferencias', () async {
+    final ServiceLocator first = ServiceLocator();
+    final ServiceLocator second = ServiceLocator();
+    await IsarStorage(directory: directory.path, name: DataSpace.databaseNameFor('casa')).register(first);
+    await IsarStorage(directory: directory.path, name: DataSpace.databaseNameFor('oficina')).register(second);
+
+    await first
+        .get<PluginPreferenceRepository>()
+        .saveAll(const <UserPluginPreference>[UserPluginPreference(pluginId: 'a', isEnabled: false, sortOrder: 0)]);
+
+    expect(await second.get<PluginPreferenceRepository>().getAll(), isEmpty);
+    expect(await first.get<PluginPreferenceRepository>().getAll(), hasLength(1));
+    await first.reset();
+    await second.reset();
   });
 }
