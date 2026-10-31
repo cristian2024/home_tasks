@@ -51,7 +51,6 @@ class AppConflictCard<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final String? keepLabel = this.keepLabel;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +66,7 @@ class AppConflictCard<T> extends StatelessWidget {
               appliedLabel: option.value == applied ? appliedLabel : null,
               onTap: busy ? null : () => onSelected(option.value),
             ),
-          if (keepLabel != null) ...<Widget>[
+          if (keepLabel case final String keepLabel) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
             AppButton(label: keepLabel, isLoading: busy, onPressed: onKeep),
           ],
@@ -87,8 +86,6 @@ class _ConflictOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? description = this.description;
-    final String? appliedLabel = this.appliedLabel;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       minTileHeight: AppSizes.minTouchTarget,
@@ -100,8 +97,8 @@ class _ConflictOptionTile extends StatelessWidget {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                if (description != null) Text(description),
-                if (appliedLabel != null) ...<Widget>[
+                if (description case final String description) Text(description),
+                if (appliedLabel case final String appliedLabel) ...<Widget>[
                   const SizedBox(height: AppSpacing.xs),
                   AppBadge(label: appliedLabel, icon: Icons.check),
                 ],
