@@ -56,8 +56,10 @@ class UndoShoppingPurchase {
   final ShoppingListRepository _repository;
   final Clock _clock;
 
-  Future<void> call(ShoppingPurchaseReceipt receipt) =>
-      _repository.undoPurchase(receipt.previous.copyWith(updatedAt: _clock.nowUtc()), receipt.purchaseId);
+  Future<void> call(ShoppingPurchaseReceipt receipt) {
+    final DateTime now = _clock.nowUtc();
+    return _repository.undoPurchase(receipt.previous.copyWith(updatedAt: now), receipt.purchaseId, deletedAt: now);
+  }
 }
 
 /// Vuelve a poner pendiente un item comprado. El historial no cambia.
@@ -81,9 +83,10 @@ class MarkShoppingItemPending {
 /// Borra los items comprados (los recurrentes nunca lo están). Devuelve
 /// cuántos borró.
 class ClearPurchasedShoppingItems {
-  const ClearPurchasedShoppingItems(this._repository);
+  const ClearPurchasedShoppingItems(this._repository, [this._clock = const SystemClock()]);
 
   final ShoppingListRepository _repository;
+  final Clock _clock;
 
   Future<int> call() async {
     final List<String> ids = <String>[
@@ -91,7 +94,7 @@ class ClearPurchasedShoppingItems {
         if (item.status == ShoppingItemStatus.purchased) item.id,
     ];
     if (ids.isNotEmpty) {
-      await _repository.deleteItems(ids);
+      await _repository.deleteItems(ids, deletedAt: _clock.nowUtc());
     }
     return ids.length;
   }
