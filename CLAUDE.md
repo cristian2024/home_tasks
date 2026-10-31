@@ -40,6 +40,9 @@
 - Todo componente interactivo de UI debe incluir accesibilidad (`Semantics` o `tooltip`)[cite: 1].
 - **Tipos explícitos:** tipar siempre las variables (`final String name = …`, no `final name = …`). La regla `always_specify_types` es obligatoria: `melos run analyze` falla con cualquier caso. `toleratedCodes` (`tool/analyze.dart`) queda vacío; sirve para adoptar poco a poco una regla nueva.
 - **Sin funciones que devuelven widgets:** evitar métodos como `Widget _buildX()` o `List<Widget> _section()`; extraer una clase de widget (privada si solo divide una pantalla). No hay lint de Dart para esto: se revisa a mano.
+- **Estilos repetidos:** si un widget usa el mismo estilo del tema más de una vez (`theme.textTheme.bodyMedium`), guardarlo en una variable al principio de `build` (`final TextStyle? bodyStyle = …`) y usarla en todos los sitios.
+- **Campos del widget en un `State`:** si `build` (u otro método del estado) lee varias veces el mismo `widget.x`, declarar un getter privado en el estado (`double? get _size => widget.size;`) y usarlo.
+- **Constantes en su archivo:** los valores por defecto o literales que se repiten (colores, márgenes, tamaños) van en un archivo propio con una `abstract final class` (p. ej. `QrDefaults` en `qr_defaults.dart`, como los tokens de `design_system`), no escritos a mano en cada constructor.
 - **Widgets reutilizables agnósticos:** un widget con una función concreta que pueda usarse en otro sitio recibe por parámetros todo lo que necesita y devuelve resultados con callbacks. No usa cubits ni blocs, navegación, diálogos ni snackbars: eso lo hace la screen, que los conecta. Las partes privadas en que se divide una screen para leerla mejor (`_DetailBody`, `_CameraView`…) son parte de la screen.
 - **Una rama por proyecto:** cada rama (y su PR) cambia un solo proyecto: un paquete de `packages/`, una app de `apps/` o la raíz (`pubspec.yaml`, `tool/`, `.github/`, CLAUDE.md, specs). Los paquetes de una misma funcionalidad (`packages/plugins/<funcionalidad>/`: `_domain`, `plugin_` con su `example/` y sus adaptadores) cuentan como un solo proyecto y se cambian en la misma rama. Cada uno sigue subiendo su versión y su CHANGELOG.
 - **Versión y CHANGELOG por paquete (§5.3):** toda rama que cambie un paquete (o `apps/app`) sube su `version:` y añade una entrada a su `CHANGELOG.md`. Se adopta poco a poco: el primer cambio a un paquete que aún no tiene CHANGELOG lo crea. Las apps de `example/`, `tool/` y la raíz no llevan.
@@ -144,3 +147,31 @@
 - **Plugin lista de compras (§9.5):** ID `shopping_list`, rutas bajo `/shopping-list`. Reglas de negocio, estado derivado (`ShoppingItem.stateAt`) y agrupación (`ShoppingListView`) en `shopping_list_domain`. Las categorías son propias del plugin. En los tests de widgets, `PluginHarness` (`test/helpers/presentation_fixtures.dart`) con repositorio en memoria, `RecordingEventBus` y `FakeShareService`.
 - **Apps de ejemplo de plugins:** el workspace las cubre con el glob `packages/plugins/*/plugin_*/example`.
 - **Workspace y globs:** pub rechaza un glob de `workspace:` que no coincide con ningún paquete. La rama que crea el primer paquete de una carpeta nueva añade su glob.
+
+## Fase 6 (sincronización entre dispositivos)
+- **Diseño:** §10.4 de la spec. P2P en la WiFi de casa, cifrado de extremo a extremo, gossip con vectores de versiones y un HLC por campo. Isar sigue siendo la fuente de verdad: sin red, la app funciona igual.
+- **Paquetes:**
+  - `hlc` (Dart puro): reloj lógico híbrido.
+  - `core_sync` (contratos, Dart puro): registros de cambio, vector, hogar, conflictos y los contratos `SyncTransport`, `SyncParticipant`, `SyncCipher`, `ChangeLog`, `SyncStateRepository` y `ConflictRepository`. En `testing.dart`, sus tests de contrato, los dobles en memoria, `InMemorySyncNetwork` (con cortes de red) y `FakeSyncCipher` (no es seguro).
+  - `core_secrets`: contrato `SecretStore`.
+  - `sync_engine`: motor, bandeja, hogar, controlador y `SyncModule`. En `testing.dart`, `SyncSimulator` y `SimulatedDevice`.
+  - Adaptadores: `sync_isar`, `sync_lan`, `sync_crypto_cryptography` y `secret_store_secure_storage`.
+  - `qr_display`: `AppQrCode`, con `qr` y un `CustomPainter` (no `qr_flutter`).
+- **Composición:** `SyncIsar()` va dentro de `IsarStorage`, y `SyncModule()` va **al final** de `appAdapters`, porque compone el motor con lo que registraron los demás. Transportes y participantes se añaden con `SyncTransports.of(services).add(...)` y `SyncParticipants.of(services).add(...)` en el scope raíz. `bootstrapApp` llama a `SyncController.start()`; la app lo pausa en segundo plano y lo reanuda al volver. Sin `SyncModule`, `SyncServices.of(locator)` es `null` y Configuración no muestra la sección.
+- **Una funcionalidad que se sincroniza:**
+  - Las entidades no llevan metadatos. El repositorio guarda una copia sincronizada por entidad (`SyncedEntity`) y, en la misma transacción que la escritura, registra el cambio con `LocalSyncRecorder` (en Isar, con `IsarChangeLogWriter`). Los casos de uso no cambian.
+  - Los borrados son lógicos (`deletedAt`): sin eso, un borrado no gana a una edición hecha a la vez en otro dispositivo.
+  - Las reglas de conflicto son una función pura del estado en `<funcionalidad>_domain` (`ItemTrackerResolver`, `ShoppingListResolver`). Las resoluciones provisionales se calculan, no se escriben, así que todos los dispositivos llegan al mismo resultado. Los ids de conflicto son deterministas.
+  - El participante (`<Funcionalidad>SyncParticipant`) vive en el `_domain` y lo registra `<funcionalidad>_isar` en el scope raíz: sigue recibiendo cambios con el plugin desactivado.
+  - Un repositorio en memoria se sincroniza si recibe `hlcClock:` y `changeLog:`.
+  - Un tipo de conflicto nuevo necesita sus textos en la bandeja de la app (`apps/app/lib/sync/conflict_description.dart` y `app.sync.conflicts` en sus JSON).
+- **Nativo:** Android con `INTERNET`, `ACCESS_NETWORK_STATE`, `CHANGE_WIFI_MULTICAST_STATE` y `allowBackup="false"`: una copia restaurada traería una clave que el Keystore de otro teléfono no descifra y la identidad de este dispositivo. iOS con `NSLocalNetworkUsageDescription` y `NSBonjourServices` (`_hometasks._tcp`). En el emulador de Android solo se ve a sí mismo: la red se prueba con teléfonos.
+- **Tests:**
+  - El motor, con `SyncSimulator` (semillas reproducibles). `SimulatedDevice.advertise()` acepta sesiones: no combinarlo con `controller.start()`, que también acepta.
+  - La app, con `SyncedDevice` (`apps/app/test/helpers/synced_device.dart`): varios dispositivos con dobles en memoria en un `InMemorySyncNetwork`. Uno se pinta con `harness.pump` y los demás corren sin UI (`startHeadless`).
+
+## Trampas de la sincronización en tests
+- **Liberar dentro del test:** en `testWidgets`, liberar los dispositivos sincronizados al final del cuerpo, después de `tester.pumpWidget(const SizedBox())`, no en `tearDown` ni en `addTearDown`. Ahí, con la app aún montada, `SyncController.stop()` no termina con el reloj simulado y el test se cuelga. Ver `syncTest` en `apps/app/test/sync_test.dart`.
+- **`--timeout` no corta un `testWidgets` colgado:** con el reloj simulado, el límite por test no salta. Para encontrar el que se cuelga, ejecutar el archivo con `--reporter expanded` y ver cuál no termina.
+- **Snackbars entre rutas:** con varias pantallas apiladas, `find.text` de un snackbar puede encontrar más de uno. Para comprobar que se avisó una sola vez, mirar el estado del cubit (p. ej. `JoinState.attempt`).
+
