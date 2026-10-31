@@ -77,6 +77,27 @@ Widget gallery() => ListView(
           ],
         ),
         AppCheckTile(title: 'Pan', value: true, checkboxLabel: 'Marcar como comprado', onChanged: (bool _) {}),
+        AppSyncStatusCard(
+          tone: AppSyncTone.idle,
+          title: 'Sincronizado hace 5 min',
+          details: const <String>['2 dispositivos a la vista'],
+          actionLabel: 'Sincronizar ahora',
+          onAction: () {},
+        ),
+        const AppSyncStatusCard(tone: AppSyncTone.error, title: 'No se pudo sincronizar', message: 'Revisa la WiFi.'),
+        AppConflictCard<String>(
+          title: 'Etiqueta en dos objetos',
+          message: 'La etiqueta NFC se asoció a la vez a dos objetos.',
+          options: const <AppConflictOption<String>>[
+            AppConflictOption<String>(value: 'a', label: 'Caja A', description: 'La etiqueta queda en «Caja A».'),
+            AppConflictOption<String>(value: 'b', label: 'Caja B'),
+          ],
+          applied: 'a',
+          appliedLabel: 'Aplicada ahora',
+          onSelected: (String _) {},
+          keepLabel: 'Dejarlo así',
+          onKeep: () {},
+        ),
       ],
     );
 
@@ -469,5 +490,148 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(results, <String?>['b', 'a', null]);
+  });
+
+  group('AppSyncStatusCard', () {
+    testWidgets('muestra título, detalles y mensaje, y la acción responde', (WidgetTester tester) async {
+      int taps = 0;
+      await tester.pumpWidget(
+        host(AppSyncStatusCard(
+          tone: AppSyncTone.error,
+          title: 'No se pudo sincronizar',
+          details: const <String>['3 cambios pendientes', 'Ningún dispositivo a la vista'],
+          message: 'Revisa la WiFi.',
+          actionLabel: 'Sincronizar ahora',
+          onAction: () => taps++,
+        )),
+      );
+
+      expect(find.text('3 cambios pendientes'), findsOneWidget);
+      expect(find.text('Ningún dispositivo a la vista'), findsOneWidget);
+      expect(find.text('Revisa la WiFi.'), findsOneWidget);
+      expect(find.byIcon(Icons.sync_problem), findsOneWidget);
+
+      await tester.tap(find.text('Sincronizar ahora'));
+      expect(taps, 1);
+    });
+
+    testWidgets('el título se anuncia al cambiar', (WidgetTester tester) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await tester.pumpWidget(host(const AppSyncStatusCard(tone: AppSyncTone.off, title: 'Sin hogar')));
+
+      expect(find.byIcon(Icons.sync_disabled), findsOneWidget);
+      expect(tester.getSemantics(find.text('Sin hogar')), isSemantics(label: 'Sin hogar', isLiveRegion: true));
+      expect(find.byType(AppButton), findsNothing);
+      semantics.dispose();
+    });
+
+    testWidgets('sincronizando, la acción muestra un indicador y no responde', (WidgetTester tester) async {
+      int taps = 0;
+      await tester.pumpWidget(
+        host(AppSyncStatusCard(
+          tone: AppSyncTone.syncing,
+          title: 'Sincronizando…',
+          actionLabel: 'Sincronizar ahora',
+          onAction: () => taps++,
+        )),
+      );
+
+      await tester.tap(find.text('Sincronizar ahora'));
+      expect(taps, 0);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+  });
+
+  group('AppConflictCard', () {
+    Widget conflict({required ValueChanged<String> onSelected, VoidCallback? onKeep, bool busy = false}) => AppConflictCard<String>(
+          title: 'Etiqueta en dos objetos',
+          message: 'La etiqueta NFC se asoció a la vez a dos objetos.',
+          options: const <AppConflictOption<String>>[
+            AppConflictOption<String>(value: 'a', label: 'Caja A', description: 'La etiqueta queda en «Caja A».'),
+            AppConflictOption<String>(value: 'b', label: 'Caja B'),
+          ],
+          applied: 'a',
+          appliedLabel: 'Aplicada ahora',
+          onSelected: onSelected,
+          keepLabel: 'Dejarlo así',
+          onKeep: onKeep,
+          busy: busy,
+        );
+
+    testWidgets('marca la opción aplicada y avisa de la elegida', (WidgetTester tester) async {
+      final List<String> selected = <String>[];
+      int keeps = 0;
+      await tester.pumpWidget(host(conflict(onSelected: selected.add, onKeep: () => keeps++)));
+
+      expect(find.text('Aplicada ahora'), findsOneWidget);
+      expect(
+        find.descendant(of: find.widgetWithText(ListTile, 'Caja A'), matching: find.text('Aplicada ahora')),
+        findsOneWidget,
+      );
+      expect(find.text('La etiqueta queda en «Caja A».'), findsOneWidget);
+
+      await tester.tap(find.text('Caja B'));
+      await tester.tap(find.text('Dejarlo así'));
+
+      expect(selected, <String>['b']);
+      expect(keeps, 1);
+    });
+
+    testWidgets('con busy, las opciones y la confirmación no responden', (WidgetTester tester) async {
+      final List<String> selected = <String>[];
+      int keeps = 0;
+      await tester.pumpWidget(host(conflict(onSelected: selected.add, onKeep: () => keeps++, busy: true)));
+
+      await tester.tap(find.text('Caja B'));
+      await tester.tap(find.text('Dejarlo así'));
+
+      expect(selected, isEmpty);
+      expect(keeps, 0);
+    });
+
+    testWidgets('sin keepLabel no hay botón de confirmar', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        host(AppConflictCard<int>(
+          title: '¿Fueron dos compras?',
+          message: 'Dos dispositivos compraron «Leche» a la vez.',
+          options: const <AppConflictOption<int>>[
+            AppConflictOption<int>(value: 1, label: 'Una compra'),
+            AppConflictOption<int>(value: 2, label: 'Dos compras'),
+          ],
+          applied: 1,
+          appliedLabel: 'Aplicada ahora',
+          onSelected: (int _) {},
+        )),
+      );
+
+      expect(find.byType(AppButton), findsNothing);
+    });
+
+    testWidgets('las tarjetas de sincronización no desbordan con el texto al 200 %', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 1200);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        host(
+          ListView(
+            children: <Widget>[
+              AppSyncStatusCard(
+                tone: AppSyncTone.error,
+                title: 'No se pudo sincronizar con el otro dispositivo',
+                details: const <String>['12 cambios pendientes de enviar'],
+                message: 'El otro dispositivo no conoce la clave del hogar.',
+                actionLabel: 'Sincronizar ahora',
+                onAction: () {},
+              ),
+              conflict(onSelected: (String _) {}, onKeep: () {}),
+            ],
+          ),
+          textScale: 2,
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
   });
 }

@@ -238,6 +238,8 @@ class _GalleryPage extends StatelessWidget {
               },
             ),
           ),
+          const AppSectionHeader('Sincronización'),
+          const _SyncDemo(),
           const AppSectionHeader('Estados'),
           SizedBox(
             height: 320,
@@ -326,6 +328,52 @@ class _ListsDemoState extends State<_ListsDemo> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SyncDemo extends StatefulWidget {
+  const _SyncDemo();
+
+  @override
+  State<_SyncDemo> createState() => _SyncDemoState();
+}
+
+class _SyncDemoState extends State<_SyncDemo> {
+  AppSyncTone _tone = AppSyncTone.idle;
+  String _applied = 'a';
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        AppSyncStatusCard(
+          tone: _tone,
+          title: switch (_tone) {
+            AppSyncTone.off => 'Sin hogar',
+            AppSyncTone.idle => 'Sincronizado hace 5 min',
+            AppSyncTone.syncing => 'Sincronizando…',
+            AppSyncTone.error => 'No se pudo sincronizar',
+          },
+          details: const <String>['2 cambios pendientes', '1 dispositivo a la vista'],
+          message: _tone == AppSyncTone.error ? 'El otro dispositivo no respondió.' : null,
+          actionLabel: 'Cambiar estado',
+          onAction: () => setState(() => _tone = AppSyncTone.values[(_tone.index + 1) % AppSyncTone.values.length]),
+        ),
+        AppConflictCard<String>(
+          title: 'Etiqueta en dos objetos',
+          message: 'La misma etiqueta NFC se asoció a la vez a dos objetos.',
+          options: const <AppConflictOption<String>>[
+            AppConflictOption<String>(value: 'a', label: 'Caja A', description: 'La etiqueta queda en «Caja A».'),
+            AppConflictOption<String>(value: 'b', label: 'Caja B', description: 'La etiqueta queda en «Caja B».'),
+          ],
+          applied: _applied,
+          appliedLabel: 'Aplicada ahora',
+          onSelected: (String value) => setState(() => _applied = value),
+          keepLabel: 'Dejarlo así',
+          onKeep: () {},
+        ),
+      ],
     );
   }
 }

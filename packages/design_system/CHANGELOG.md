@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.4 - 2026-10-31
+
+### Añadido
+
+- `AppSyncStatusCard`: tarjeta con el estado de una sincronización (`AppSyncTone`: `off`, `idle`, `syncing`, `error`), detalles en líneas, mensaje de error y una acción que se desactiva con indicador mientras sincroniza. El título se anuncia a los lectores de pantalla cuando cambia.
+- `AppConflictCard<T>` con `AppConflictOption<T>`: conflicto entre dispositivos con sus opciones. Marca la opción que ya rige, avisa de la elegida y, con `keepLabel`, confirma la actual. Con `busy` no responde.
+- La galería del ejemplo los muestra en la sección «Sincronización».
+
 ## 0.1.3 - 2026-10-29
 
 ### Añadido
