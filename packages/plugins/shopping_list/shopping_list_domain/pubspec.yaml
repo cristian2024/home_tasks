@@ -1,6 +1,6 @@
 name: shopping_list_domain
 description: Dominio de la lista de compras en Dart puro - items, categorías, compras, reglas de estado y agrupación, y el contrato del repositorio.
-version: 0.1.1
+version: 0.2.0
 publish_to: none
 
 environment:
@@ -11,6 +11,8 @@ resolution: workspace
 dependencies:
   # Solo para los tests de contrato (StreamQueue).
   async: ^2.13.1
+  core_sync: ^0.1.1
+  core_utils: ^0.1.1
   equatable: ^3.0.0
   recurrence: ^0.1.0
   # Solo para los tests de contrato de `package:shopping_list_domain/testing.dart`.

@@ -70,7 +70,7 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
   IconData get icon => Icons.shopping_cart_outlined;
 
   @override
-  String get version => '0.1.1';
+  String get version => '0.2.0';
 
   /// La lista: desde la grilla del inicio se abre directamente.
   @override
@@ -125,11 +125,11 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
             createItem: createItem,
             updateItem: UpdateShoppingItem(repository, clock),
             getItem: GetShoppingItem(repository),
-            deleteItems: DeleteShoppingItems(repository),
+            deleteItems: DeleteShoppingItems(repository, clock),
             markPurchased: MarkShoppingItemPurchased(repository, ids, clock, eventBus),
             undoPurchase: UndoShoppingPurchase(repository, clock),
             markPending: markPending,
-            clearPurchased: ClearPurchasedShoppingItems(repository),
+            clearPurchased: ClearPurchasedShoppingItems(repository, clock),
             createCategory: CreateShoppingCategory(repository, ids, categoryName),
             renameCategory: RenameShoppingCategory(repository, categoryName),
             countCategoryUsage: CountShoppingCategoryUsage(repository),

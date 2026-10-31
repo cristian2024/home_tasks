@@ -18,7 +18,7 @@ dependencies:
   flutter:
     sdk: flutter
   go_router: ">=14.0.0 <17.0.0"
-  plugin_shopping_list: ^0.1.0
+  plugin_shopping_list: ^0.2.0
   share_native: ^0.1.0
   shopping_list_isar: ^0.1.0
   storage_isar: ^0.2.0

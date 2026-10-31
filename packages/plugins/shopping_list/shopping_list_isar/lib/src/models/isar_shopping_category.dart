@@ -14,4 +14,7 @@ class IsarShoppingCategory {
 
   @Index()
   late int sortOrder;
+
+  /// Borrado lógico: `null` si está activa.
+  DateTime? deletedAt;
 }
