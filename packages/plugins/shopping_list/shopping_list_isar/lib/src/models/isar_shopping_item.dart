@@ -31,4 +31,7 @@ class IsarShoppingItem {
   DateTime? lastPurchasedAt;
   late DateTime createdAt;
   late DateTime updatedAt;
+
+  /// Borrado lógico: `null` si está activo.
+  DateTime? deletedAt;
 }

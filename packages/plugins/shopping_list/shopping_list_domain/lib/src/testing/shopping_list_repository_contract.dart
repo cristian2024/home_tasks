@@ -116,7 +116,7 @@ void shoppingListRepositoryContract(
           queue,
           emitsThrough(predicate<List<ShoppingItem>>((List<ShoppingItem> items) => items.length == 2)),
         );
-        await repository.deleteItems(<String>['i1']);
+        await repository.deleteItems(<String>['i1'], deletedAt: t1);
         await expectLater(
           queue,
           emitsThrough(predicate<List<ShoppingItem>>((List<ShoppingItem> items) => ids(items).join() == 'i2')),
@@ -128,9 +128,21 @@ void shoppingListRepositoryContract(
         await repository.saveItem(item('i2'));
         await repository.recordPurchase(item('i1'), purchase('p1', t0));
 
-        await repository.deleteItems(<String>['i1', 'nada']);
+        await repository.deleteItems(<String>['i1', 'nada'], deletedAt: t1);
 
         expect(ids(await repository.getItems()), <String>{'i2'});
+        expect(await repository.getItem('i1'), isNull);
+        expect(await repository.getPurchases('i1'), isEmpty);
+      });
+
+      test('un item borrado no vuelve al guardarlo ni al comprarlo', () async {
+        await repository.saveItem(item('i1'));
+        await repository.deleteItems(<String>['i1'], deletedAt: t1);
+
+        await repository.saveItem(item('i1', updatedAt: t1));
+        await repository.recordPurchase(item('i1', updatedAt: t1), purchase('p1', t1));
+
+        expect(await repository.getItems(), isEmpty);
         expect(await repository.getPurchases('i1'), isEmpty);
       });
     });
@@ -194,6 +206,15 @@ void shoppingListRepositoryContract(
         expect(await repository.getItem('i1'), item('i1', categoryIds: <String>['c1']));
       });
 
+      test('una categoría borrada no vuelve al guardarla', () async {
+        await repository.saveCategories(<ShoppingCategory>[category('c1', 0)]);
+        await repository.deleteCategory('c1', updatedAt: t1);
+
+        await repository.saveCategories(<ShoppingCategory>[category('c1', 0, name: 'Comida'), category('c2', 1)]);
+
+        expect(await repository.getCategories(), <ShoppingCategory>[category('c2', 1)]);
+      });
+
       test('seedDefaultCategories solo crea las categorías la primera vez', () async {
         final List<ShoppingCategory> defaults = <ShoppingCategory>[category('c1', 0, defaultKey: 'food')];
 
@@ -232,10 +253,19 @@ void shoppingListRepositoryContract(
         await repository.recordPurchase(item('i1'), purchase('p1', t0));
         await repository.recordPurchase(item('i1', status: ShoppingItemStatus.purchased), purchase('p2', t1));
 
-        await repository.undoPurchase(item('i1', updatedAt: t1), 'p2');
+        await repository.undoPurchase(item('i1', updatedAt: t1), 'p2', deletedAt: t1);
 
         expect(await repository.getItem('i1'), item('i1', updatedAt: t1));
         expect(await repository.getPurchases('i1'), <ShoppingPurchase>[purchase('p1', t0)]);
+      });
+
+      test('undoPurchase de una compra que no existe solo restaura el item', () async {
+        await repository.saveItem(item('i1', status: ShoppingItemStatus.purchased));
+
+        await repository.undoPurchase(item('i1', updatedAt: t1), 'nada', deletedAt: t1);
+
+        expect(await repository.getItem('i1'), item('i1', updatedAt: t1));
+        expect(await repository.getPurchases('i1'), isEmpty);
       });
     });
   });
