@@ -52,6 +52,8 @@ class AppSyncStatusCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final TextStyle? bodyStyle = theme.textTheme.bodyMedium;
+    final String? message = this.message;
+    final String? actionLabel = this.actionLabel;
     final (IconData icon, Color color) = switch (tone) {
       AppSyncTone.off => (Icons.sync_disabled, colors.onSurfaceVariant),
       AppSyncTone.idle => (Icons.sync, colors.primary),
@@ -78,11 +80,11 @@ class AppSyncStatusCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             Text(detail, style: bodyStyle?.copyWith(color: colors.onSurfaceVariant)),
           ],
-          if (message case final String message) ...<Widget>[
+          if (message != null) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
             Text(message, style: bodyStyle?.copyWith(color: tone == AppSyncTone.error ? colors.error : null)),
           ],
-          if (actionLabel case final String actionLabel) ...<Widget>[
+          if (actionLabel != null) ...<Widget>[
             const SizedBox(height: AppSpacing.md),
             AppButton(
               label: actionLabel,
