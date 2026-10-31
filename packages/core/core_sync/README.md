@@ -16,10 +16,22 @@ Contratos y modelo de la sincronización entre dispositivos (§10.4 de la spec).
   - `apply(changes, hlc)` / `merge(record)` devuelven un `SyncMerge`: los metadatos nuevos y los cambios que ganan, que son los que hay que escribir.
   - La fusión es idempotente y conmutativa. El borrado es un campo más (`deletedAt`) que nadie vuelve a poner a `null`, así que siempre gana a una edición.
   - `toJson` / `fromJson` para guardarlos junto a la entidad.
+- **`SyncedEntity`**: copia sincronizada de una entidad, la que guarda cada repositorio junto a sus entidades. El último valor de cada campo y sus `SyncMetadata`. Se fusiona con `apply` / `merge`. Un conjunto se guarda como la lista ordenada de sus elementos presentes. Puede estar incompleta si llegó un cambio antes que el registro que la crea.
+- **`FieldDiff.between(before, after)`**: los `FieldChange` para pasar de una versión de los campos a otra. Un valor `Set<String>` es un conjunto y da un `ElementChange` por elemento añadido o quitado.
 - **`Household`** (id, época, creador), **`DeviceIdentity`**, **`SyncPeer`**.
 - **`SyncConflict`** y **`ConflictOption`**: conflicto de reglas de negocio con su resolución provisional y, cuando el usuario elige, `resolve(optionId)`.
 - **`BlobRef`**: referencia a un binario por `sha256`. Reservada.
 - Errores (`sealed SyncException`): `SyncTransportException` y `SyncCipherException`.
+
+## Escrituras locales
+
+`LocalSyncRecorder` convierte una escritura local de un repositorio en registros de cambio. El repositorio le pasa, por entidad escrita, un `LocalSyncWrite` con su copia sincronizada actual y sus campos después de escribir. Devuelve un registro por entidad que cambió, todos con la misma marca y `seq` consecutivos desde `nextSeq`, y las copias nuevas. El repositorio guarda ambos en la misma transacción que la entidad.
+
+```dart
+final LocalSyncChanges changes = recorder.record(<LocalSyncWrite>[
+  LocalSyncWrite(collection: 'shopping_list.items', id: item.id, fields: fields, current: synced),
+], nextSeq: (await log.vector())[recorder.deviceId] + 1);
+```
 
 ## Contratos
 

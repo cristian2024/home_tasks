@@ -1,6 +1,6 @@
 name: core_sync
 description: Contratos y modelo de la sincronización entre dispositivos (registros de cambio, vector de versiones, metadatos por campo), en Dart puro. El motor va en sync_engine y las implementaciones en packages/adapters/.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:
@@ -12,6 +12,7 @@ dependencies:
   # Solo para los tests de contrato (StreamQueue).
   async: ^2.13.1
   core_di: ^0.1.2
+  core_utils: ^0.1.1
   equatable: ^3.0.0
   hlc: ^0.1.0
   # Solo para los tests de contrato de `package:core_sync/testing.dart`.
