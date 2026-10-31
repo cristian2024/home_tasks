@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import 'qr_defaults.dart';
 import 'qr_matrix.dart';
 
 /// Dibuja [data] como un código QR cuadrado que ocupa el ancho disponible (o
@@ -18,9 +19,9 @@ class AppQrCode extends StatefulWidget {
     required this.semanticLabel,
     this.size,
     this.errorLevel = QrErrorLevel.medium,
-    this.color = const Color(0xFF000000),
-    this.backgroundColor = const Color(0xFFFFFFFF),
-    this.quietZone = 4,
+    this.color = QrDefaults.color,
+    this.backgroundColor = QrDefaults.backgroundColor,
+    this.quietZone = QrDefaults.quietZone,
   }) : assert(quietZone >= 0);
 
   /// Lo que codifica el QR.
@@ -50,6 +51,8 @@ class AppQrCode extends StatefulWidget {
 
 class _AppQrCodeState extends State<AppQrCode> {
   late QrMatrix _matrix;
+
+  double? get _size => widget.size;
 
   @override
   void initState() {
@@ -82,7 +85,7 @@ class _AppQrCodeState extends State<AppQrCode> {
       label: widget.semanticLabel,
       image: true,
       excludeSemantics: true,
-      child: widget.size == null ? code : SizedBox.square(dimension: widget.size, child: code),
+      child: _size == null ? code : SizedBox.square(dimension: _size, child: code),
     );
   }
 }
@@ -95,9 +98,9 @@ class _AppQrCodeState extends State<AppQrCode> {
 class QrPainter extends CustomPainter {
   const QrPainter({
     required this.matrix,
-    this.color = const Color(0xFF000000),
-    this.backgroundColor = const Color(0xFFFFFFFF),
-    this.quietZone = 4,
+    this.color = QrDefaults.color,
+    this.backgroundColor = QrDefaults.backgroundColor,
+    this.quietZone = QrDefaults.quietZone,
   });
 
   final QrMatrix matrix;

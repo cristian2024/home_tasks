@@ -7,11 +7,11 @@ App de utilidades del hogar hecha con Flutter y organizada por plugins: cada fun
 | Carpeta | Contenido |
 | :--- | :--- |
 | `apps/app` | La app. Elige los adaptadores y los plugins, e inyecta todos los textos. |
-| `packages/core/` | Contratos y servicios base: plugins (`core_contracts`), inyección de dependencias (`core_di`), eventos entre plugins (`core_events`), hardware (`core_hardware`) y compartir (`core_share`). |
-| `packages/shared/` | Paquetes comunes en Dart puro o de UI base: `core_ui`, `core_utils`, `urgency`, `recurrence`, `list_export`. |
+| `packages/core/` | Contratos y servicios base: plugins (`core_contracts`), inyección de dependencias (`core_di`), eventos entre plugins (`core_events`), hardware (`core_hardware`), compartir (`core_share`), secretos (`core_secrets`), contratos de la sincronización (`core_sync`) y su motor (`sync_engine`). |
+| `packages/shared/` | Paquetes comunes en Dart puro o de UI base: `core_ui`, `core_utils`, `urgency`, `recurrence`, `list_export`, `hlc` (reloj lógico híbrido) y `qr_display` (widget de código QR). |
 | `packages/design_system` | Tokens, temas y componentes accesibles. |
 | `packages/contracts/` | Lo que un plugin expone a otros (eventos y capacidades), en Dart puro. |
-| `packages/adapters/` | Tecnologías reemplazables: `storage_isar` (base de datos), `share_native` (compartir) y `hardware_mobile_scanner`, `hardware_nfc_manager` y `hardware_permission_handler` (cámara, NFC y permisos). |
+| `packages/adapters/` | Tecnologías reemplazables: `storage_isar` (base de datos), `share_native` (compartir), `hardware_mobile_scanner`, `hardware_nfc_manager` y `hardware_permission_handler` (cámara, NFC y permisos) y, para la sincronización, `sync_isar` (estado y log de cambios), `sync_lan` (red local), `sync_crypto_cryptography` (cifrado) y `secret_store_secure_storage` (clave del hogar). |
 | `packages/plugins/<funcionalidad>/` | Una funcionalidad con datos, en tres paquetes: `<funcionalidad>_domain` (Dart puro), `plugin_<funcionalidad>` (casos de uso, UI y su app de `example/`) y su adaptador (p. ej. `item_tracker_isar`). |
 
 Los paquetes dependen de contratos, no de implementaciones. Cambiar de tecnología (p. ej. de Isar a SQLite) solo requiere adaptadores nuevos que pasen la batería de tests de contrato, y cambiar la lista de adaptadores de la app.
