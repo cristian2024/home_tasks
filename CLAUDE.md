@@ -144,3 +144,31 @@
 - **Plugin lista de compras (§9.5):** ID `shopping_list`, rutas bajo `/shopping-list`. Reglas de negocio, estado derivado (`ShoppingItem.stateAt`) y agrupación (`ShoppingListView`) en `shopping_list_domain`. Las categorías son propias del plugin. En los tests de widgets, `PluginHarness` (`test/helpers/presentation_fixtures.dart`) con repositorio en memoria, `RecordingEventBus` y `FakeShareService`.
 - **Apps de ejemplo de plugins:** el workspace las cubre con el glob `packages/plugins/*/plugin_*/example`.
 - **Workspace y globs:** pub rechaza un glob de `workspace:` que no coincide con ningún paquete. La rama que crea el primer paquete de una carpeta nueva añade su glob.
+
+## Fase 6 (sincronización entre dispositivos)
+- **Diseño:** §10.4 de la spec. P2P en la WiFi de casa, cifrado de extremo a extremo, gossip con vectores de versiones y un HLC por campo. Isar sigue siendo la fuente de verdad: sin red, la app funciona igual.
+- **Paquetes:**
+  - `hlc` (Dart puro): reloj lógico híbrido.
+  - `core_sync` (contratos, Dart puro): registros de cambio, vector, hogar, conflictos y los contratos `SyncTransport`, `SyncParticipant`, `SyncCipher`, `ChangeLog`, `SyncStateRepository` y `ConflictRepository`. En `testing.dart`, sus tests de contrato, los dobles en memoria, `InMemorySyncNetwork` (con cortes de red) y `FakeSyncCipher` (no es seguro).
+  - `core_secrets`: contrato `SecretStore`.
+  - `sync_engine`: motor, bandeja, hogar, controlador y `SyncModule`. En `testing.dart`, `SyncSimulator` y `SimulatedDevice`.
+  - Adaptadores: `sync_isar`, `sync_lan`, `sync_crypto_cryptography` y `secret_store_secure_storage`.
+  - `qr_display`: `AppQrCode`, con `qr` y un `CustomPainter` (no `qr_flutter`).
+- **Composición:** `SyncIsar()` va dentro de `IsarStorage`, y `SyncModule()` va **al final** de `appAdapters`, porque compone el motor con lo que registraron los demás. Transportes y participantes se añaden con `SyncTransports.of(services).add(...)` y `SyncParticipants.of(services).add(...)` en el scope raíz. `bootstrapApp` llama a `SyncController.start()`; la app lo pausa en segundo plano y lo reanuda al volver. Sin `SyncModule`, `SyncServices.of(locator)` es `null` y Configuración no muestra la sección.
+- **Una funcionalidad que se sincroniza:**
+  - Las entidades no llevan metadatos. El repositorio guarda una copia sincronizada por entidad (`SyncedEntity`) y, en la misma transacción que la escritura, registra el cambio con `LocalSyncRecorder` (en Isar, con `IsarChangeLogWriter`). Los casos de uso no cambian.
+  - Los borrados son lógicos (`deletedAt`): sin eso, un borrado no gana a una edición hecha a la vez en otro dispositivo.
+  - Las reglas de conflicto son una función pura del estado en `<funcionalidad>_domain` (`ItemTrackerResolver`, `ShoppingListResolver`). Las resoluciones provisionales se calculan, no se escriben, así que todos los dispositivos llegan al mismo resultado. Los ids de conflicto son deterministas.
+  - El participante (`<Funcionalidad>SyncParticipant`) vive en el `_domain` y lo registra `<funcionalidad>_isar` en el scope raíz: sigue recibiendo cambios con el plugin desactivado.
+  - Un repositorio en memoria se sincroniza si recibe `hlcClock:` y `changeLog:`.
+  - Un tipo de conflicto nuevo necesita sus textos en la bandeja de la app (`apps/app/lib/sync/conflict_description.dart` y `app.sync.conflicts` en sus JSON).
+- **Nativo:** Android con `INTERNET`, `ACCESS_NETWORK_STATE`, `CHANGE_WIFI_MULTICAST_STATE` y `allowBackup="false"`: una copia restaurada traería una clave que el Keystore de otro teléfono no descifra y la identidad de este dispositivo. iOS con `NSLocalNetworkUsageDescription` y `NSBonjourServices` (`_hometasks._tcp`). En el emulador de Android solo se ve a sí mismo: la red se prueba con teléfonos.
+- **Tests:**
+  - El motor, con `SyncSimulator` (semillas reproducibles). `SimulatedDevice.advertise()` acepta sesiones: no combinarlo con `controller.start()`, que también acepta.
+  - La app, con `SyncedDevice` (`apps/app/test/helpers/synced_device.dart`): varios dispositivos con dobles en memoria en un `InMemorySyncNetwork`. Uno se pinta con `harness.pump` y los demás corren sin UI (`startHeadless`).
+
+## Trampas de la sincronización en tests
+- **Liberar dentro del test:** en `testWidgets`, liberar los dispositivos sincronizados al final del cuerpo, después de `tester.pumpWidget(const SizedBox())`, no en `tearDown` ni en `addTearDown`. Ahí, con la app aún montada, `SyncController.stop()` no termina con el reloj simulado y el test se cuelga. Ver `syncTest` en `apps/app/test/sync_test.dart`.
+- **`--timeout` no corta un `testWidgets` colgado:** con el reloj simulado, el límite por test no salta. Para encontrar el que se cuelga, ejecutar el archivo con `--reporter expanded` y ver cuál no termina.
+- **Snackbars entre rutas:** con varias pantallas apiladas, `find.text` de un snackbar puede encontrar más de uno. Para comprobar que se avisó una sola vez, mirar el estado del cubit (p. ej. `JoinState.attempt`).
+
