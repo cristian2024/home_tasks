@@ -27,6 +27,7 @@ También se exportan:
 
 - `QrMatrix.encode(data, errorLevel:)`: los módulos ya codificados (`size`, `isDark(row, column)`), para dibujarlos de otra forma.
 - `QrPainter`: el `CustomPainter` que pinta una `QrMatrix` centrada.
+- `QrDefaults`: los valores por defecto de colores y margen.
 
 **Capacidad:** con `medium` caben 2331 bytes (versión 40). Un texto de 2000 caracteres base64url (el máximo que acepta el lector de identificadores es 2048) cabe.
 
