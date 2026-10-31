@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 - 2026-10-30
+
+### Añadido
+
+- `SyncedEntity`: copia sincronizada de una entidad (último valor y marca de cada campo), que se fusiona con `apply` / `merge`. Un conjunto se guarda como la lista ordenada de sus elementos presentes.
+- `FieldDiff.between`: cambios entre dos versiones de los campos. Un valor `Set<String>` se compara elemento a elemento (`ElementChange`); mapas y listas, por contenido.
+- `LocalSyncRecorder` (con `LocalSyncWrite` y `LocalSyncChanges`): convierte una escritura local de un repositorio en registros de cambio con la misma marca y en sus copias sincronizadas nuevas.
+
 ## 0.1.0 - 2026-10-30
 
 ### Añadido
