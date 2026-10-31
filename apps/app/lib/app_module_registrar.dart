@@ -1,3 +1,4 @@
+import 'package:app_shortcuts_quick_actions/app_shortcuts_quick_actions.dart';
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_ui/core_ui.dart';
@@ -21,6 +22,8 @@ import 'package:sync_lan/sync_lan.dart';
 /// adaptadores de **todos** los plugins registrados, también los
 /// desactivados, para que sus datos sigan accesibles (AC-02).
 ///
+/// Los accesos rápidos del icono, con quick_actions.
+///
 /// La sincronización: `SyncIsar` (estado y log en la misma base),
 /// almacén seguro para la clave del hogar, cifrado, transporte por la WiFi y,
 /// **al final**, `SyncModule`, que compone el motor con lo anterior.
@@ -30,6 +33,7 @@ const List<DependencyModule> appAdapters = <DependencyModule>[
   MobileScannerHardware(),
   NfcManagerHardware(),
   PermissionHandlerHardware(),
+  QuickActionsShortcuts(),
   SecureStorageSecrets(),
   CryptographySyncCipher(),
   LanSyncTransport(),

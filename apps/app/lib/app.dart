@@ -39,10 +39,28 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     locator: widget.environment.locator,
   );
 
+  StreamSubscription<String>? _shortcutSelections;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Después del primer frame, con el router ya montado. Una pulsación que
+    // abrió la app en frío la guarda el servicio hasta este momento.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _shortcutSelections = widget.environment.shortcuts?.selections.listen(_openShortcut);
+      }
+    });
+  }
+
+  /// Abre la pantalla principal del plugin del acceso pulsado. Si el plugin
+  /// no está listo, el guard del router lleva al inicio con un aviso.
+  void _openShortcut(String pluginId) {
+    final String? route = widget.environment.shortcuts?.entryRouteOf(pluginId);
+    if (route != null) {
+      _router.go(route);
+    }
   }
 
   @override
@@ -87,6 +105,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(_shortcutSelections?.cancel());
     _router.dispose();
     super.dispose();
   }

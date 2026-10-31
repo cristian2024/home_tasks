@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.7.0+11 - 2026-10-31
+
+### Añadido
+
+- Accesos rápidos del icono de la app (pulsación larga en el lanzador de Android e iOS): los plugins del inicio con pantalla principal, como mucho 4 y en su orden, con su nombre traducido. Cada uno abre su pantalla principal, también con la app cerrada. Se actualizan al activar o desactivar plugins y al cambiar de idioma.
+- `appAdapters` incluye `QuickActionsShortcuts` (`app_shortcuts_quick_actions`). `bootstrapApp` crea `AppShortcutsPublisher` si hay un `AppShortcutService` registrado y `AppEnvironment.dispose()` lo libera.
+- Icono del acceso de la lista de compras como recurso nativo (Android `res/drawable`, iOS `Assets.xcassets`) y `res/raw/keep.xml` para que el build de release no lo quite.
+
+### Interno
+
+- `AppHarness` acepta `shortcuts:` (p. ej. `FakeAppShortcutService`).
+
 ## 1.6.0+10 - 2026-10-31
 
 ### Añadido

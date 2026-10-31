@@ -1,3 +1,4 @@
+import 'package:core_app_shortcuts/core_app_shortcuts.dart';
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_contracts/testing.dart';
 import 'package:core_di/core_di.dart';
@@ -14,6 +15,7 @@ import 'package:home_utility_app/i18n/strings.g.dart' as app_i18n;
 import 'package:home_utility_app/plugins/plugin_controller.dart';
 import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:home_utility_app/settings/app_settings_controller.dart';
+import 'package:home_utility_app/shortcuts/app_shortcuts_publisher.dart';
 import 'package:home_utility_app/sync/sync_services.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
@@ -77,7 +79,8 @@ class FakeHomePlugin implements HomePlugin {
 /// [includeShoppingList] registra también la lista de compras real, con su
 /// repositorio en memoria. Con [sync] (ver `SyncedDevice`), la
 /// sincronización compuesta sobre [locator], con [items] y [shoppingItems]
-/// sincronizados.
+/// sincronizados. Con [shortcuts] (p. ej. `FakeAppShortcutService`), los
+/// accesos rápidos del icono.
 class AppHarness {
   AppHarness({
     List<HomePlugin> extraPlugins = const <HomePlugin>[],
@@ -87,6 +90,7 @@ class AppHarness {
     InMemoryHouseholdItemRepository? items,
     InMemoryShoppingListRepository? shoppingItems,
     SyncServices? sync,
+    AppShortcutService? shortcuts,
   })  : extraPlugins = extraPlugins,
         items = items ?? InMemoryHouseholdItemRepository(),
         shoppingItems = shoppingItems ?? InMemoryShoppingListRepository(),
@@ -129,11 +133,13 @@ class AppHarness {
         for (final HomePlugin plugin in extraPlugins) (_, _) => plugin,
       ],
     );
+    final PluginController plugins =
+        PluginController(PluginLifecycleManager(registry: registry, preferences: preferences));
     environment = AppEnvironment(
       locator: this.locator,
       localization: localization,
       registry: registry,
-      plugins: PluginController(PluginLifecycleManager(registry: registry, preferences: preferences)),
+      plugins: plugins,
       settings: AppSettingsController(
         repository: settingsRepository,
         localization: localization,
@@ -141,6 +147,9 @@ class AppHarness {
         systemLanguageCode: 'es',
       ),
       sync: sync,
+      shortcuts: shortcuts == null
+          ? null
+          : AppShortcutsPublisher(service: shortcuts, plugins: plugins, localization: localization),
     );
   }
 
@@ -159,6 +168,7 @@ class AppHarness {
     await plugins.load();
     // Como bootstrapApp.
     await environment.sync?.controller.start();
+    environment.shortcuts?.start();
     await tester.pumpWidget(HomeUtilityApp(environment: environment, initialLocation: initialLocation));
     await tester.pumpAndSettle();
   }
