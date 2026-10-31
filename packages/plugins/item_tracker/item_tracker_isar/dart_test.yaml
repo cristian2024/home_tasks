@@ -1,0 +1,5 @@
+# Los archivos de test se ejecutan de uno en uno. Varios abren Isar con
+# `initializeIsarCore(download: true)`, que descarga libisar sobre la misma ruta
+# sin escritura atómica: en paralelo, uno carga la librería a medio escribir y
+# su proceso muere (SIGBUS, código -7, en la CI de Ubuntu).
+concurrency: 1
