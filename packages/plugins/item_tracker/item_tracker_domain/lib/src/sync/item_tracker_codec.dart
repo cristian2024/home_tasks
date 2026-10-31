@@ -5,7 +5,6 @@ import '../entities/item_event.dart';
 import '../entities/physical_identifier.dart';
 import '../errors/item_tracker_exception.dart';
 import '../value_objects/item_metadata.dart';
-import 'synced_entity.dart';
 
 /// Colecciones de item_tracker en la sincronización.
 abstract final class ItemTrackerCollections {
@@ -16,8 +15,7 @@ abstract final class ItemTrackerCollections {
   static const Set<String> all = <String>{items, identifiers, events};
 }
 
-/// Conversión entre las entidades de item_tracker y sus campos sincronizados,
-/// y diferencia entre dos versiones de los campos.
+/// Conversión entre las entidades de item_tracker y sus campos sincronizados.
 ///
 /// Las fechas viajan en ISO 8601 (UTC) y los enums por su nombre.
 abstract final class ItemTrackerCodec {
@@ -118,13 +116,6 @@ abstract final class ItemTrackerCodec {
     return value is String ? DateTime.parse(value) : null;
   }
 
-  /// Cambios para pasar de [before] a [after]. Sin [before] (entidad nueva),
-  /// solo los campos con valor.
-  static List<FieldChange> diff(Map<String, Object?>? before, Map<String, Object?> after) => <FieldChange>[
-        for (final MapEntry<String, Object?>(:String key, :Object? value) in after.entries)
-          if (before == null ? value != null : !_deepEquals(before[key], value)) ValueChange(key, value),
-      ];
-
   static String _date(DateTime value) => value.toUtc().toIso8601String();
 
   static String? _dateOrNull(DateTime? value) => value == null ? null : _date(value);
@@ -141,13 +132,5 @@ abstract final class ItemTrackerCodec {
     } on ItemValidationException {
       return const ItemMetadata.empty();
     }
-  }
-
-  static bool _deepEquals(Object? a, Object? b) {
-    if (a is Map && b is Map) {
-      return a.length == b.length &&
-          a.entries.every((MapEntry<Object?, Object?> entry) => b.containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]));
-    }
-    return a == b;
   }
 }

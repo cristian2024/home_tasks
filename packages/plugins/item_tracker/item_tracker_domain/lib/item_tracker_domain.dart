@@ -15,6 +15,4 @@ export 'src/sync/item_tracker_codec.dart';
 export 'src/sync/item_tracker_resolver.dart';
 export 'src/sync/item_tracker_sync_participant.dart';
 export 'src/sync/item_tracker_sync_store.dart';
-export 'src/sync/local_sync_recorder.dart';
-export 'src/sync/synced_entity.dart';
 export 'src/value_objects/item_metadata.dart';

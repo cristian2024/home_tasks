@@ -12,7 +12,7 @@
 
 ### Cambiado
 
-- item_tracker_domain 0.2.1, sync_isar 0.1.0, core_sync 0.1.0 y core_utils 0.1.1.
+- item_tracker_domain 0.2.1, sync_isar 0.1.0, core_sync 0.1.1 y core_utils 0.1.1.
 
 ## 0.1.1 - 2026-10-29
 

@@ -8,7 +8,6 @@ import '../repositories/household_item_repository.dart';
 import 'item_tracker_codec.dart';
 import 'item_tracker_resolver.dart';
 import 'item_tracker_sync_store.dart';
-import 'synced_entity.dart';
 
 /// item_tracker en la sincronización (spec §10.4.5). Trabaja sobre los
 /// contratos del repositorio, así que sirve con cualquier implementación.

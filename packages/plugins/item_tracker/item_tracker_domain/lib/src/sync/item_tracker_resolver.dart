@@ -5,7 +5,6 @@ import '../entities/household_item.dart';
 import '../entities/physical_identifier.dart';
 import '../hierarchy/containment_policy.dart';
 import 'item_tracker_codec.dart';
-import 'synced_entity.dart';
 
 /// Un objeto tal como lo lee la app: con su contenedor efectivo y, si está
 /// borrado, el momento del borrado.

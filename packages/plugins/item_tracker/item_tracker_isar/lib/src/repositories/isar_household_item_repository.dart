@@ -1,4 +1,5 @@
 import 'package:core_di/core_di.dart';
+import 'package:core_sync/core_sync.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'package:storage_isar/adapter.dart';
 

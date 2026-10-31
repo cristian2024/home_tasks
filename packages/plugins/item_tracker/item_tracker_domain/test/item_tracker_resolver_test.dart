@@ -1,5 +1,4 @@
 import 'package:core_sync/core_sync.dart';
-import 'package:core_utils/core_utils.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'package:test/test.dart';
 
@@ -22,7 +21,7 @@ HouseholdItem _item(String id, {String? parentId}) => HouseholdItem(
 /// [movedTo] en [movedAt].
 SyncedEntity _synced(String id, {int at = 1, String? parentId, String? movedTo, int? movedAt, int? deletedAt}) {
   SyncedEntity entity = SyncedEntity(collection: ItemTrackerCollections.items, id: id)
-      .apply(ItemTrackerCodec.diff(null, ItemTrackerCodec.itemFields(_item(id, parentId: parentId))), _hlc(at));
+      .apply(FieldDiff.between(null, ItemTrackerCodec.itemFields(_item(id, parentId: parentId))), _hlc(at));
   if (movedAt != null) {
     entity = entity.apply(<FieldChange>[ValueChange(ItemTrackerCodec.parentId, movedTo)], _hlc(movedAt));
   }
@@ -39,7 +38,7 @@ SyncedEntity _identifier(String id, String itemId, {required int at, int? delete
   final PhysicalIdentifier identifier =
       PhysicalIdentifier(id: id, rawValue: rawValue, type: IdentifierType.qr, itemId: itemId, boundAt: _t0);
   SyncedEntity entity = SyncedEntity(collection: ItemTrackerCollections.identifiers, id: id)
-      .apply(ItemTrackerCodec.diff(null, ItemTrackerCodec.identifierFields(identifier)), _hlc(at));
+      .apply(FieldDiff.between(null, ItemTrackerCodec.identifierFields(identifier)), _hlc(at));
   if (deletedAt != null) {
     entity = entity.apply(<FieldChange>[ValueChange(ItemTrackerCodec.deletedAt, _t0.toIso8601String())], _hlc(deletedAt));
   }
@@ -155,62 +154,10 @@ void main() {
       expect(ItemTrackerCodec.identifierOf(identifier), isNull);
       expect(ItemTrackerCodec.eventOf(SyncedEntity(collection: ItemTrackerCollections.events, id: 'e')), isNull);
     });
-
-    test('diff compara mapas por contenido', () {
-      final Map<String, Object?> before = <String, Object?>{'metadata': <String, Object?>{'color': 'rojo'}};
-
-      expect(ItemTrackerCodec.diff(before, <String, Object?>{'metadata': <String, Object?>{'color': 'rojo'}}), isEmpty);
-      expect(ItemTrackerCodec.diff(before, <String, Object?>{'metadata': <String, Object?>{'color': 'azul'}}),
-          hasLength(1));
-      expect(ItemTrackerCodec.diff(before, <String, Object?>{'metadata': <String, Object?>{'talla': 'rojo'}}),
-          hasLength(1));
-    });
-  });
-
-  group('LocalSyncRecorder', () {
-    final LocalSyncRecorder recorder =
-        LocalSyncRecorder(hlcClock: HlcClock(deviceId: 'local', clock: FixedClock(_t0)), ids: _Ids());
-
-    test('las escrituras y los cambios se comparan por valor', () {
-      expect(
-        LocalSyncWrite(collection: 'c', id: 'a', fields: const <String, Object?>{'x': 1}),
-        LocalSyncWrite(collection: 'c', id: 'a', fields: const <String, Object?>{'x': 1}),
-      );
-      expect(LocalSyncChanges(const <ChangeRecord>[], const <SyncedEntity>[]), LocalSyncChanges.none);
-    });
-
-    test('sin cambios no genera registros', () {
-      final SyncedEntity current = _synced('a');
-
-      expect(
-        recorder.record(<LocalSyncWrite>[
-          LocalSyncWrite(collection: current.collection, id: 'a', fields: current.fields, current: current),
-        ], nextSeq: 1),
-        LocalSyncChanges.none,
-      );
-    });
-
-    test('un registro por entidad cambiada, con la misma marca y seq consecutivos', () {
-      final LocalSyncChanges changes = recorder.record(<LocalSyncWrite>[
-        LocalSyncWrite(collection: ItemTrackerCollections.items, id: 'a', fields: const <String, Object?>{'name': 'A'}),
-        LocalSyncWrite(collection: ItemTrackerCollections.items, id: 'b', fields: const <String, Object?>{'name': 'B'}),
-      ], nextSeq: 4);
-
-      expect(changes.records.map((ChangeRecord record) => record.seq), <int>[4, 5]);
-      expect(changes.records.map((ChangeRecord record) => record.hlc).toSet(), hasLength(1));
-      expect(changes.entities.map((SyncedEntity entity) => entity.fields['name']), <String>['A', 'B']);
-    });
   });
 
   test('un commit vacío se reconoce y se compara por valor', () {
     expect(ItemTrackerSyncCommit().isEmpty, isTrue);
     expect(ItemTrackerSyncCommit(events: const <ItemEvent>[]), ItemTrackerSyncCommit());
   });
-}
-
-class _Ids implements IdGenerator {
-  int _next = 0;
-
-  @override
-  String newId() => 'id-${_next++}';
 }

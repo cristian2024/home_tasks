@@ -126,7 +126,7 @@ class IsarItemTrackerSync {
     final List<SyncedEntity> entities = <SyncedEntity>[];
     void add(String collection, String id, Map<String, Object?> fields, DateTime at) {
       final Hlc hlc = Hlc(wallTime: at.millisecondsSinceEpoch, counter: 0, deviceId: deviceId);
-      final List<FieldChange> changes = ItemTrackerCodec.diff(null, fields);
+      final List<FieldChange> changes = FieldDiff.between(null, fields);
       records.add(ChangeRecord(
         opId: _ids.newId(),
         deviceId: deviceId,

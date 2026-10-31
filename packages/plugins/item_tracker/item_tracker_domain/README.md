@@ -33,7 +33,7 @@ El mismo archivo trae `InMemoryHouseholdItemRepository`, para los tests y las ap
 
 item_tracker se sincroniza entre dispositivos con `core_sync` (spec §10.4):
 
-- Cada repositorio guarda, aparte de las entidades, su **copia sincronizada** (`SyncedEntity`): el último valor de cada campo y la marca con que se escribió. Las escrituras locales la actualizan y registran sus cambios (`LocalSyncRecorder`) en la misma transacción. Para eso implementa también `ItemTrackerSyncStore`.
+- Cada repositorio guarda, aparte de las entidades, su **copia sincronizada** (`SyncedEntity`, de core_sync): el último valor de cada campo y la marca con que se escribió. Las escrituras locales la actualizan y registran sus cambios (`LocalSyncRecorder`) en la misma transacción. Para eso implementa también `ItemTrackerSyncStore`.
 - `ItemTrackerSyncParticipant` fusiona los cambios recibidos en las copias y, con `ItemTrackerResolver`, calcula lo que lee la app:
 
   | Situación | Lo que se ve | Conflicto |

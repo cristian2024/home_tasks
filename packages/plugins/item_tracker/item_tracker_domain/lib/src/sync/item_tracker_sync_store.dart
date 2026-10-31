@@ -1,8 +1,8 @@
+import 'package:core_sync/core_sync.dart';
 import 'package:equatable/equatable.dart';
 
 import '../entities/item_event.dart';
 import 'item_tracker_resolver.dart';
-import 'synced_entity.dart';
 
 /// Lo que el participante escribe tras aplicar cambios recibidos: las copias
 /// sincronizadas que cambiaron y lo que la app debe leer desde entonces.
