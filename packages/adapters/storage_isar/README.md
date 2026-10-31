@@ -19,6 +19,15 @@ La base se cierra con `ServiceLocator.reset()`.
 
 **Isar exige conocer todos los esquemas al abrir la base.** Por eso `features` lleva los adaptadores de **todos** los plugins registrados, también los desactivados, para que sus datos sigan intactos.
 
+## Espacios de datos
+
+Cada espacio de datos (`core_spaces`) es una base Isar con su propio nombre: quien compone abre la del espacio activo con `IsarStorage(name: space.databaseName, ...)`. Las preferencias de los plugins van en esa misma base, así que son de cada espacio.
+
+`IsarSpaceStorage` implementa `DataSpaceStorage` sobre los archivos de esas bases (`IsarSpaceStorage.documents()` usa la misma carpeta que `IsarStorage` por defecto):
+
+- `databaseNames()`: las bases `<nombre>.isar` de la carpeta.
+- `delete(databaseName)`: borra la base y su `.lock`. Si está abierta, lanza `DataSpaceInUseException` sin borrar nada.
+
 ## Para los adaptadores de las funcionalidades
 
 Un adaptador Isar (p. ej. `item_tracker_isar`) importa `package:storage_isar/adapter.dart`, que reexporta la API de Isar para que todos usen la misma versión, e implementa `IsarFeature`:

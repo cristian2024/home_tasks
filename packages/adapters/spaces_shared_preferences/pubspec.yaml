@@ -1,0 +1,22 @@
+name: spaces_shared_preferences
+description: Adaptador de core_spaces con shared_preferences - guarda la lista de espacios de datos del dispositivo y el activo.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.1
+  core_spaces: ^0.1.0
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.5.6
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
