@@ -120,6 +120,8 @@
   2. Añadir sus adaptadores en `appAdapters` (p. ej. su `IsarFeature` dentro de `IsarStorage`).
   3. Añadir una `PluginFactory` en `appPluginFactories`. La factoría debe registrar las traducciones del plugin (como `registerLocalization()` de item_tracker).
   4. Sus rutas deben ser absolutas y compartir un primer segmento propio (el guard lo usa como prefijo).
+  5. Si implementa `HomePluginEntryRoute`, sale en los accesos rápidos del icono. Su icono es un recurso nativo (`res/drawable/shortcut_<plugin>.xml` y `Assets.xcassets/shortcut_<plugin>.imageset`) con su entrada en `AppShortcutDefaults.icons`.
+- **Accesos rápidos del icono:** contrato `AppShortcutService` (`core_app_shortcuts`, con `FakeAppShortcutService` y `appShortcutServiceContract` en `testing.dart`) y adaptador `QuickActionsShortcuts` (`app_shortcuts_quick_actions`). `AppShortcutsPublisher` (`apps/app/lib/shortcuts/`) publica los plugins del inicio con pantalla principal (como mucho 4) y los vuelve a publicar al cambiar los plugins o el idioma. La app escucha las pulsaciones tras el primer frame; la del arranque en frío la guarda el servicio. En los tests, `AppHarness(shortcuts: FakeAppShortcutService())`.
 - **Idioma:**
   - Envolver con `LanguageRebuilder` (`core_ui`) el contenido de las rutas. El router de la app ya lo hace con `withLanguageRebuild`.
   - Sin eso, las páginas abiertas no cambian de idioma, porque los textos de slang son globales y GoRouter conserva su `Navigator` con una `GlobalKey`.
