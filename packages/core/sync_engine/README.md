@@ -9,7 +9,8 @@ Motor de la sincronización entre dispositivos (§10.4 de la spec). Es Dart puro
   - `join(invitation)` se une y fusiona los datos locales al sincronizar. Si ya está en ese hogar, adopta una época más nueva.
   - `leave()` borra la clave y el hogar, no los datos.
   - `expel(deviceId)` solo lo puede hacer el creador: abre una época nueva con otra clave y devuelve su invitación.
-  - La clave va en el `SecretStore` (`sync.household.key`); el resto, en el `SyncStateRepository`.
+  - La clave va en el `SecretStore`, una por hogar (`HouseholdService.secretKeyFor(householdId)`), así que varios servicios sobre el mismo almacén (un espacio de datos por hogar) no se pisan. El resto va en el `SyncStateRepository`.
+  - La clave de las versiones con un solo hogar (`sync.household.key`) se copia a la suya la primera vez que se lee, y se conserva y se mantiene al día mientras sea la del hogar actual: así una versión anterior sigue sincronizando. `leave()` la borra si es la de su hogar.
 - **`HouseholdInvitation`**: el contenido del QR. `encode()` da `hometasks-sync:` seguido del JSON en base64url, y `HouseholdInvitation.parse` lo lee.
 - **`HouseholdKeys`**: claves derivadas por uso, hogar y época (autenticación, registros). `discoveryId()` es el anuncio en la red, que nunca revela el id del hogar.
 - **`SyncEngine`**: `syncWith(transport, endpoint)` y `accept(channel)`. Ejecutan una **`SyncSession`**:

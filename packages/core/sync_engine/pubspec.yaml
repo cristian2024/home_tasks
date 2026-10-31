@@ -1,6 +1,6 @@
 name: sync_engine
 description: Motor de la sincronización entre dispositivos (sesiones, fusión, gossip, hogar, bandeja de conflictos y planificación) y su simulador, en Dart puro.
-version: 0.1.1
+version: 0.1.2
 publish_to: none
 
 environment:

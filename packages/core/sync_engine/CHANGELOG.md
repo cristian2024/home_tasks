@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.2 - 2026-10-31
+
+### Cambiado
+
+- `HouseholdService` guarda la clave del hogar con un nombre por hogar (`secretKeyFor(householdId)`): varios servicios sobre el mismo `SecretStore`, cada uno en su hogar, ya no se pisan la clave.
+- La clave de las versiones anteriores (`legacySecretKey`) se copia a la nueva la primera vez que se lee, comprobando la copia. Se conserva y se mantiene al día (`join` a otra época, `expel`) mientras sea la del hogar actual, para que volver a una versión anterior siga sincronizando. `leave()` borra las dos si son de su hogar.
+
+### Obsoleto
+
+- `HouseholdService.secretKey`: usar `secretKeyFor(householdId)`.
+
 ## 0.1.1 - 2026-10-30
 
 ### Interno

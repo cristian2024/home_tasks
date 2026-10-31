@@ -13,8 +13,9 @@ import 'household_keys.dart';
 /// Identidad del dispositivo y hogar al que pertenece: crearlo, unirse con una
 /// invitación, salir y expulsar (solo el creador).
 ///
-/// La clave del hogar va en el [SecretStore]; el resto, en el
-/// [SyncStateRepository].
+/// La clave del hogar va en el [SecretStore], con un nombre por hogar
+/// ([secretKeyFor]): varios servicios sobre el mismo almacén (un espacio de
+/// datos por hogar) no se pisan. El resto va en el [SyncStateRepository].
 class HouseholdService {
   HouseholdService({
     required SyncStateRepository state,
@@ -26,8 +27,17 @@ class HouseholdService {
         _cipher = cipher,
         _ids = ids;
 
-  /// Clave del [SecretStore] donde se guarda la del hogar (en base64url).
-  static const String secretKey = 'sync.household.key';
+  /// Clave del [SecretStore] donde se guarda la del hogar [householdId] (en
+  /// base64url).
+  static String secretKeyFor(String householdId) => 'sync.household.$householdId.key';
+
+  /// Clave del [SecretStore] de las versiones con un solo hogar. Se lee para
+  /// migrar a [secretKeyFor] y se mantiene al día mientras sea la del hogar
+  /// actual, para que una versión anterior siga sincronizando.
+  static const String legacySecretKey = 'sync.household.key';
+
+  @Deprecated('Usar secretKeyFor(householdId); se quitará en una versión futura')
+  static const String secretKey = legacySecretKey;
 
   final SyncStateRepository _state;
   final SecretStore _secrets;
@@ -59,7 +69,7 @@ class HouseholdService {
   /// Claves del hogar actual, o `null` sin hogar (o sin su clave).
   Future<HouseholdKeys?> keys() async {
     final Household? household = await _state.readHousehold();
-    final String? key = await _secrets.read(secretKey);
+    final String? key = household == null ? null : await _readKey(household);
     if (household == null || key == null) {
       return null;
     }
@@ -78,11 +88,12 @@ class HouseholdService {
   /// Invitación del hogar actual, para mostrar su QR. Lanza
   /// [NotInHouseholdException] sin hogar.
   Future<HouseholdInvitation> invitation() async {
-    final HouseholdKeys? keys = await this.keys();
-    if (keys == null) {
+    final Household? household = await _state.readHousehold();
+    final String? key = household == null ? null : await _readKey(household);
+    if (household == null || key == null) {
       throw const NotInHouseholdException();
     }
-    return HouseholdInvitation(household: keys.household, key: base64Url.decode((await _secrets.read(secretKey))!));
+    return HouseholdInvitation(household: household, key: base64Url.decode(key));
   }
 
   /// Se une al hogar de [invitation]. Los datos locales se conservan y se
@@ -103,7 +114,15 @@ class HouseholdService {
   /// Sale del hogar: borra la clave, el hogar y los dispositivos conocidos.
   /// Los datos locales se conservan. No falla si no está en ninguno.
   Future<void> leave() async {
-    await _secrets.delete(secretKey);
+    final Household? household = await _state.readHousehold();
+    if (household != null) {
+      // Migra antes, para saber si la clave antigua es la de este hogar.
+      await _readKey(household);
+      if (await _legacyKeyBelongsTo(household.id)) {
+        await _secrets.delete(legacySecretKey);
+      }
+      await _secrets.delete(secretKeyFor(household.id));
+    }
     await _state.clearHousehold();
   }
 
@@ -124,10 +143,50 @@ class HouseholdService {
     return invitation;
   }
 
+  /// La clave va antes que el hogar: un hogar guardado sin su clave por
+  /// hogar solo puede venir de una versión anterior, y [_readKey] la migra.
   Future<HouseholdInvitation> _save(Household household, Uint8List key) async {
-    await _secrets.write(secretKey, base64Url.encode(key));
+    final Household? current = await _state.readHousehold();
+    if (current != null && current.id == household.id) {
+      // Una época nueva de un hogar aún sin migrar: migra antes, para saber
+      // si la clave antigua es la suya.
+      await _readKey(current);
+    }
+    final String encoded = base64Url.encode(key);
+    final bool updateLegacy = await _legacyKeyBelongsTo(household.id);
+    await _secrets.write(secretKeyFor(household.id), encoded);
+    if (updateLegacy) {
+      await _secrets.write(legacySecretKey, encoded);
+    }
     await _state.saveHousehold(household);
     return HouseholdInvitation(household: household, key: key);
+  }
+
+  /// Clave de [household] (en base64url), o `null` si no la hay. Si falta la
+  /// suya y está la de las versiones con un solo hogar, es la de este hogar
+  /// (ver [_save]): la copia a [secretKeyFor], comprueba la copia y conserva
+  /// la antigua.
+  Future<String?> _readKey(Household household) async {
+    final String name = secretKeyFor(household.id);
+    final String? key = await _secrets.read(name);
+    if (key != null) {
+      return key;
+    }
+    final String? legacy = await _secrets.read(legacySecretKey);
+    if (legacy == null) {
+      return null;
+    }
+    await _secrets.write(name, legacy);
+    if (await _secrets.read(name) != legacy) {
+      throw StateError('No se pudo copiar la clave del hogar ${household.id}');
+    }
+    return legacy;
+  }
+
+  /// Si la clave antigua es (aún) la del hogar [householdId].
+  Future<bool> _legacyKeyBelongsTo(String householdId) async {
+    final String? legacy = await _secrets.read(legacySecretKey);
+    return legacy != null && legacy == await _secrets.read(secretKeyFor(householdId));
   }
 
   Future<DeviceIdentity> _requireDevice() async {
