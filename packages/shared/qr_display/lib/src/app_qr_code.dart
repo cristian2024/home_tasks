@@ -52,6 +52,8 @@ class AppQrCode extends StatefulWidget {
 class _AppQrCodeState extends State<AppQrCode> {
   late QrMatrix _matrix;
 
+  double? get _size => widget.size;
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +85,7 @@ class _AppQrCodeState extends State<AppQrCode> {
       label: widget.semanticLabel,
       image: true,
       excludeSemantics: true,
-      child: widget.size == null ? code : SizedBox.square(dimension: widget.size, child: code),
+      child: _size == null ? code : SizedBox.square(dimension: _size, child: code),
     );
   }
 }
