@@ -14,6 +14,10 @@
 
 - item_tracker_domain 0.2.1, sync_isar 0.1.0, core_sync 0.1.1 y core_utils 0.1.1.
 
+### Interno
+
+- Los archivos de test se ejecutan de uno en uno (`dart_test.yaml`): en paralelo, la descarga de libisar hacía caer los tests en la CI.
+
 ## 0.1.1 - 2026-10-29
 
 ### Añadido
