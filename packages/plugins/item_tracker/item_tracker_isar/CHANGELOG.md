@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.2 - 2026-10-30
+
+### Añadido
+
+- Sincronización con `sync_isar`, si la app la compuso (hay `HlcClock` e `IsarChangeLogWriter` en el locator):
+  - cada escritura local actualiza las copias sincronizadas (colección nueva `IsarItemTrackerSynced`) y registra sus cambios en la misma transacción;
+  - `IsarHouseholdItemRepository` implementa `ItemTrackerSyncStore` y pasa `itemTrackerSyncContract`;
+  - `ItemTrackerIsar` añade su `ItemTrackerSyncParticipant` a `SyncParticipants` en el scope raíz, así que un plugin desactivado sigue recibiendo sus cambios. `ItemTrackerIsar(containmentPolicy:)` permite pasar la regla de niveles del plugin.
+- Migración (spec §10.4.8): la primera vez que se sincroniza, lo guardado antes recibe su copia, con marcas derivadas de sus fechas, y sus registros de cambio. Se hace una sola vez.
+
+### Cambiado
+
+- item_tracker_domain 0.2.1, sync_isar 0.1.0, core_sync 0.1.0 y core_utils 0.1.1.
+
 ## 0.1.1 - 2026-10-29
 
 ### Añadido

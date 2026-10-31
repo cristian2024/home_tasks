@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.1 - 2026-10-30
+
+### Añadido
+
+- Sincronización de item_tracker (spec §10.4):
+  - `SyncedEntity`: copia sincronizada de una entidad (último valor y marca de cada campo), que se fusiona con los registros de cambio en cualquier orden.
+  - `ItemTrackerCodec` y `ItemTrackerCollections`: campos sincronizados de objetos, identificadores y eventos, y la diferencia entre dos versiones.
+  - `ItemTrackerResolver`: calcula, como función pura del estado, lo que lee la app y los conflictos (`containerDeleted`, `moveReverted` e `identifierBoundTwice`). Todos los dispositivos llegan al mismo resultado sin escribir cambios nuevos.
+  - `ItemTrackerSyncStore`: contrato de las copias sincronizadas que implementan los repositorios.
+  - `LocalSyncRecorder`: convierte una escritura local en registros de cambio y copias nuevas.
+  - `ItemTrackerSyncParticipant`: el `SyncParticipant` de item_tracker. Resuelve los conflictos con escrituras normales del repositorio.
+- `InMemoryHouseholdItemRepository(hlcClock:, changeLog:)` se sincroniza: registra las escrituras locales e implementa `ItemTrackerSyncStore`. Sin esos parámetros funciona igual que antes.
+- `package:item_tracker_domain/testing.dart`: batería `itemTrackerSyncContract` (incluye `syncParticipantContract`), los registros de ejemplo `itemTrackerSyncRecords` y `readItemTrackerState`.
+
 ## 0.2.0 - 2026-10-29
 
 ### Añadido

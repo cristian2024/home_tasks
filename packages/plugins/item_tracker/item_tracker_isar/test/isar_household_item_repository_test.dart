@@ -32,7 +32,7 @@ void main() {
     test('aporta las colecciones de item_tracker y registra su repositorio Isar', () {
       expect(
         const ItemTrackerIsar().schemas.map((CollectionSchema<dynamic> schema) => schema.name),
-        <String>['IsarHouseholdItem', 'IsarPhysicalIdentifier', 'IsarItemEvent'],
+        <String>['IsarHouseholdItem', 'IsarPhysicalIdentifier', 'IsarItemEvent', 'IsarItemTrackerSynced'],
       );
       expect(storage.repository, isA<IsarHouseholdItemRepository>());
     });

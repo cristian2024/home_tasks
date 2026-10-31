@@ -1,3 +1,4 @@
+import 'package:core_di/core_di.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'package:storage_isar/adapter.dart';
 
@@ -6,13 +7,29 @@ import '../mappers/item_data_mapper.dart';
 import '../models/isar_household_item.dart';
 import '../models/isar_item_event.dart';
 import '../models/isar_physical_identifier.dart';
+import '../sync/isar_item_tracker_sync.dart';
 
 /// [HouseholdItemRepository] sobre Isar. Pasa
 /// `householdItemRepositoryContract`.
-class IsarHouseholdItemRepository implements HouseholdItemRepository {
-  IsarHouseholdItemRepository(Isar isar) : _source = IsarLocalDataSource(isar);
+///
+/// Con [services] se sincroniza si la app compuso la sincronización (ver
+/// [IsarItemTrackerSync]): registra cada escritura en la misma transacción y,
+/// como [ItemTrackerSyncStore], sirve a `ItemTrackerSyncParticipant`. Pasa
+/// `itemTrackerSyncContract`.
+class IsarHouseholdItemRepository implements HouseholdItemRepository, ItemTrackerSyncStore {
+  factory IsarHouseholdItemRepository(Isar isar, {ServiceLocator? services}) =>
+      IsarHouseholdItemRepository._(isar, IsarItemTrackerSync(isar, services));
+
+  IsarHouseholdItemRepository._(Isar isar, this._sync) : _source = IsarLocalDataSource(isar, _sync);
 
   final IsarLocalDataSource _source;
+  final IsarItemTrackerSync _sync;
+
+  @override
+  Future<List<SyncedEntity>> syncedEntities(String collection) => _sync.syncedEntities(collection);
+
+  @override
+  Future<void> commitSync(ItemTrackerSyncCommit commit) => _sync.commit(commit);
 
   @override
   Future<void> createItem(

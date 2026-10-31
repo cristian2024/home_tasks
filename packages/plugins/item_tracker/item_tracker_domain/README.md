@@ -29,4 +29,32 @@ householdItemRepositoryContract(
 
 El mismo archivo trae `InMemoryHouseholdItemRepository`, para los tests y las apps de ejemplo de otros paquetes.
 
+## Sincronización
+
+item_tracker se sincroniza entre dispositivos con `core_sync` (spec §10.4):
+
+- Cada repositorio guarda, aparte de las entidades, su **copia sincronizada** (`SyncedEntity`): el último valor de cada campo y la marca con que se escribió. Las escrituras locales la actualizan y registran sus cambios (`LocalSyncRecorder`) en la misma transacción. Para eso implementa también `ItemTrackerSyncStore`.
+- `ItemTrackerSyncParticipant` fusiona los cambios recibidos en las copias y, con `ItemTrackerResolver`, calcula lo que lee la app:
+
+  | Situación | Lo que se ve | Conflicto |
+  | :--- | :--- | :--- |
+  | Mover algo a un contenedor borrado (o borrarlo a la vez) | Pasa al contenedor del borrado o queda suelto | `containerDeleted` |
+  | Movimientos que forman un ciclo o superan los niveles | Se revierte el de mayor marca; queda suelto | `moveReverted` |
+  | El mismo identificador en dos objetos | Se queda el asociado antes; el otro, quitado | `identifierBoundTwice` |
+  | Identificador de un objeto borrado | Queda quitado | No |
+
+  Es una función pura del estado: todos los dispositivos llegan a lo mismo, en cualquier orden, sin escribir cambios. Las resoluciones elegidas por el usuario (`resolveConflict`) son escrituras normales y se sincronizan.
+
+Un repositorio que se sincroniza debe pasar también `itemTrackerSyncContract`:
+
+```dart
+itemTrackerSyncContract('SQLite', create: () => ItemTrackerSyncSubject(
+  repository: repository,
+  participant: ItemTrackerSyncParticipant(store: repository, repository: repository),
+  log: changeLog,
+));
+```
+
+`InMemoryHouseholdItemRepository(hlcClock: …, changeLog: …)` se sincroniza; sin esos parámetros, no.
+
 Cobertura: 100 %.
