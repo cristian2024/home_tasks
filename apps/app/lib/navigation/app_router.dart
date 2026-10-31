@@ -1,8 +1,11 @@
 import 'package:core_contracts/core_contracts.dart';
+import 'package:core_di/core_di.dart';
+import 'package:core_hardware/core_hardware.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 
 import '../catalog/catalog_cubit.dart';
 import '../catalog/catalog_screen.dart';
@@ -11,22 +14,39 @@ import '../home/presentation/home_dashboard_screen.dart';
 import '../i18n/strings.g.dart';
 import '../plugins/plugin_controller.dart';
 import '../settings/settings_screen.dart';
+import '../sync/conflicts_cubit.dart';
+import '../sync/conflicts_screen.dart';
+import '../sync/invitation_cubit.dart';
+import '../sync/invitation_screen.dart';
+import '../sync/join_household_cubit.dart';
+import '../sync/join_household_screen.dart';
+import '../sync/sync_cubit.dart';
+import '../sync/sync_screen.dart';
+import '../sync/sync_services.dart';
 import 'plugin_route_guard.dart';
 
 abstract final class AppRoutes {
   static const String home = '/';
   static const String catalog = '/plugins-catalog';
   static const String settings = '/settings';
+  static const String sync = '/settings/sync';
+  static const String syncInvitation = '/settings/sync/invitation';
+  static const String syncJoin = '/settings/sync/join';
+  static const String syncConflicts = '/settings/sync/conflicts';
 }
 
 /// Router de la app: inicio, catálogo y las rutas de **todos** los plugins
 /// registrados. Las de plugins no listos las bloquea [PluginRouteGuard],
 /// que redirige a inicio con un aviso; se reevalúa cuando cambian los plugins.
+/// Con [sync], también las pantallas de la sincronización, que piden a
+/// [locator] la cámara y los nombres de los objetos.
 GoRouter buildAppRouter({
   required PluginRegistry registry,
   required PluginController controller,
   required GlobalKey<ScaffoldMessengerState> messengerKey,
   String initialLocation = AppRoutes.home,
+  SyncServices? sync,
+  ServiceLocator? locator,
 }) {
   final PluginRouteGuard guard = PluginRouteGuard(registry: registry, controller: controller);
   return GoRouter(
@@ -67,12 +87,54 @@ GoRouter buildAppRouter({
       GoRoute(
         path: AppRoutes.settings,
         builder: (BuildContext context, GoRouterState state) =>
-            const SettingsScreen(),
+            SettingsScreen(showSync: sync != null),
       ),
+      if (sync != null) ..._syncRoutes(sync, locator ?? ServiceLocator.instance),
       for (final HomePlugin plugin in registry.allPlugins) ...plugin.routes,
     ]),
   );
 }
+
+List<RouteBase> _syncRoutes(SyncServices sync, ServiceLocator locator) => <RouteBase>[
+      GoRoute(
+        path: AppRoutes.sync,
+        builder: (BuildContext context, GoRouterState state) => BlocProvider<SyncCubit>(
+          create: (_) => SyncCubit(sync),
+          child: const SyncScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.syncInvitation,
+        builder: (BuildContext context, GoRouterState state) => BlocProvider<InvitationCubit>(
+          create: (_) => InvitationCubit(sync.households),
+          child: const InvitationScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.syncJoin,
+        builder: (BuildContext context, GoRouterState state) => BlocProvider<JoinHouseholdCubit>(
+          create: (_) => JoinHouseholdCubit(
+            households: sync.households,
+            // Los escáneres se registran como factorías: uno nuevo en cada get.
+            cameraFactory: locator.isRegistered<CameraIdentifierScanner>()
+                ? () => locator.get<CameraIdentifierScanner>()
+                : null,
+            permissions: locator.isRegistered<HardwarePermissions>() ? locator.get<HardwarePermissions>() : null,
+          )..start(),
+          child: const JoinHouseholdScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.syncConflicts,
+        builder: (BuildContext context, GoRouterState state) => BlocProvider<ConflictsCubit>(
+          create: (_) => ConflictsCubit(
+            inbox: sync.inbox,
+            items: locator.isRegistered<HouseholdItemRepository>() ? locator.get<HouseholdItemRepository>() : null,
+          ),
+          child: const ConflictsScreen(),
+        ),
+      ),
+    ];
 
 /// Envuelve el contenido de cada `GoRoute` con [LanguageRebuilder] para que
 /// las páginas abiertas cambien de idioma (ver su documentación). Las rutas

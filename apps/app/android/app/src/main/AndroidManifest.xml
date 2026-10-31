@@ -4,8 +4,17 @@
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
+    <!-- sync_lan: conexión con los demás dispositivos y anuncio mDNS en la WiFi. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
+    <!-- Sin copias de seguridad: la clave del hogar (secret_store_secure_storage)
+         no se descifra con el Keystore de otro teléfono, y restaurar la base
+         copiaría la identidad de este dispositivo en otro. Los datos ya viven
+         en los demás dispositivos del hogar. -->
     <application
+        android:allowBackup="false"
         android:label="Utilidades del Hogar"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

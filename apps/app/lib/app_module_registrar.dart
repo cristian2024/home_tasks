@@ -7,20 +7,33 @@ import 'package:hardware_permission_handler/hardware_permission_handler.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:secret_store_secure_storage/secret_store_secure_storage.dart';
 import 'package:share_native/share_native.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
 import 'package:storage_isar/storage_isar.dart';
+import 'package:sync_crypto_cryptography/sync_crypto_cryptography.dart';
+import 'package:sync_engine/sync_engine.dart';
+import 'package:sync_isar/sync_isar.dart';
+import 'package:sync_lan/sync_lan.dart';
 
 /// Adaptadores que usa la app. Cada uno abre sus recursos y registra sus
 /// contratos en el `ServiceLocator`; la app solo los elige. Incluye los
 /// adaptadores de **todos** los plugins registrados, también los
 /// desactivados, para que sus datos sigan accesibles (AC-02).
+///
+/// La sincronización: `SyncIsar` (estado y log en la misma base),
+/// almacén seguro para la clave del hogar, cifrado, transporte por la WiFi y,
+/// **al final**, `SyncModule`, que compone el motor con lo anterior.
 const List<DependencyModule> appAdapters = <DependencyModule>[
-  IsarStorage(features: <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()]),
+  IsarStorage(features: <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), SyncIsar()]),
   NativeShare(),
   MobileScannerHardware(),
   NfcManagerHardware(),
   PermissionHandlerHardware(),
+  SecureStorageSecrets(),
+  CryptographySyncCipher(),
+  LanSyncTransport(),
+  SyncModule(),
 ];
 
 /// Crea un plugin con los servicios de la app. Además de construirlo, debe

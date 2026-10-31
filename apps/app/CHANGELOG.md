@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.6.0+10 - 2026-10-31
+
+### Añadido
+
+- Sincronización entre los dispositivos de casa por la WiFi, en Configuración → Sincronización: estado y «Sincronizar ahora», hogar (crear y mostrar su código QR, unirse escaneándolo o pegándolo, renombrar este dispositivo, ver los demás, salir y, solo el creador, expulsar) y bandeja de conflictos.
+- `appAdapters` compone la sincronización: `SyncIsar` dentro de `IsarStorage`, `SecureStorageSecrets`, `CryptographySyncCipher`, `LanSyncTransport` y `SyncModule` al final. `bootstrapApp` arranca el controlador y la app lo pausa en segundo plano y lo reanuda al volver.
+- Permisos de red en Android y `NSLocalNetworkUsageDescription` y `NSBonjourServices` en iOS.
+
+### Cambiado
+
+- Android no hace copias de seguridad de la app (`allowBackup="false"`): la clave del hogar no se descifraría en otro teléfono y la copia duplicaría la identidad del dispositivo.
+- `item_tracker_isar` ^0.1.2 y `shopping_list_isar` ^0.1.2, que registran los cambios para la sincronización. `plugin_shopping_list` pasa a ^0.2.0 (borrados lógicos). `design_system` ^0.1.4.
+
+### Interno
+
+- `SyncedDevice` en los tests: varios dispositivos con la sincronización sobre dobles en memoria. `AppHarness` acepta repositorios y la sincronización.
+
 ## 1.5.2+9 - 2026-10-29
 
 ### Interno

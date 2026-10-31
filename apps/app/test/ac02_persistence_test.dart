@@ -1,9 +1,15 @@
 import 'dart:io';
 
+import 'dart:math';
+
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_hardware/core_hardware.dart';
 import 'package:core_hardware/testing.dart';
+import 'package:core_secrets/core_secrets.dart';
+import 'package:core_secrets/testing.dart';
+import 'package:core_sync/core_sync.dart';
+import 'package:core_sync/testing.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/bootstrap.dart';
@@ -14,6 +20,8 @@ import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
 import 'package:storage_isar/adapter.dart' show Isar;
 import 'package:storage_isar/storage_isar.dart';
+import 'package:sync_engine/sync_engine.dart';
+import 'package:sync_isar/sync_isar.dart';
 
 import 'helpers/in_memory_app_settings_repository.dart';
 
@@ -27,6 +35,22 @@ class _FakeHardware implements DependencyModule {
     ..registerFactory<CameraIdentifierScanner>(FakeCameraScanner.new)
     ..registerFactory<NfcIdentifierScanner>(FakeNfcScanner.new)
     ..registerSingleton<HardwarePermissions>(FakeHardwarePermissions());
+}
+
+/// Almacén de secretos, cifrado y red en memoria en lugar de los adaptadores
+/// nativos de la sincronización.
+class _FakeSyncPlatform implements DependencyModule {
+  const _FakeSyncPlatform(this.network);
+
+  final InMemorySyncNetwork network;
+
+  @override
+  Future<void> register(ServiceLocator services) async {
+    services
+      ..registerSingleton<SecretStore>(InMemorySecretStore())
+      ..registerSingleton<SyncCipher>(FakeSyncCipher(random: Random(1)));
+    SyncTransports.of(services).add(network.transport());
+  }
 }
 
 /// AC-02 de extremo a extremo con Isar real y el arranque real de la app:
@@ -129,6 +153,48 @@ void main() {
     app = await start();
     expect(app.settings.state, const AppSettings(theme: AppThemePreference.dark, languageCode: 'en'));
     expect(app.localization.languageCode.value, 'en');
+    await app.dispose();
+  });
+
+  test('AC-10: con la sincronización compuesta sobre Isar, lo guardado se registra y se sigue leyendo', () async {
+    final InMemorySyncNetwork network = InMemorySyncNetwork();
+    Future<AppEnvironment> startSynced() => bootstrapApp(
+          adapters: <DependencyModule>[
+            IsarStorage(
+              directory: directory.path,
+              features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), SyncIsar()],
+            ),
+            const _FakeHardware(),
+            _FakeSyncPlatform(network),
+            const SyncModule(),
+          ],
+          systemLanguageCode: 'es',
+          settingsRepository: settings,
+          locator: ServiceLocator(),
+          localization: LocalizationCoordinator(),
+        );
+
+    // Datos de antes de componer la sincronización.
+    AppEnvironment app = await start();
+    final HouseholdItem before = await app.locator.get<ItemTrackerDependencies>().createItem(name: 'Caja A');
+    await app.dispose();
+
+    app = await startSynced();
+    expect(app.sync, isNotNull);
+    final String deviceId = (await app.sync!.state.readDevice())!.deviceId;
+    final HouseholdItem after = await app.locator.get<ItemTrackerDependencies>().createItem(name: 'Caja B');
+    final int recorded = (await app.locator.get<ChangeLog>().vector())[deviceId];
+    expect(recorded, greaterThan(0), reason: 'la migración y la escritura nueva registran cambios');
+    await app.sync!.households.create();
+    await app.dispose();
+
+    app = await startSynced();
+    final HouseholdItemRepository items = app.locator.get<HouseholdItemRepository>();
+    expect((await items.getById(before.id))?.name, 'Caja A');
+    expect((await items.getById(after.id))?.name, 'Caja B');
+    expect((await app.sync!.state.readDevice())!.deviceId, deviceId, reason: 'la identidad se conserva');
+    expect(await app.sync!.households.current(), isNotNull);
+    expect((await app.locator.get<ChangeLog>().vector())[deviceId], recorded);
     await app.dispose();
   });
 }

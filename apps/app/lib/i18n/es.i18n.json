@@ -46,6 +46,113 @@
     "languages": {
       "es": "Español",
       "en": "English"
+    },
+    "sync": {
+      "section": "Sincronización",
+      "tile": "Sincronizar con otros dispositivos",
+      "tile_description": "Comparte los datos con los demás teléfonos de casa por la WiFi.",
+      "title": "Sincronización",
+      "status": {
+        "no_household": "Sin hogar",
+        "no_household_message": "Crea un hogar o únete a uno para compartir los datos con otros dispositivos.",
+        "syncing": "Sincronizando…",
+        "synced_at": "Última sincronización: {time}",
+        "never_synced": "Aún no se ha sincronizado",
+        "failed": "No se pudo sincronizar",
+        "pending_changes(plural)": {
+          "one": "1 cambio pendiente de enviar",
+          "other": "{n} cambios pendientes de enviar"
+        },
+        "visible_devices(plural)": {
+          "zero": "Ningún dispositivo a la vista",
+          "one": "1 dispositivo a la vista",
+          "other": "{n} dispositivos a la vista"
+        },
+        "sync_now": "Sincronizar ahora",
+        "error_transport": "No se pudo conectar con el otro dispositivo. Comprueba que los dos estén en la misma WiFi y con la app abierta.",
+        "error_authentication": "El otro dispositivo no tiene la clave actual del hogar. Puede que tenga que volver a escanear el código.",
+        "error_protocol": "El otro dispositivo usa otra versión de la app. Actualiza las dos.",
+        "error_unknown": "Algo falló durante la sincronización. Se volverá a intentar."
+      },
+      "household": {
+        "section": "Hogar",
+        "create": "Crear un hogar",
+        "join": "Unirse a un hogar",
+        "show_code": "Mostrar el código para unirse",
+        "show_code_description": "Escanéalo desde el otro dispositivo.",
+        "this_device": "Este dispositivo",
+        "rename": "Cambiar el nombre",
+        "rename_title": "Nombre de este dispositivo",
+        "rename_field": "Nombre",
+        "save": "Guardar",
+        "devices_section": "Dispositivos del hogar",
+        "no_devices": "Todavía no se ha sincronizado con ningún otro dispositivo.",
+        "last_synced": "Última vez: {time}",
+        "creator": "Creaste este hogar",
+        "expel": "Expulsar a {name}",
+        "expel_title": "¿Expulsar a «{name}»?",
+        "expel_message": "El hogar cambia de clave. «{name}» se quedará con los datos que ya tiene, pero no recibirá nada nuevo. Los demás dispositivos tendrán que volver a escanear el código.",
+        "expel_confirm": "Expulsar",
+        "expelled": "Clave nueva. Los demás dispositivos deben escanear este código.",
+        "leave": "Salir del hogar",
+        "leave_title": "¿Salir del hogar?",
+        "leave_message": "Este dispositivo dejará de sincronizarse. Los datos que ya tiene se conservan.",
+        "leave_confirm": "Salir",
+        "error_already_in_household": "Este dispositivo ya está en otro hogar. Sal de él antes de unirte a uno nuevo.",
+        "error_not_creator": "Solo el dispositivo que creó el hogar puede expulsar a otros.",
+        "error_generic": "No se pudo completar la acción. Inténtalo de nuevo."
+      },
+      "invitation": {
+        "title": "Código del hogar",
+        "qr_label": "Código QR para unirse al hogar",
+        "message": "Escanéalo desde el otro dispositivo en «Configuración → Sincronización → Unirse a un hogar».",
+        "warning": "Quien escanee este código podrá ver y cambiar los datos del hogar. Enséñalo solo a los tuyos.",
+        "loading": "Preparando el código…"
+      },
+      "join": {
+        "title": "Unirse a un hogar",
+        "scan_prompt": "Apunta la cámara al código del hogar que muestra el otro dispositivo.",
+        "camera_unavailable": "La cámara no está disponible. Pega el código del hogar.",
+        "camera_denied": "Sin permiso para la cámara. Pega el código del hogar o da el permiso en Ajustes.",
+        "open_settings": "Abrir Ajustes",
+        "manual_field": "Código del hogar",
+        "manual_submit": "Unirse",
+        "joining": "Uniéndose al hogar…",
+        "invalid_code": "Ese código no es de un hogar de esta app.",
+        "joined": "Te uniste al hogar. Los datos se combinarán al sincronizar."
+      },
+      "conflicts": {
+        "tile": "Conflictos",
+        "tile_none": "Ninguno por revisar",
+        "tile_count(plural)": {
+          "one": "1 por revisar",
+          "other": "{n} por revisar"
+        },
+        "title": "Conflictos",
+        "empty_title": "Sin conflictos",
+        "empty_message": "Cuando dos dispositivos cambien lo mismo a la vez y haga falta decidir, aparecerá aquí.",
+        "applied": "Aplicada ahora",
+        "keep_current": "Dejarlo así",
+        "resolve_all": "Dejar todos así",
+        "unknown_item": "un objeto",
+        "container_deleted_title": "Contenedor borrado",
+        "container_deleted_message": "Se borró «{container}» mientras otro dispositivo guardaba «{item}» dentro. «{item}» quedó fuera.",
+        "container_deleted_keep": "Conservar «{item}»",
+        "container_deleted_delete": "Borrar «{item}» también",
+        "move_reverted_title": "Movimiento deshecho",
+        "move_reverted_message": "Dos dispositivos movieron objetos a la vez y «{item}» habría quedado dentro de sí mismo o demasiado hondo. Se deshizo su último movimiento.",
+        "move_reverted_confirm": "Entendido",
+        "identifier_twice_title": "Código en dos objetos",
+        "identifier_twice_message": "El código «{value}» se asoció a la vez a dos objetos. Solo puede estar en uno.",
+        "identifier_twice_keep": "Dejarlo en «{item}»",
+        "double_purchase_title": "¿Fueron dos compras?",
+        "double_purchase_message": "Dos dispositivos registraron a la vez la compra de «{name}».",
+        "double_purchase_one": "Fue una compra",
+        "double_purchase_two": "Fueron dos compras",
+        "unknown_title": "Conflicto",
+        "unknown_message": "Dos dispositivos cambiaron lo mismo a la vez.",
+        "unknown_option": "Opción {option}"
+      }
     }
   }
 }
