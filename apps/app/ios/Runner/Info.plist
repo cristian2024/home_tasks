@@ -9,6 +9,12 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>La cámara se usa para escanear códigos QR y de barras de tus objetos.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>La red local se usa para sincronizar los datos con los demás dispositivos de tu casa.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_hometasks._tcp</string>
+	</array>
 	<key>NFCReaderUsageDescription</key>
 	<string>NFC se usa para leer y escribir las etiquetas de tus objetos.</string>
 	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>

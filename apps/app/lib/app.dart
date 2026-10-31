@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:core_ui/core_ui.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sync_engine/sync_engine.dart';
 
 import 'bootstrap.dart';
 import 'i18n/strings.g.dart';
@@ -32,6 +35,8 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     controller: widget.environment.plugins,
     messengerKey: _messengerKey,
     initialLocation: widget.initialLocation,
+    sync: widget.environment.sync,
+    locator: widget.environment.locator,
   );
 
   @override
@@ -56,6 +61,26 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   void didChangeLocales(List<Locale>? locales) {
     if (locales != null) {
       widget.environment.settings.systemLocalesChanged(locales);
+    }
+  }
+
+  /// La sincronización solo corre en primer plano: en segundo plano el
+  /// sistema cortaría la red igualmente.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final SyncController? sync = widget.environment.sync?.controller;
+    if (sync == null) {
+      return;
+    }
+    switch (state) {
+      case AppLifecycleState.resumed:
+        unawaited(sync.resume());
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+        unawaited(sync.pause());
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        break;
     }
   }
 

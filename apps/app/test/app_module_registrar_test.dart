@@ -8,6 +8,12 @@ import 'package:hardware_mobile_scanner/hardware_mobile_scanner.dart';
 import 'package:hardware_nfc_manager/hardware_nfc_manager.dart';
 import 'package:hardware_permission_handler/hardware_permission_handler.dart';
 import 'package:home_utility_app/app_module_registrar.dart';
+import 'package:secret_store_secure_storage/secret_store_secure_storage.dart';
+import 'package:storage_isar/storage_isar.dart';
+import 'package:sync_crypto_cryptography/sync_crypto_cryptography.dart';
+import 'package:sync_engine/sync_engine.dart';
+import 'package:sync_isar/sync_isar.dart';
+import 'package:sync_lan/sync_lan.dart';
 
 void main() {
   test('AC-01: el registro de la app incluye item_tracker y la lista de compras con sus traducciones', () {
@@ -40,5 +46,14 @@ void main() {
     expect(locator.isRegistered<CameraIdentifierScanner>(), isTrue);
     expect(locator.isRegistered<NfcIdentifierScanner>(), isTrue);
     expect(locator.isRegistered<HardwarePermissions>(), isTrue);
+  });
+
+  test('la sincronización usa Isar, el almacén seguro, el cifrado y la WiFi, y SyncModule va al final', () {
+    final IsarStorage storage = appAdapters.whereType<IsarStorage>().single;
+    expect(storage.features.whereType<SyncIsar>(), hasLength(1));
+    expect(appAdapters.whereType<SecureStorageSecrets>(), hasLength(1));
+    expect(appAdapters.whereType<CryptographySyncCipher>(), hasLength(1));
+    expect(appAdapters.whereType<LanSyncTransport>(), hasLength(1));
+    expect(appAdapters.last, isA<SyncModule>(), reason: 'compone el motor con lo que registraron los demás');
   });
 }

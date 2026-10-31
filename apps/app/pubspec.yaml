@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.5.2+9
+version: 1.6.0+10
 
 environment:
   sdk: ^3.11.0
@@ -14,9 +14,11 @@ dependencies:
   core_contracts: ^0.1.2
   core_di: ^0.1.1
   core_events: ^0.1.1
+  core_hardware: ^0.2.0
+  core_sync: ^0.1.1
   core_ui: ^0.1.1
   core_utils: ^0.1.0
-  design_system: ^0.1.2
+  design_system: ^0.1.4
   equatable: ^3.0.0
   flutter:
     sdk: flutter
@@ -25,19 +27,25 @@ dependencies:
   hardware_mobile_scanner: ^0.1.0
   hardware_nfc_manager: ^0.1.0
   hardware_permission_handler: ^0.1.0
-  item_tracker_isar: ^0.1.1
+  item_tracker_isar: ^0.1.2
   plugin_item_tracker: ^3.0.0
   plugin_shopping_list: ^0.2.0
+  qr_display: ^0.1.0
+  secret_store_secure_storage: ^0.1.0
   share_native: ^0.1.0
   shared_preferences: ^2.5.6
-  shopping_list_isar: ^0.1.0
+  shopping_list_isar: ^0.1.2
   slang: ^4.19.0
   slang_flutter: ^4.19.0
   storage_isar: ^0.2.0
+  sync_crypto_cryptography: ^0.1.0
+  sync_engine: ^0.1.1
+  sync_isar: ^0.1.0
+  sync_lan: ^0.1.0
 
 dev_dependencies:
   bloc_test: ^10.0.0
-  core_hardware: ^0.2.0
+  core_secrets: ^0.1.0
   core_share: ^0.1.0
   flutter_lints: ^6.0.0
   flutter_test:

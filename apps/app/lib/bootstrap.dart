@@ -14,6 +14,7 @@ import 'plugins/plugin_controller.dart';
 import 'settings/app_settings.dart';
 import 'settings/app_settings_controller.dart';
 import 'settings/app_settings_repository.dart';
+import 'sync/sync_services.dart';
 
 /// Todo lo que la app necesita tras arrancar.
 class AppEnvironment {
@@ -23,6 +24,7 @@ class AppEnvironment {
     required this.registry,
     required this.plugins,
     required this.settings,
+    this.sync,
   });
 
   final ServiceLocator locator;
@@ -33,9 +35,13 @@ class AppEnvironment {
   /// Tema e idioma elegidos por el usuario.
   final AppSettingsController settings;
 
+  /// Sincronización con otros dispositivos, o `null` si no se compuso.
+  final SyncServices? sync;
+
   /// Libera los plugins y los servicios; los adaptadores liberan con el
   /// locator lo que abrieron, p. ej. la base de datos (tests y reinicios).
   Future<void> dispose() async {
+    await sync?.controller.stop();
     await plugins.disposePlugins();
     plugins.dispose();
     await settings.close();
@@ -53,6 +59,9 @@ class AppEnvironment {
 /// 3. Registro de plugins en tiempo de compilación ([appPluginFactories]).
 /// 4. Ciclo de vida: inicializa los plugins activos y disponibles, con el
 ///    `PluginPreferenceRepository` que registró un adaptador.
+/// 5. Sincronización, si un adaptador la compuso (`SyncModule`): empieza a
+///    seguir el hogar y los cambios. La app la pausa y reanuda con el ciclo
+///    de vida.
 Future<AppEnvironment> bootstrapApp({
   required String systemLanguageCode,
   List<DependencyModule> adapters = appAdapters,
@@ -109,11 +118,15 @@ Future<AppEnvironment> bootstrapApp({
   );
   await plugins.load();
 
+  final SyncServices? sync = SyncServices.of(services);
+  await sync?.controller.start();
+
   return AppEnvironment(
     locator: services,
     localization: l10n,
     registry: registry,
     plugins: plugins,
     settings: settings,
+    sync: sync,
   );
 }
