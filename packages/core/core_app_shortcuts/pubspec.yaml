@@ -1,0 +1,17 @@
+name: core_app_shortcuts
+description: Contrato para los accesos rápidos del icono de la app (pulsación larga en el lanzador), en Dart puro. Las implementaciones van en packages/adapters/.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  equatable: ^3.0.0
+  # Solo para los tests de contrato de `package:core_app_shortcuts/testing.dart`.
+  test: ^1.28.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
