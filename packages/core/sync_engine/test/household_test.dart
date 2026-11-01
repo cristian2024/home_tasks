@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:core_secrets/testing.dart';
 import 'package:core_sync/core_sync.dart';
 import 'package:core_sync/testing.dart';
+import 'package:core_utils/core_utils.dart';
 import 'package:sync_engine/sync_engine.dart';
 import 'package:test/test.dart';
 
@@ -47,7 +48,9 @@ void main() {
 
       expect(invitation.household, Household(id: 'id-002', epoch: 1, creatorDeviceId: 'id-001'));
       expect(await service.current(), invitation.household);
-      expect(secrets.values[HouseholdService.secretKey], base64Url.encode(invitation.key));
+      expect(secrets.values, <String, String>{
+        HouseholdService.secretKeyFor(invitation.household.id): base64Url.encode(invitation.key),
+      });
       expect(await service.invitation(), invitation);
       expect((await service.keys())!.household, invitation.household);
     });
@@ -64,8 +67,8 @@ void main() {
     });
 
     test('sin la clave no hay claves aunque haya hogar', () async {
-      await service.create();
-      await secrets.delete(HouseholdService.secretKey);
+      final HouseholdInvitation invitation = await service.create();
+      await secrets.delete(HouseholdService.secretKeyFor(invitation.household.id));
 
       expect(await service.keys(), isNull);
     });
@@ -134,6 +137,119 @@ void main() {
 
       await service.join(await _otherHousehold());
       await expectLater(service.expel('b'), throwsA(isA<NotHouseholdCreatorException>()));
+    });
+  });
+
+  group('clave por hogar', () {
+    final Household legacyHousehold = Household(id: 'hogar-antiguo', epoch: 1, creatorDeviceId: 'id-001');
+    late String legacyKey;
+
+    /// Estado de una versión con un solo hogar: el hogar guardado y su clave
+    /// con el nombre antiguo.
+    Future<void> legacySetup() async {
+      await service.ensureDevice(defaultName: 'Teléfono');
+      await state.saveHousehold(legacyHousehold);
+      legacyKey = base64Url.encode(await FakeSyncCipher().newKey());
+      await secrets.write(HouseholdService.legacySecretKey, legacyKey);
+    }
+
+    String keyOf(String householdId) => secrets.values[HouseholdService.secretKeyFor(householdId)]!;
+
+    test('migra la clave antigua del hogar actual y la conserva', () async {
+      await legacySetup();
+
+      final HouseholdKeys? keys = await service.keys();
+
+      expect(keys!.household, legacyHousehold);
+      expect(secrets.values, <String, String>{
+        HouseholdService.legacySecretKey: legacyKey,
+        HouseholdService.secretKeyFor(legacyHousehold.id): legacyKey,
+      });
+      expect(base64Url.encode((await service.invitation()).key), legacyKey);
+    });
+
+    test('dos servicios sobre el mismo almacén, cada uno en su hogar, no se pisan', () async {
+      // Ids propios (id-101…), como otro espacio con su propio hogar.
+      final HouseholdService other = HouseholdService(
+        state: InMemorySyncStateRepository(),
+        secrets: secrets,
+        cipher: FakeSyncCipher(),
+        ids: _OffsetIds(100),
+      );
+      await service.ensureDevice(defaultName: 'Teléfono');
+      await other.ensureDevice(defaultName: 'Teléfono');
+
+      final HouseholdInvitation mine = await service.create();
+      final HouseholdInvitation theirs = await other.create();
+
+      expect(mine.household.id, isNot(theirs.household.id));
+      expect(await service.invitation(), mine);
+      expect(await other.invitation(), theirs);
+
+      await other.leave();
+      expect(await service.invitation(), mine);
+    });
+
+    test('con la clave antigua de otro hogar, un hogar nuevo usa la suya', () async {
+      await legacySetup();
+      final HouseholdService other = serviceFor(InMemorySyncStateRepository(), secrets);
+      await other.ensureDevice(defaultName: 'Teléfono');
+
+      final HouseholdInvitation created = await other.create();
+
+      expect(keyOf(created.household.id), base64Url.encode(created.key));
+      expect(secrets.values[HouseholdService.legacySecretKey], legacyKey);
+      await other.leave();
+      expect(secrets.values[HouseholdService.legacySecretKey], legacyKey, reason: 'no es la de su hogar');
+    });
+
+    test('expel de un hogar antiguo mantiene al día la clave antigua', () async {
+      await legacySetup();
+
+      final HouseholdInvitation rotated = await service.expel('b');
+
+      expect(keyOf(legacyHousehold.id), base64Url.encode(rotated.key));
+      expect(secrets.values[HouseholdService.legacySecretKey], base64Url.encode(rotated.key));
+    });
+
+    test('join a una época nueva de un hogar antiguo mantiene al día la clave antigua', () async {
+      await legacySetup();
+      final Uint8List newKey = await FakeSyncCipher().newKey();
+
+      await service.join(HouseholdInvitation(household: legacyHousehold.nextEpoch(), key: newKey));
+
+      expect(secrets.values[HouseholdService.legacySecretKey], base64Url.encode(newKey));
+      expect(keyOf(legacyHousehold.id), base64Url.encode(newKey));
+    });
+
+    test('leave de un hogar antiguo borra las dos claves', () async {
+      await legacySetup();
+
+      await service.leave();
+
+      expect(secrets.values, isEmpty);
+    });
+
+    test('un corte al copiar la clave se repite sin perderla', () async {
+      await legacySetup();
+      final _FailingSecretStore failing = _FailingSecretStore(secrets.values);
+      final HouseholdService flaky = serviceFor(state, failing);
+
+      failing.failWrites = true;
+      await expectLater(flaky.keys(), throwsA(isA<_WriteFailure>()));
+      expect(failing.values, <String, String>{HouseholdService.legacySecretKey: legacyKey});
+
+      failing.failWrites = false;
+      expect(await flaky.keys(), isNotNull);
+      expect(failing.values[HouseholdService.secretKeyFor(legacyHousehold.id)], legacyKey);
+    });
+
+    test('si la copia no coincide, falla sin tocar la clave antigua', () async {
+      await legacySetup();
+      final _FailingSecretStore corrupting = _FailingSecretStore(secrets.values)..corruptWrites = true;
+
+      await expectLater(serviceFor(state, corrupting).keys(), throwsStateError);
+      expect(corrupting.values[HouseholdService.legacySecretKey], legacyKey);
     });
   });
 
@@ -222,3 +338,32 @@ Future<HouseholdInvitation> _otherHousehold({int epoch = 1}) async => HouseholdI
       household: Household(id: 'other-house', epoch: epoch, creatorDeviceId: 'other-device'),
       key: await FakeSyncCipher().newKey(),
     );
+
+class _WriteFailure implements Exception {}
+
+/// Ids `id-<n>` desde [offset] + 1, para que no coincidan con los de
+/// `SequentialIds`.
+class _OffsetIds implements IdGenerator {
+  _OffsetIds(this._next);
+
+  int _next;
+
+  @override
+  String newId() => 'id-${++_next}';
+}
+
+/// [InMemorySecretStore] cuyas escrituras pueden fallar o guardar otro valor.
+class _FailingSecretStore extends InMemorySecretStore {
+  _FailingSecretStore(super.initial);
+
+  bool failWrites = false;
+  bool corruptWrites = false;
+
+  @override
+  Future<void> write(String key, String value) {
+    if (failWrites) {
+      throw _WriteFailure();
+    }
+    return super.write(key, corruptWrites ? '$value-x' : value);
+  }
+}
