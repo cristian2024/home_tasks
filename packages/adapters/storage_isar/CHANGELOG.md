@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.2 - 2026-10-31
+
+### Añadido
+
+- `IsarSpaceStorage`: `DataSpaceStorage` (`core_spaces`) sobre los archivos de Isar. Lista las bases de una carpeta y borra una con su `.lock`; una base abierta no se borra (`DataSpaceInUseException`). `IsarSpaceStorage.documents()` usa la carpeta de `IsarStorage`. Pasa `dataSpaceStorageContract`.
+
+### Interno
+
+- Test de que dos bases con otro nombre (dos espacios) no comparten datos ni preferencias de plugins.
+
 ## 0.2.1 - 2026-10-29
 
 ### Añadido
