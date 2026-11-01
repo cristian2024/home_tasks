@@ -262,7 +262,7 @@ void main() {
         relayUrl: 'https://relay.example',
       );
 
-      expect(invitation.encode(), startsWith('hometasks-sync:'));
+      expect(invitation.encode(), startsWith('HOMETASKS:'));
       expect(HouseholdInvitation.parse(invitation.encode()), invitation);
       expect(HouseholdInvitation.parse(withRelay.encode()), withRelay);
       expect(HouseholdInvitation.parse(withRelay.encode()).relayUrl, 'https://relay.example');
@@ -280,6 +280,61 @@ void main() {
         () => HouseholdInvitation(household: invitation.household, key: Uint8List(16)),
         throwsArgumentError,
       );
+    });
+
+    test('con UUID, el código es corto y solo lleva caracteres del modo alfanumérico del QR', () {
+      final HouseholdInvitation invitation = HouseholdInvitation(
+        household: Household(
+          id: '0b6f4a0e-3c2d-4e5f-8a9b-1c2d3e4f5a6b',
+          epoch: 300,
+          creatorDeviceId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+        ),
+        key: Uint8List.fromList(List<int>.generate(SyncCipher.keyLength, (int i) => i * 7)),
+      );
+
+      final String code = invitation.encode();
+
+      expect(code, matches(RegExp(r'^HOMETASKS:[A-Z2-7]+$')));
+      expect(code.length, lessThanOrEqualTo(121));
+      expect(HouseholdInvitation.parse(code), invitation);
+    });
+
+    test('parse acepta el código en minúsculas y con espacios o saltos de línea', () async {
+      final HouseholdInvitation invitation = await _otherHousehold();
+      final String code = invitation.encode();
+      final String spaced = '  ${code.substring(0, 20)} \n${code.substring(20)}\t';
+
+      expect(HouseholdInvitation.parse(code.toLowerCase()), invitation);
+      expect(HouseholdInvitation.parse(spaced), invitation);
+    });
+
+    test('parse rechaza un código compacto dañado', () async {
+      final String code = (await _otherHousehold()).encode();
+      final String body = code.substring('HOMETASKS:'.length);
+
+      for (final String text in <String>[
+        'HOMETASKS:',
+        'HOMETASKS:${body.substring(0, body.length - 10)}',
+        'HOMETASKS:${body}AAAAAAAA',
+        'HOMETASKS:${body.substring(1)}',
+        'HOMETASKS:1$body',
+        'HOMETASKS:Z${body.substring(1)}',
+      ]) {
+        expect(() => HouseholdInvitation.parse(text), throwsFormatException, reason: text);
+      }
+    });
+
+    test('parse sigue leyendo las invitaciones de la versión 1', () async {
+      final HouseholdInvitation invitation = await _otherHousehold();
+      final String legacy = 'hometasks-sync:${base64Url.encode(utf8.encode(jsonEncode(<String, Object?>{
+            'v': 1,
+            'id': invitation.household.id,
+            'epoch': invitation.household.epoch,
+            'creator': invitation.household.creatorDeviceId,
+            'key': base64Url.encode(invitation.key),
+          })))}';
+
+      expect(HouseholdInvitation.parse(legacy), invitation);
     });
 
     test('parse rechaza lo que no es una invitación válida', () {
