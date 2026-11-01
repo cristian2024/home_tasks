@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.1+13 - 2026-11-01
+
+### Cambiado
+
+- «Nuevo espacio» pide primero el nombre (con uno propuesto) y no crea nada si se cancela. El diálogo de cambiar el nombre también tiene «Cancelar».
+- El código del hogar se muestra también como texto, con «Copiar el código» y, si hay un adaptador para compartir, «Compartir el código»: se puede mandar y pegar en el otro dispositivo sin escanear el QR.
+- En «Unirse a un hogar», sin permiso para la cámara aparece «Dar permiso», que lo vuelve a pedir o, si se dio desde Ajustes, arranca la cámara. Pegar el código sigue disponible.
+
 ## 1.8.0+12 - 2026-10-31
 
 ### Añadido

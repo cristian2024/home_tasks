@@ -1,6 +1,7 @@
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_hardware/core_hardware.dart';
+import 'package:core_share/core_share.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -121,7 +122,10 @@ List<RouteBase> _syncRoutes(SyncServices sync, ServiceLocator locator, SpaceSwit
       GoRoute(
         path: AppRoutes.syncInvitation,
         builder: (BuildContext context, GoRouterState state) => BlocProvider<InvitationCubit>(
-          create: (_) => InvitationCubit(sync.households),
+          create: (_) => InvitationCubit(
+            sync.households,
+            share: locator.isRegistered<ShareService>() ? locator.get<ShareService>() : null,
+          ),
           child: const InvitationScreen(),
         ),
       ),

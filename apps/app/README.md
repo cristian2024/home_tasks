@@ -7,11 +7,11 @@ App de utilidades del hogar. Es el punto de composición del monorepo: elige los
 - **Inicio:** los plugins activos, en lista (con sus tarjetas) o en grilla. En la grilla, un plugin con pantalla principal (`HomePluginEntryRoute`) se abre al tocarlo; los demás muestran su tarjeta en una hoja inferior.
 - **Catálogo:** activar y desactivar plugins. La preferencia se guarda, y las rutas de un plugin desactivado, no disponible o que falló al iniciar quedan bloqueadas.
 - **Accesos rápidos del icono:** al mantener pulsado el icono de la app aparecen los plugins del inicio con pantalla principal (como mucho 4, en su orden) y cada uno la abre directamente. Se actualizan al activar o desactivar plugins y al cambiar de idioma. Si el plugin ya no está activo, la app abre el inicio con un aviso.
-- **Espacios de datos** (Configuración → Espacios): cada espacio es un conjunto de datos con su propia base, local o de un hogar de sincronización, con sus propios plugins activos. Se puede cambiar de espacio, crear uno, renombrarlo y borrar los que no están en uso. Al cambiar, la app vuelve a empezar con los datos de ese espacio; solo se sincroniza el abierto.
+- **Espacios de datos** (Configuración → Espacios): cada espacio es un conjunto de datos con su propia base, local o de un hogar de sincronización, con sus propios plugins activos. Se puede cambiar de espacio, crear uno (eligiendo antes su nombre), renombrarlo y borrar los que no están en uso. Al cambiar, la app vuelve a empezar con los datos de ese espacio; solo se sincroniza el abierto.
 - **Configuración:** tema (claro, oscuro o del sistema), idioma (español o inglés) y vista del inicio.
 - **Sincronización** (Configuración → Sincronización), entre los teléfonos de casa por la WiFi:
   - estado (última sincronización, cambios pendientes, dispositivos a la vista y el último error) y «Sincronizar ahora»;
-  - hogar: crearlo y mostrar su código QR, unirse escaneándolo (o pegándolo), renombrar este dispositivo, ver los demás y salir. Solo el dispositivo que lo creó puede expulsar a otro: el hogar cambia de clave y el resto vuelve a escanear el código;
+  - hogar: crearlo y mostrar su código, como QR y como texto para copiarlo o compartirlo; unirse escaneándolo o pegándolo (sin permiso para la cámara, «Dar permiso» lo vuelve a pedir); renombrar este dispositivo, ver los demás y salir. Solo el dispositivo que lo creó puede expulsar a otro: el hogar cambia de clave y el resto vuelve a escanear el código;
   - conflictos: cada uno con la resolución que ya rige y sus opciones. La elegida se sincroniza.
 
   Sincroniza al arrancar, al volver a primer plano, al ver otro dispositivo y poco después de cada cambio. En segundo plano se detiene.

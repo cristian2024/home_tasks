@@ -65,6 +65,18 @@ void main() {
     await tester.tap(find.byTooltip(t.delete(name: 'Oficina')));
     await tester.pumpAndSettle();
     expect(find.text(t.deleteTitle(name: 'Oficina')), findsOneWidget);
+    await tester.tap(find.text(t.cancel));
+    await tester.pumpAndSettle();
+
+    // Crear pide el nombre antes; al cancelar no se crea nada.
+    await tester.tap(find.text(t.create));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(AlertDialog, t.createTitle), findsOneWidget);
+    expect(find.widgetWithText(TextField, t.newSpaceName(n: 3)), findsOneWidget);
+    await tester.tap(find.text(t.cancel));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(cubit.state.spaces, hasLength(2));
 
     await tester.pumpWidget(const SizedBox());
     await tester.runAsync(() async {

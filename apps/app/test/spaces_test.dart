@@ -309,6 +309,9 @@ void main() {
       expect((await ana.spaces.spaces()).map((DataSpace space) => space.id), <String>[first]);
       expect(await ana.device.spaceStorage.databaseNames(), isNot(contains(other.databaseName)));
       expect(ana.secrets.values.keys, isNot(contains(HouseholdService.secretKeyFor(householdId))));
+
+      expect(await cubit.create('Taller'), isTrue);
+      expect((await switcher.activeSpace()).name, 'Taller');
       await cubit.close();
     });
   });

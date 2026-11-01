@@ -107,7 +107,11 @@
         "qr_label": "QR code to join the household",
         "message": "Scan it from the other device in “Settings → Sync → Join a household”.",
         "warning": "Whoever scans this code can see and change the household's data. Only show it to your people.",
-        "loading": "Preparing the code…"
+        "loading": "Preparing the code…",
+        "code_label": "Or share it and paste it on the other device:",
+        "copy": "Copy the code",
+        "copied": "Code copied.",
+        "share": "Share the code"
       },
       "join": {
         "title": "Join a household",
@@ -115,6 +119,7 @@
         "camera_unavailable": "The camera isn't available. Paste the household code.",
         "camera_denied": "No camera permission. Paste the household code or grant the permission in Settings.",
         "open_settings": "Open Settings",
+        "retry_permission": "Allow camera",
         "manual_field": "Household code",
         "manual_submit": "Join",
         "joining": "Joining the household…",
@@ -176,6 +181,8 @@
       "delete_message": "Its data is deleted from this device. If it is a household, the other devices keep theirs.",
       "delete_confirm": "Delete",
       "create": "New space",
+      "create_title": "New space",
+      "create_confirm": "Create",
       "create_description": "A separate set of data, only on this device.",
       "switching": "Switching space…",
       "notice_switched": "You are now in “{name}”.",
