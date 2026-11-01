@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 - 2026-11-01
+
+### Cambiado
+
+- `HouseholdInvitation.encode()` escribe la versión 2: `HOMETASKS:` seguido de los campos en binario y en base32. Con ids UUID ocupa unos 120 caracteres en lugar de 235, y el QR usa el modo alfanumérico, así que tiene muchos menos módulos. Un dispositivo con una versión anterior no lee las invitaciones nuevas.
+- `HouseholdInvitation.parse` ignora mayúsculas, espacios y saltos de línea en el código, para poder pegarlo desde un mensaje. Sigue leyendo la versión 1.
+
 ## 0.1.2 - 2026-10-31
 
 ### Cambiado
