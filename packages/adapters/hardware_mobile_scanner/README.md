@@ -12,7 +12,7 @@ adapters: <DependencyModule>[MobileScannerHardware()]
 
 `MobileScannerHardware` registra una **factoría** de `CameraIdentifierScanner` en el `ServiceLocator`: cada `get` devuelve un escáner nuevo. Quien lo pide (p. ej. una pantalla de escaneo) lo libera con `dispose()` al salir, y así la cámara se apaga.
 
-La vista previa se muestra con `buildPreview()`, sin importar `mobile_scanner` fuera de este paquete.
+La vista previa se muestra con `buildPreview()`, sin importar `mobile_scanner` fuera de este paquete. `startScanning()` puede llamarse antes de montarla: `mobile_scanner` solo arranca la cámara con su widget montado, así que el escáner espera a la vista previa para arrancarla.
 
 ## Configuración nativa
 
@@ -27,4 +27,4 @@ Consulta la app de ejemplo de `core_hardware`.
 flutter test
 ```
 
-Prueban el registro en el locator y la traducción de formatos y errores. La lectura real necesita un dispositivo.
+Prueban el registro en el locator, la traducción de formatos y errores y el orden del arranque (con un controlador falso). La lectura real necesita un dispositivo.
