@@ -25,11 +25,14 @@ class IsarSpaceStorage implements DataSpaceStorage {
     if (!folder.existsSync()) {
       return <String>{};
     }
-    return <String>{
-      for (final FileSystemEntity entity in folder.listSync())
-        if (entity is File && entity.path.endsWith(_extension))
-          entity.uri.pathSegments.last.substring(0, entity.uri.pathSegments.last.length - _extension.length),
-    };
+    final Set<String> names = <String>{};
+    for (final FileSystemEntity entity in folder.listSync()) {
+      final String fileName = entity.uri.pathSegments.last;
+      if (entity is File && fileName.endsWith(_extension)) {
+        names.add(fileName.substring(0, fileName.length - _extension.length));
+      }
+    }
+    return names;
   }
 
   @override
