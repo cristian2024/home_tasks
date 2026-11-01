@@ -109,7 +109,7 @@
 
 ## Fase 4 (apps/app)
 - **Estructura:**
-  - `lib/app_module_registrar.dart`: adaptadores elegidos (`appAdapters`) y registro de plugins (`appPluginFactories`).
+  - `lib/app_module_registrar.dart`: adaptadores elegidos (`deviceAdapters`, una vez; `appAdaptersFor(space:)`, en cada espacio) y registro de plugins (`appPluginFactories`).
   - `lib/bootstrap.dart`: arranque testeable (`bootstrapApp`).
   - `lib/plugins/plugin_controller.dart`: estado de los plugins para inicio, catálogo y guard.
   - `lib/navigation/`: router y `PluginRouteGuard`.
@@ -117,7 +117,7 @@
 - **Preferencias de la app** (tema, idioma): `shared_preferences` vía `AppSettingsRepository`, nunca en la base de datos (es de los plugins). `bootstrapApp` recibe `systemLanguageCode` y aplica el idioma guardado si el usuario fijó uno. En tests, `InMemoryAppSettingsRepository` (`test/helpers/`) o `SharedPreferences.setMockInitialValues`.
 - **Añadir un plugin:**
   1. Añadir en `apps/app/pubspec.yaml` la dependencia del plugin y la de sus adaptadores (p. ej. `item_tracker_isar`).
-  2. Añadir sus adaptadores en `appAdapters` (p. ej. su `IsarFeature` dentro de `IsarStorage`).
+  2. Añadir sus adaptadores en `appAdaptersFor` (p. ej. su `IsarFeature` dentro de `IsarStorage`).
   3. Añadir una `PluginFactory` en `appPluginFactories`. La factoría debe registrar las traducciones del plugin (como `registerLocalization()` de item_tracker).
   4. Sus rutas deben ser absolutas y compartir un primer segmento propio (el guard lo usa como prefijo).
   5. Si implementa `HomePluginEntryRoute`, sale en los accesos rápidos del icono. Su icono es un recurso nativo (`res/drawable/shortcut_<plugin>.xml` y `Assets.xcassets/shortcut_<plugin>.imageset`) con su entrada en `AppShortcutDefaults.icons`.
@@ -159,7 +159,7 @@
   - `sync_engine`: motor, bandeja, hogar, controlador y `SyncModule`. En `testing.dart`, `SyncSimulator` y `SimulatedDevice`.
   - Adaptadores: `sync_isar`, `sync_lan`, `sync_crypto_cryptography` y `secret_store_secure_storage`.
   - `qr_display`: `AppQrCode`, con `qr` y un `CustomPainter` (no `qr_flutter`).
-- **Composición:** `SyncIsar()` va dentro de `IsarStorage`, y `SyncModule()` va **al final** de `appAdapters`, porque compone el motor con lo que registraron los demás. Transportes y participantes se añaden con `SyncTransports.of(services).add(...)` y `SyncParticipants.of(services).add(...)` en el scope raíz. `bootstrapApp` llama a `SyncController.start()`; la app lo pausa en segundo plano y lo reanuda al volver. Sin `SyncModule`, `SyncServices.of(locator)` es `null` y Configuración no muestra la sección.
+- **Composición:** `SyncIsar()` va dentro de `IsarStorage`, y `SyncModule()` va **al final** de `appAdaptersFor`, porque compone el motor con lo que registraron los demás. Transportes y participantes se añaden con `SyncTransports.of(services).add(...)` y `SyncParticipants.of(services).add(...)` en el scope raíz. `bootstrapApp` llama a `SyncController.start()`; la app lo pausa en segundo plano y lo reanuda al volver. Sin `SyncModule`, `SyncServices.of(locator)` es `null` y Configuración no muestra la sección.
 - **Una funcionalidad que se sincroniza:**
   - Las entidades no llevan metadatos. El repositorio guarda una copia sincronizada por entidad (`SyncedEntity`) y, en la misma transacción que la escritura, registra el cambio con `LocalSyncRecorder` (en Isar, con `IsarChangeLogWriter`). Los casos de uso no cambian.
   - Los borrados son lógicos (`deletedAt`): sin eso, un borrado no gana a una edición hecha a la vez en otro dispositivo.
@@ -171,6 +171,14 @@
 - **Tests:**
   - El motor, con `SyncSimulator` (semillas reproducibles). `SimulatedDevice.advertise()` acepta sesiones: no combinarlo con `controller.start()`, que también acepta.
   - La app, con `SyncedDevice` (`apps/app/test/helpers/synced_device.dart`): varios dispositivos con dobles en memoria en un `InMemorySyncNetwork`. Uno se pinta con `harness.pump` y los demás corren sin UI (`startHeadless`).
+
+## Varios hogares (espacios de datos)
+- **Diseño:** §10.4.10 de la spec. Un espacio es una base Isar propia, local o de un hogar (como mucho uno por hogar). Solo se sincroniza el activo.
+- **Paquetes:** `core_spaces` (contratos `DataSpaceDirectory` y `DataSpaceStorage`, `deleteOrphanDatabases`; en `testing.dart`, sus tests de contrato y dobles en memoria), `spaces_shared_preferences` (la lista) e `IsarSpaceStorage` en `storage_isar` (las bases).
+- **Por espacio / por dispositivo:** los datos, la sincronización y los plugins activos son de cada espacio. La lista de espacios y los accesos rápidos son del dispositivo: van en `deviceAdapters`, en un `ServiceLocator` propio (`DeviceEnvironment`) que no se vacía al cambiar de espacio.
+- **App (`apps/app/lib/spaces/`):** `bootstrapSpaces` elige el activo (en el primer arranque, uno sobre la base `default`, sin copiar datos) y borra las bases huérfanas. `SpaceSwitcher` cambia de espacio (libera el entorno, abre el otro, `setActive` solo si abrió; si no, vuelve al anterior). `SpaceRoot` reconstruye `HomeUtilityApp` con `ObjectKey(environment)`. `SpaceHouseholdTracker` anota en la lista el hogar de cada espacio.
+- **Clave del hogar:** `HouseholdService.secretKeyFor(householdId)`. La antigua (`legacySecretKey`) no se borra mientras sea la del hogar actual.
+- **Tests:** `SpacePhone` (`apps/app/test/helpers/space_phone.dart`): Isar real en una carpeta temporal y el arranque real, con tests normales (no `testWidgets`). Isar comparte instancias por nombre en todo el proceso: dos teléfonos de un test no pueden abrir a la vez una base con el mismo nombre (p. ej. `default`); al segundo se le da antes un espacio propio.
 
 ## Trampas de la sincronización en tests
 - **Liberar dentro del test:** en `testWidgets`, liberar los dispositivos sincronizados al final del cuerpo, después de `tester.pumpWidget(const SizedBox())`, no en `tearDown` ni en `addTearDown`. Ahí, con la app aún montada, `SyncController.stop()` no termina con el reloj simulado y el test se cuelga. Ver `syncTest` en `apps/app/test/sync_test.dart`.
