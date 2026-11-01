@@ -29,20 +29,40 @@ class HomeUtilityApp extends StatefulWidget {
 
 class _HomeUtilityAppState extends State<HomeUtilityApp>
     with WidgetsBindingObserver {
+  AppEnvironment get _environment => widget.environment;
+
   final GlobalKey<ScaffoldMessengerState> _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final GoRouter _router = buildAppRouter(
-    registry: widget.environment.registry,
-    controller: widget.environment.plugins,
+    registry: _environment.registry,
+    controller: _environment.plugins,
     messengerKey: _messengerKey,
     initialLocation: widget.initialLocation,
-    sync: widget.environment.sync,
-    locator: widget.environment.locator,
+    sync: _environment.sync,
+    locator: _environment.locator,
   );
+
+  StreamSubscription<String>? _shortcutSelections;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Después del primer frame, con el router ya montado. Una pulsación que
+    // abrió la app en frío la guarda el servicio hasta este momento.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _shortcutSelections = _environment.shortcuts?.selections.listen(_openShortcut);
+      }
+    });
+  }
+
+  /// Abre la pantalla principal del plugin del acceso pulsado. Si el plugin
+  /// no está listo, el guard del router lleva al inicio con un aviso.
+  void _openShortcut(String pluginId) {
+    final String? route = _environment.shortcuts?.entryRouteOf(pluginId);
+    if (route != null) {
+      _router.go(route);
+    }
   }
 
   @override
@@ -60,7 +80,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   @override
   void didChangeLocales(List<Locale>? locales) {
     if (locales != null) {
-      widget.environment.settings.systemLocalesChanged(locales);
+      _environment.settings.systemLocalesChanged(locales);
     }
   }
 
@@ -68,7 +88,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   /// sistema cortaría la red igualmente.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final SyncController? sync = widget.environment.sync?.controller;
+    final SyncController? sync = _environment.sync?.controller;
     if (sync == null) {
       return;
     }
@@ -87,17 +107,18 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(_shortcutSelections?.cancel());
     _router.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final LocalizationCoordinator localization = widget.environment.localization;
+    final LocalizationCoordinator localization = _environment.localization;
     return RepositoryProvider<LocalizationCoordinator>.value(
       value: localization,
       child: BlocProvider<AppSettingsController>.value(
-        value: widget.environment.settings,
+        value: _environment.settings,
         // Las páginas (ver `withLanguageRebuild`) dependen de este scope.
         child: LanguageScope(
           languageCode: localization.languageCode,

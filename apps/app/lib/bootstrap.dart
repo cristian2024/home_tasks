@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 
+import 'package:core_app_shortcuts/core_app_shortcuts.dart';
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_di/core_di.dart';
 import 'package:core_events/core_events.dart';
@@ -14,6 +15,7 @@ import 'plugins/plugin_controller.dart';
 import 'settings/app_settings.dart';
 import 'settings/app_settings_controller.dart';
 import 'settings/app_settings_repository.dart';
+import 'shortcuts/app_shortcuts_publisher.dart';
 import 'sync/sync_services.dart';
 
 /// Todo lo que la app necesita tras arrancar.
@@ -25,6 +27,7 @@ class AppEnvironment {
     required this.plugins,
     required this.settings,
     this.sync,
+    this.shortcuts,
   });
 
   final ServiceLocator locator;
@@ -38,9 +41,14 @@ class AppEnvironment {
   /// Sincronización con otros dispositivos, o `null` si no se compuso.
   final SyncServices? sync;
 
+  /// Accesos rápidos del icono, o `null` si ningún adaptador registró
+  /// `AppShortcutService`.
+  final AppShortcutsPublisher? shortcuts;
+
   /// Libera los plugins y los servicios; los adaptadores liberan con el
   /// locator lo que abrieron, p. ej. la base de datos (tests y reinicios).
   Future<void> dispose() async {
+    shortcuts?.dispose();
     await sync?.controller.stop();
     await plugins.disposePlugins();
     plugins.dispose();
@@ -62,6 +70,8 @@ class AppEnvironment {
 /// 5. Sincronización, si un adaptador la compuso (`SyncModule`): empieza a
 ///    seguir el hogar y los cambios. La app la pausa y reanuda con el ciclo
 ///    de vida.
+/// 6. Accesos rápidos del icono, si un adaptador registró
+///    `AppShortcutService`: publica los plugins del inicio y los sigue.
 Future<AppEnvironment> bootstrapApp({
   required String systemLanguageCode,
   List<DependencyModule> adapters = appAdapters,
@@ -121,6 +131,11 @@ Future<AppEnvironment> bootstrapApp({
   final SyncServices? sync = SyncServices.of(services);
   await sync?.controller.start();
 
+  final AppShortcutsPublisher? shortcuts = services.isRegistered<AppShortcutService>()
+      ? (AppShortcutsPublisher(service: services.get<AppShortcutService>(), plugins: plugins, localization: l10n)
+        ..start())
+      : null;
+
   return AppEnvironment(
     locator: services,
     localization: l10n,
@@ -128,5 +143,6 @@ Future<AppEnvironment> bootstrapApp({
     plugins: plugins,
     settings: settings,
     sync: sync,
+    shortcuts: shortcuts,
   );
 }

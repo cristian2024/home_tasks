@@ -1,3 +1,4 @@
+import 'package:app_shortcuts_quick_actions/app_shortcuts_quick_actions.dart';
 import 'package:core_contracts/src/home_plugin.dart';
 import 'package:core_contracts/src/plugin_registry.dart';
 import 'package:core_di/core_di.dart';
@@ -46,6 +47,10 @@ void main() {
     expect(locator.isRegistered<CameraIdentifierScanner>(), isTrue);
     expect(locator.isRegistered<NfcIdentifierScanner>(), isTrue);
     expect(locator.isRegistered<HardwarePermissions>(), isTrue);
+  });
+
+  test('los accesos rápidos del icono usan quick_actions', () {
+    expect(appAdapters.whereType<QuickActionsShortcuts>(), hasLength(1));
   });
 
   test('la sincronización usa Isar, el almacén seguro, el cifrado y la WiFi, y SyncModule va al final', () {
