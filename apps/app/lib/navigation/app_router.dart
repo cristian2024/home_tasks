@@ -14,6 +14,9 @@ import '../home/presentation/home_dashboard_screen.dart';
 import '../i18n/strings.g.dart';
 import '../plugins/plugin_controller.dart';
 import '../settings/settings_screen.dart';
+import '../spaces/space_switcher.dart';
+import '../spaces/spaces_cubit.dart';
+import '../spaces/spaces_screen.dart';
 import '../sync/conflicts_cubit.dart';
 import '../sync/conflicts_screen.dart';
 import '../sync/invitation_cubit.dart';
@@ -33,13 +36,16 @@ abstract final class AppRoutes {
   static const String syncInvitation = '/settings/sync/invitation';
   static const String syncJoin = '/settings/sync/join';
   static const String syncConflicts = '/settings/sync/conflicts';
+  static const String spaces = '/settings/spaces';
 }
 
 /// Router de la app: inicio, catálogo y las rutas de **todos** los plugins
 /// registrados. Las de plugins no listos las bloquea [PluginRouteGuard],
 /// que redirige a inicio con un aviso; se reevalúa cuando cambian los plugins.
 /// Con [sync], también las pantallas de la sincronización, que piden a
-/// [locator] la cámara y los nombres de los objetos.
+/// [locator] la cámara y los nombres de los objetos. Con [spaces], la
+/// pantalla de los espacios de datos, y crear un hogar o unirse a uno puede
+/// abrir otro espacio.
 GoRouter buildAppRouter({
   required PluginRegistry registry,
   required PluginController controller,
@@ -47,6 +53,7 @@ GoRouter buildAppRouter({
   String initialLocation = AppRoutes.home,
   SyncServices? sync,
   ServiceLocator? locator,
+  SpaceSwitcher? spaces,
 }) {
   final PluginRouteGuard guard = PluginRouteGuard(registry: registry, controller: controller);
   return GoRouter(
@@ -87,19 +94,27 @@ GoRouter buildAppRouter({
       GoRoute(
         path: AppRoutes.settings,
         builder: (BuildContext context, GoRouterState state) =>
-            SettingsScreen(showSync: sync != null),
+            SettingsScreen(showSync: sync != null, showSpaces: spaces != null),
       ),
-      if (sync != null) ..._syncRoutes(sync, locator ?? ServiceLocator.instance),
+      if (spaces != null)
+        GoRoute(
+          path: AppRoutes.spaces,
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<SpacesCubit>(
+            create: (_) => SpacesCubit(spaces),
+            child: const SpacesScreen(),
+          ),
+        ),
+      if (sync != null) ..._syncRoutes(sync, locator ?? ServiceLocator.instance, spaces),
       for (final HomePlugin plugin in registry.allPlugins) ...plugin.routes,
     ]),
   );
 }
 
-List<RouteBase> _syncRoutes(SyncServices sync, ServiceLocator locator) => <RouteBase>[
+List<RouteBase> _syncRoutes(SyncServices sync, ServiceLocator locator, SpaceSwitcher? spaces) => <RouteBase>[
       GoRoute(
         path: AppRoutes.sync,
         builder: (BuildContext context, GoRouterState state) => BlocProvider<SyncCubit>(
-          create: (_) => SyncCubit(sync),
+          create: (_) => SyncCubit(sync, spaces: spaces),
           child: const SyncScreen(),
         ),
       ),
@@ -115,6 +130,7 @@ List<RouteBase> _syncRoutes(SyncServices sync, ServiceLocator locator) => <Route
         builder: (BuildContext context, GoRouterState state) => BlocProvider<JoinHouseholdCubit>(
           create: (_) => JoinHouseholdCubit(
             households: sync.households,
+            spaces: spaces,
             // Los escáneres se registran como factorías: uno nuevo en cada get.
             cameraFactory: locator.isRegistered<CameraIdentifierScanner>()
                 ? () => locator.get<CameraIdentifierScanner>()

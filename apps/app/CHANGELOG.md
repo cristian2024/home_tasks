@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.8.0+12 - 2026-10-31
+
+### Añadido
+
+- Varios espacios de datos (Configuración → Espacios): cada uno es local o de un hogar, con su propia base Isar y sus propios plugins activos. Cambiar de espacio vuelve a empezar la app con sus datos; solo se sincroniza el abierto. Se pueden crear, renombrar y borrar (salvo el abierto, que nunca se borra).
+- Crear un hogar o unirse a uno pregunta, si el espacio abierto no tiene hogar, si sus datos van al hogar o se empieza un espacio vacío. Unirse a un hogar que ya tiene espacio cambia a él; desde el espacio de otro hogar, se une en uno nuevo.
+- Avisos al cambiar de espacio (al que se ha cambiado, que elija los plugins de un espacio nuevo, o que no se pudo abrir) y el nombre del espacio en Sincronización.
+
+### Cambiado
+
+- `appAdapters` pasa a ser `appAdaptersFor({space, deviceName})`; la lista de espacios y los accesos rápidos van en `deviceAdapters`, que se componen una vez y sobreviven a los cambios de espacio. `bootstrapApp` recibe `device` y `space`.
+- El primer arranque crea un espacio sobre la base de siempre: los datos, la sincronización y las preferencias de los plugins se siguen leyendo sin copiar nada, y su hogar se anota en la lista.
+- `core_spaces`, `spaces_shared_preferences`, `storage_isar` ^0.2.2 y `sync_engine` ^0.1.2 (una clave por hogar). `core_secrets` pasa a dependencia.
+
+### Interno
+
+- `SpacePhone` en los tests: teléfonos con Isar real y el arranque real con espacios.
+
 ## 1.7.0+11 - 2026-10-31
 
 ### Añadido

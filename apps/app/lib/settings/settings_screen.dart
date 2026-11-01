@@ -8,14 +8,17 @@ import '../navigation/app_router.dart';
 import 'app_settings.dart';
 import 'app_settings_controller.dart';
 
-/// Configuración de la app: tema, idioma, acceso al catálogo de módulos, a la
-/// sincronización (con [showSync]) y, más adelante, exportar e importar los
-/// datos.
+/// Configuración de la app: tema, idioma, acceso al catálogo de módulos, a
+/// los espacios de datos (con [showSpaces]), a la sincronización (con
+/// [showSync]) y, más adelante, exportar e importar los datos.
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, this.showSync = false});
+  const SettingsScreen({super.key, this.showSync = false, this.showSpaces = false});
 
   /// Si se compuso la sincronización.
   final bool showSync;
+
+  /// Si la app tiene espacios de datos.
+  final bool showSpaces;
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +87,18 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ],
             ),
+            if (showSpaces)
+              AppSettingsSection(
+                title: appStrings.app.spaces.section,
+                children: <Widget>[
+                  AppSettingsTile(
+                    icon: Icons.workspaces_outlined,
+                    title: appStrings.app.spaces.tile,
+                    subtitle: appStrings.app.spaces.createDescription,
+                    onTap: () => context.push(AppRoutes.spaces),
+                  ),
+                ],
+              ),
             if (showSync)
               AppSettingsSection(
                 title: appStrings.app.sync.section,

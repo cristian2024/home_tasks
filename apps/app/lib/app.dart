@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:core_spaces/core_spaces.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -12,16 +13,25 @@ import 'i18n/strings.g.dart';
 import 'navigation/app_router.dart';
 import 'settings/app_settings.dart';
 import 'settings/app_settings_controller.dart';
+import 'spaces/space_switcher.dart';
 
 class HomeUtilityApp extends StatefulWidget {
   const HomeUtilityApp({
     super.key,
     required this.environment,
     this.initialLocation = AppRoutes.home,
+    this.spaces,
+    this.notice,
   });
 
   final AppEnvironment environment;
   final String initialLocation;
+
+  /// Espacios de datos, o `null` sin ellos (Configuración no los muestra).
+  final SpaceSwitcher? spaces;
+
+  /// Aviso del cambio de espacio que abrió este entorno.
+  final SpaceNotice? notice;
 
   @override
   State<HomeUtilityApp> createState() => _HomeUtilityAppState();
@@ -37,6 +47,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     initialLocation: widget.initialLocation,
     sync: widget.environment.sync,
     locator: widget.environment.locator,
+    spaces: widget.spaces,
   );
 
   StreamSubscription<String>? _shortcutSelections;
@@ -50,8 +61,34 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _shortcutSelections = widget.environment.shortcuts?.selections.listen(_openShortcut);
+        unawaited(_showNotice());
       }
     });
+  }
+
+  /// Avisa de lo que pasó al cambiar de espacio.
+  Future<void> _showNotice() async {
+    final SpaceNotice? notice = widget.notice;
+    final SpaceSwitcher? spaces = widget.spaces;
+    if (notice == null || spaces == null) {
+      return;
+    }
+    final DataSpace space = await spaces.activeSpace();
+    final AppTranslations$app$spaces$es t = appStrings.app.spaces;
+    final SnackBar snackBar = switch (notice) {
+      SpaceNotice.switched => SnackBar(
+          content: Text(space.isShared ? t.noticeShared(name: space.name) : t.noticeSwitched(name: space.name)),
+        ),
+      SpaceNotice.created => SnackBar(
+          content: Text(t.noticeCreated),
+          action: SnackBarAction(label: t.choosePlugins, onPressed: () => _router.push(AppRoutes.catalog)),
+        ),
+      SpaceNotice.failed => SnackBar(content: Text(t.noticeFailed(name: space.name))),
+      SpaceNotice.actionFailed => SnackBar(content: Text(t.errorGeneric)),
+    };
+    _messengerKey.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
   }
 
   /// Abre la pantalla principal del plugin del acceso pulsado. Si el plugin
