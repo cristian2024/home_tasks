@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.7.0+11
+version: 1.8.0+12
 
 environment:
   sdk: ^3.11.0
@@ -17,6 +17,8 @@ dependencies:
   core_di: ^0.1.1
   core_events: ^0.1.1
   core_hardware: ^0.2.0
+  core_secrets: ^0.1.0
+  core_spaces: ^0.1.0
   core_sync: ^0.1.1
   core_ui: ^0.1.1
   core_utils: ^0.1.0
@@ -37,17 +39,17 @@ dependencies:
   share_native: ^0.1.0
   shared_preferences: ^2.5.6
   shopping_list_isar: ^0.1.2
+  spaces_shared_preferences: ^0.1.0
   slang: ^4.19.0
   slang_flutter: ^4.19.0
-  storage_isar: ^0.2.0
+  storage_isar: ^0.2.2
   sync_crypto_cryptography: ^0.1.0
-  sync_engine: ^0.1.1
+  sync_engine: ^0.1.2
   sync_isar: ^0.1.0
   sync_lan: ^0.1.0
 
 dev_dependencies:
   bloc_test: ^10.0.0
-  core_secrets: ^0.1.0
   core_share: ^0.1.0
   flutter_lints: ^6.0.0
   flutter_test:

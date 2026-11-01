@@ -153,6 +153,43 @@
         "unknown_message": "Two devices changed the same thing at once.",
         "unknown_option": "Option {option}"
       }
+    },
+    "spaces": {
+      "section": "Spaces",
+      "tile": "Space in use",
+      "title": "Spaces",
+      "local": "Only on this device",
+      "shared": "Shared household",
+      "active": "In use",
+      "default_name": "My space",
+      "new_space_name": "Space {n}",
+      "switch": "Switch to {name}",
+      "switch_title": "Switch to “{name}”?",
+      "switch_message": "The app starts again with that space's data and plugins.",
+      "switch_confirm": "Switch",
+      "rename": "Rename {name}",
+      "rename_title": "Space name",
+      "rename_field": "Name",
+      "save": "Save",
+      "delete": "Delete {name}",
+      "delete_title": "Delete “{name}”?",
+      "delete_message": "Its data is deleted from this device. If it is a household, the other devices keep theirs.",
+      "delete_confirm": "Delete",
+      "create": "New space",
+      "create_description": "A separate set of data, only on this device.",
+      "switching": "Switching space…",
+      "notice_switched": "You are now in “{name}”.",
+      "notice_shared": "You are now in “{name}”. It will catch up when it sees the household's other devices.",
+      "notice_created": "New space: choose its plugins.",
+      "choose_plugins": "Choose",
+      "notice_failed": "The space could not be opened. You are still in “{name}”.",
+      "bring_title": "Bring the data from “{name}”?",
+      "bring_message": "You can share this space's data with the household, or start a new, empty space for the household.",
+      "bring_confirm": "Bring my data",
+      "start_empty": "Start empty",
+      "cancel": "Cancel",
+      "current": "Space: {name}",
+      "error_generic": "The action could not be completed. Try again."
     }
   }
 }

@@ -153,6 +153,43 @@
         "unknown_message": "Dos dispositivos cambiaron lo mismo a la vez.",
         "unknown_option": "Opción {option}"
       }
+    },
+    "spaces": {
+      "section": "Espacios",
+      "tile": "Espacio en uso",
+      "title": "Espacios",
+      "local": "Solo en este dispositivo",
+      "shared": "Hogar compartido",
+      "active": "En uso",
+      "default_name": "Mi espacio",
+      "new_space_name": "Espacio {n}",
+      "switch": "Cambiar a {name}",
+      "switch_title": "¿Cambiar a «{name}»?",
+      "switch_message": "La app vuelve a empezar con los datos y los plugins de ese espacio.",
+      "switch_confirm": "Cambiar",
+      "rename": "Cambiar el nombre de {name}",
+      "rename_title": "Nombre del espacio",
+      "rename_field": "Nombre",
+      "save": "Guardar",
+      "delete": "Borrar {name}",
+      "delete_title": "¿Borrar «{name}»?",
+      "delete_message": "Se borran sus datos de este dispositivo. Si es un hogar, los demás dispositivos conservan los suyos.",
+      "delete_confirm": "Borrar",
+      "create": "Nuevo espacio",
+      "create_description": "Un conjunto de datos aparte, solo en este dispositivo.",
+      "switching": "Cambiando de espacio…",
+      "notice_switched": "Ahora estás en «{name}».",
+      "notice_shared": "Ahora estás en «{name}». Se pondrá al día cuando vea los demás dispositivos del hogar.",
+      "notice_created": "Espacio nuevo: elige sus plugins.",
+      "choose_plugins": "Elegir",
+      "notice_failed": "No se pudo abrir el espacio. Sigues en «{name}».",
+      "bring_title": "¿Llevar los datos de «{name}»?",
+      "bring_message": "Puedes compartir con el hogar los datos de este espacio, o empezar un espacio nuevo y vacío para el hogar.",
+      "bring_confirm": "Llevar mis datos",
+      "start_empty": "Empezar vacío",
+      "cancel": "Cancelar",
+      "current": "Espacio: {name}",
+      "error_generic": "No se pudo completar la acción. Inténtalo de nuevo."
     }
   }
 }

@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:core_hardware/core_hardware.dart';
+import 'package:core_sync/core_sync.dart';
 import 'package:equatable/equatable.dart';
 import 'package:sync_engine/sync_engine.dart';
+
+import '../spaces/space_switcher.dart';
 
 /// Qué muestra la pantalla de unirse a un hogar.
 enum JoinPhase {
@@ -18,6 +21,10 @@ enum JoinPhase {
 
   /// Sin permiso para la cámara: el campo y, si es permanente, Ajustes.
   cameraDenied,
+
+  /// Un código válido con el espacio actual sin hogar: el usuario elige si
+  /// se lleva sus datos al hogar ([JoinHouseholdCubit.chooseData]).
+  choosingData,
 
   joining,
   joined,
@@ -51,17 +58,31 @@ class JoinState extends Equatable {
 
 /// Se une a un hogar con el código que muestra otro dispositivo: leído con la
 /// cámara o pegado a mano.
+///
+/// Con [spaces], cada hogar va en su espacio de datos: si el hogar ya tiene
+/// uno, se une allí; si el espacio actual es de otro hogar, en uno nuevo y
+/// vacío; si no tiene hogar, el usuario elige si lleva sus datos
+/// ([JoinPhase.choosingData]). Unirse en otro espacio lo abre, y la app
+/// cambia de entorno.
 class JoinHouseholdCubit extends Cubit<JoinState> {
   JoinHouseholdCubit({
     required HouseholdService households,
+    SpaceSwitcher? spaces,
     CameraIdentifierScanner Function()? cameraFactory,
     HardwarePermissions? permissions,
   })  : _households = households,
+        _spaces = spaces,
         _cameraFactory = cameraFactory,
         _permissions = permissions,
         super(const JoinState());
 
   final HouseholdService _households;
+  final SpaceSwitcher? _spaces;
+
+  /// Invitación pendiente mientras [JoinPhase.choosingData], y la fase a la
+  /// que se vuelve si el usuario cancela.
+  HouseholdInvitation? _pending;
+  JoinPhase _beforeChoice = JoinPhase.starting;
   final CameraIdentifierScanner Function()? _cameraFactory;
   final HardwarePermissions? _permissions;
   CameraIdentifierScanner? _camera;
@@ -117,9 +138,15 @@ class JoinHouseholdCubit extends Cubit<JoinState> {
 
   Future<void> openSettings() async => _permissions?.openSettings();
 
-  /// Se une con [code]. Ignora lo que llegue mientras se une o ya se unió.
+  /// Nombre del espacio de datos abierto, o `null` sin espacios.
+  Future<String?> activeSpaceName() async => (await _spaces?.activeSpace())?.name;
+
+  /// Se une con [code]. Ignora lo que llegue mientras se une, ya se unió o
+  /// el usuario elige qué hacer con sus datos.
   Future<void> submit(String code) async {
-    if (state.phase == JoinPhase.joining || state.phase == JoinPhase.joined) {
+    if (state.phase == JoinPhase.joining ||
+        state.phase == JoinPhase.joined ||
+        state.phase == JoinPhase.choosingData) {
       return;
     }
     final JoinPhase previous = state.phase;
@@ -130,6 +157,59 @@ class JoinHouseholdCubit extends Cubit<JoinState> {
       _fail(code, previous, JoinError.invalidCode);
       return;
     }
+    final SpaceSwitcher? spaces = _spaces;
+    if (spaces != null) {
+      final String? existing = await spaces.spaceOfHousehold(invitation.household.id);
+      if (existing != null && existing != spaces.activeSpaceId) {
+        return _joinInSpace(spaces, invitation, spaceId: existing);
+      }
+      if (existing == null) {
+        final Household? current = await _households.current();
+        if (current == null) {
+          _pending = invitation;
+          _beforeChoice = previous;
+          emit(state.copyWith(phase: JoinPhase.choosingData, error: () => null));
+          return;
+        }
+        if (current.id != invitation.household.id) {
+          return _joinInSpace(spaces, invitation);
+        }
+      }
+    }
+    return _joinHere(code, previous, invitation);
+  }
+
+  /// Respuesta a [JoinPhase.choosingData]: con [bringData], se une en este
+  /// espacio y comparte sus datos; si no, en un espacio nuevo y vacío.
+  Future<void> chooseData({required bool bringData}) async {
+    final HouseholdInvitation? invitation = _pending;
+    final SpaceSwitcher? spaces = _spaces;
+    if (state.phase != JoinPhase.choosingData || invitation == null || spaces == null) {
+      return;
+    }
+    _pending = null;
+    if (bringData) {
+      return _joinHere(invitation.encode(), _beforeChoice, invitation);
+    }
+    return _joinInSpace(spaces, invitation);
+  }
+
+  /// El usuario cerró la elección sin decidir: vuelve a leer códigos.
+  void cancelChoice() {
+    if (state.phase == JoinPhase.choosingData) {
+      _pending = null;
+      emit(state.copyWith(phase: _beforeChoice));
+    }
+  }
+
+  /// Se une en otro espacio: la app cambia de entorno y cierra este cubit.
+  Future<void> _joinInSpace(SpaceSwitcher spaces, HouseholdInvitation invitation, {String? spaceId}) async {
+    emit(state.copyWith(phase: JoinPhase.joining, error: () => null));
+    _releaseCamera();
+    await spaces.joinInSpace(invitation, spaceId: spaceId);
+  }
+
+  Future<void> _joinHere(String code, JoinPhase previous, HouseholdInvitation invitation) async {
     emit(state.copyWith(phase: JoinPhase.joining, error: () => null));
     try {
       await _households.join(invitation);

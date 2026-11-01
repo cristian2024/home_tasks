@@ -7,6 +7,7 @@ import 'package:sync_engine/sync_engine.dart';
 
 import '../i18n/strings.g.dart';
 import '../navigation/app_router.dart';
+import '../spaces/bring_data_dialog.dart';
 import 'sync_cubit.dart';
 import 'sync_time_format.dart';
 
@@ -24,9 +25,13 @@ class SyncScreen extends StatelessWidget {
         builder: (BuildContext context, SyncViewState state) => ListView(
           padding: const EdgeInsets.all(AppSpacing.md),
           children: <Widget>[
+            if (state.spaceName != null) ...<Widget>[
+              Text(appStrings.app.spaces.current(name: state.spaceName!), style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.sm),
+            ],
             _StatusCard(state: state),
             if (state.household == null)
-              _NoHouseholdSection(busy: state.busy)
+              _NoHouseholdSection(busy: state.busy, spaceName: state.spaceName)
             else ...<Widget>[
               _HouseholdSection(state: state),
               _DevicesSection(state: state),
@@ -101,13 +106,29 @@ class _StatusCard extends StatelessWidget {
 }
 
 class _NoHouseholdSection extends StatelessWidget {
-  const _NoHouseholdSection({required this.busy});
+  const _NoHouseholdSection({required this.busy, this.spaceName});
 
   final bool busy;
 
+  /// Espacio de datos abierto, o `null` sin espacios.
+  final String? spaceName;
+
+  /// Con espacios, pregunta si los datos de este van al hogar. Si no, el hogar
+  /// se crea en un espacio nuevo y la app cambia de entorno (y muestra allí
+  /// el código).
   Future<void> _create(BuildContext context) async {
-    final SyncActionError? error = await context.read<SyncCubit>().createHousehold();
-    if (!context.mounted) {
+    final SyncCubit cubit = context.read<SyncCubit>();
+    final String? spaceName = this.spaceName;
+    bool bringData = true;
+    if (cubit.hasSpaces && spaceName != null) {
+      final bool? choice = await showBringDataDialog(context, spaceName: spaceName);
+      if (choice == null) {
+        return;
+      }
+      bringData = choice;
+    }
+    final SyncActionError? error = await cubit.createHousehold(bringData: bringData);
+    if (!context.mounted || !bringData) {
       return;
     }
     if (error == null) {

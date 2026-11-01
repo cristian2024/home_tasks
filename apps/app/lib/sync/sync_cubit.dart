@@ -5,6 +5,7 @@ import 'package:core_sync/core_sync.dart';
 import 'package:equatable/equatable.dart';
 import 'package:sync_engine/sync_engine.dart';
 
+import '../spaces/space_switcher.dart';
 import 'sync_services.dart';
 
 /// Por qué falló una acción del hogar, para explicarlo.
@@ -18,6 +19,7 @@ class SyncViewState extends Equatable {
     this.peers = const <SyncPeer>[],
     this.openConflicts = 0,
     this.busy = false,
+    this.spaceName,
   }) : status = status ?? SyncStatus();
 
   final SyncStatus status;
@@ -30,6 +32,9 @@ class SyncViewState extends Equatable {
 
   /// Hay una acción del hogar en curso.
   final bool busy;
+
+  /// Nombre del espacio de datos abierto, o `null` sin espacios.
+  final String? spaceName;
 
   /// Si este dispositivo creó el hogar (solo él puede expulsar).
   bool get isCreator {
@@ -45,6 +50,7 @@ class SyncViewState extends Equatable {
     List<SyncPeer>? peers,
     int? openConflicts,
     bool? busy,
+    String? spaceName,
   }) =>
       SyncViewState(
         status: status ?? this.status,
@@ -53,16 +59,18 @@ class SyncViewState extends Equatable {
         peers: peers ?? this.peers,
         openConflicts: openConflicts ?? this.openConflicts,
         busy: busy ?? this.busy,
+        spaceName: spaceName ?? this.spaceName,
       );
 
   @override
-  List<Object?> get props => <Object?>[status, household, device, peers, openConflicts, busy];
+  List<Object?> get props => <Object?>[status, household, device, peers, openConflicts, busy, spaceName];
 }
 
 /// Estado de la sincronización y acciones del hogar para la pantalla de
-/// sincronización.
+/// sincronización. Con [spaces], un hogar nuevo puede crearse en un espacio
+/// de datos nuevo y vacío.
 class SyncCubit extends Cubit<SyncViewState> {
-  SyncCubit(this._services) : super(SyncViewState()) {
+  SyncCubit(this._services, {SpaceSwitcher? spaces}) : _spaces = spaces, super(SyncViewState()) {
     _subscriptions
       ..add(_services.controller.watchStatus().listen(_onStatus))
       ..add(_services.households.watch().listen(_onHousehold))
@@ -70,14 +78,32 @@ class SyncCubit extends Cubit<SyncViewState> {
             (List<SyncConflict> conflicts) => emit(state.copyWith(openConflicts: conflicts.length)),
           ));
     unawaited(_reloadDevices());
+    unawaited(_loadSpaceName());
   }
 
   final SyncServices _services;
+  final SpaceSwitcher? _spaces;
+
+  /// Si se puede elegir dónde van los datos de un hogar nuevo.
+  bool get hasSpaces => _spaces != null;
   final List<StreamSubscription<Object?>> _subscriptions = <StreamSubscription<Object?>>[];
 
   Future<void> syncNow() => _services.controller.syncNow();
 
-  Future<SyncActionError?> createHousehold() => _run(() => _services.households.create());
+  /// Crea un hogar. Con [bringData] (o sin espacios), en este espacio, que
+  /// comparte sus datos; si no, en un espacio nuevo y vacío, que la app abre.
+  Future<SyncActionError?> createHousehold({bool bringData = true}) {
+    final SpaceSwitcher? spaces = _spaces;
+    if (bringData || spaces == null) {
+      return _run(() => _services.households.create());
+    }
+    return _run(() async {
+      if (!await spaces.createHouseholdInNewSpace()) {
+        throw StateError('No se pudo crear el hogar en un espacio nuevo');
+      }
+      return null;
+    });
+  }
 
   Future<SyncActionError?> leave() => _run(_services.households.leave);
 
@@ -98,6 +124,13 @@ class SyncCubit extends Cubit<SyncViewState> {
   void _onHousehold(Household? household) {
     emit(state.copyWith(household: () => household));
     unawaited(_reloadDevices());
+  }
+
+  Future<void> _loadSpaceName() async {
+    final String? name = (await _spaces?.activeSpace())?.name;
+    if (name != null && !isClosed) {
+      emit(state.copyWith(spaceName: name));
+    }
   }
 
   Future<void> _reloadDevices() async {
