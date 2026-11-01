@@ -39,15 +39,18 @@ class HomeUtilityApp extends StatefulWidget {
 
 class _HomeUtilityAppState extends State<HomeUtilityApp>
     with WidgetsBindingObserver {
+  AppEnvironment get _environment => widget.environment;
+  SpaceSwitcher? get _spaces => widget.spaces;
+
   final GlobalKey<ScaffoldMessengerState> _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final GoRouter _router = buildAppRouter(
-    registry: widget.environment.registry,
-    controller: widget.environment.plugins,
+    registry: _environment.registry,
+    controller: _environment.plugins,
     messengerKey: _messengerKey,
     initialLocation: widget.initialLocation,
-    sync: widget.environment.sync,
-    locator: widget.environment.locator,
-    spaces: widget.spaces,
+    sync: _environment.sync,
+    locator: _environment.locator,
+    spaces: _spaces,
   );
 
   StreamSubscription<String>? _shortcutSelections;
@@ -60,7 +63,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
     // abrió la app en frío la guarda el servicio hasta este momento.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _shortcutSelections = widget.environment.shortcuts?.selections.listen(_openShortcut);
+        _shortcutSelections = _environment.shortcuts?.selections.listen(_openShortcut);
         unawaited(_showNotice());
       }
     });
@@ -69,7 +72,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   /// Avisa de lo que pasó al cambiar de espacio.
   Future<void> _showNotice() async {
     final SpaceNotice? notice = widget.notice;
-    final SpaceSwitcher? spaces = widget.spaces;
+    final SpaceSwitcher? spaces = _spaces;
     if (notice == null || spaces == null) {
       return;
     }
@@ -94,7 +97,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   /// Abre la pantalla principal del plugin del acceso pulsado. Si el plugin
   /// no está listo, el guard del router lleva al inicio con un aviso.
   void _openShortcut(String pluginId) {
-    final String? route = widget.environment.shortcuts?.entryRouteOf(pluginId);
+    final String? route = _environment.shortcuts?.entryRouteOf(pluginId);
     if (route != null) {
       _router.go(route);
     }
@@ -115,7 +118,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   @override
   void didChangeLocales(List<Locale>? locales) {
     if (locales != null) {
-      widget.environment.settings.systemLocalesChanged(locales);
+      _environment.settings.systemLocalesChanged(locales);
     }
   }
 
@@ -123,7 +126,7 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
   /// sistema cortaría la red igualmente.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final SyncController? sync = widget.environment.sync?.controller;
+    final SyncController? sync = _environment.sync?.controller;
     if (sync == null) {
       return;
     }
@@ -149,11 +152,11 @@ class _HomeUtilityAppState extends State<HomeUtilityApp>
 
   @override
   Widget build(BuildContext context) {
-    final LocalizationCoordinator localization = widget.environment.localization;
+    final LocalizationCoordinator localization = _environment.localization;
     return RepositoryProvider<LocalizationCoordinator>.value(
       value: localization,
       child: BlocProvider<AppSettingsController>.value(
-        value: widget.environment.settings,
+        value: _environment.settings,
         // Las páginas (ver `withLanguageRebuild`) dependen de este scope.
         child: LanguageScope(
           languageCode: localization.languageCode,

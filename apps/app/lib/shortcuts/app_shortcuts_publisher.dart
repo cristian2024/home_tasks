@@ -49,15 +49,20 @@ class AppShortcutsPublisher {
   }
 
   /// Accesos que corresponden ahora a los plugins del inicio.
-  List<AppShortcut> currentShortcuts() => <AppShortcut>[
-        for (final PluginState state in _plugins.dashboard)
-          if (state.plugin is HomePluginEntryRoute)
-            AppShortcut(
-              id: state.plugin.id,
-              title: _localization.translate(state.plugin.nameKey),
-              iconName: _icons[state.plugin.id],
-            ),
-      ].take(_maxShortcuts).toList();
+  List<AppShortcut> currentShortcuts() {
+    final List<AppShortcut> shortcuts = <AppShortcut>[];
+    for (final PluginState state in _plugins.dashboard) {
+      final HomePlugin plugin = state.plugin;
+      if (plugin is HomePluginEntryRoute) {
+        shortcuts.add(AppShortcut(
+          id: plugin.id,
+          title: _localization.translate(plugin.nameKey),
+          iconName: _icons[plugin.id],
+        ));
+      }
+    }
+    return shortcuts.take(_maxShortcuts).toList();
+  }
 
   /// Ruta de la pantalla principal del plugin [pluginId], aunque esté
   /// desactivado (el guard del router decide si se abre), o `null` si no

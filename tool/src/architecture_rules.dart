@@ -35,7 +35,7 @@ final RegExp _nativeHardwarePackage = RegExp(r'^(mobile_scanner|nfc_manager\w*|p
 
 /// SDKs de plataforma que solo usan los adaptadores (compartir, abrir
 /// enlaces, archivos).
-final RegExp _platformSdkPackage = RegExp(r'^(share_plus\w*|url_launcher\w*|file_picker|path_provider\w*)$');
+final RegExp _platformSdkPackage = RegExp(r'^(share_plus\w*|url_launcher\w*|file_picker|path_provider\w*|quick_actions\w*)$');
 
 /// Librerías de la sincronización que solo usan los adaptadores
 /// (descubrimiento en red, criptografía y almacén seguro).

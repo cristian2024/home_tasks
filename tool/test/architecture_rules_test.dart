@@ -252,11 +252,13 @@ import 'package:app/bootstrap.dart';
     featureFolder();
     package('packages/adapters/share_native', 'share_native');
     package('packages/core/core_share', 'core_share');
+    package('apps/app', 'app');
     source('packages/adapters/share_native/lib/a.dart', '''
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:quick_actions/quick_actions.dart';
 ''');
     source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart', '''
 import 'package:share_plus/share_plus.dart';
@@ -266,8 +268,12 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 ''');
+    source('apps/app/lib/a.dart', '''
+import 'package:quick_actions/quick_actions.dart';
+import 'package:quick_actions_platform_interface/quick_actions_platform_interface.dart';
+''');
 
-    expect(rules(), <String>['Regla 9', 'Regla 9', 'Regla 9', 'Regla 9']);
+    expect(rules(), <String>['Regla 9', 'Regla 9', 'Regla 9', 'Regla 9', 'Regla 9', 'Regla 9']);
   });
 
   test('Regla 10: solo los adaptadores importan las librerías de la sincronización', () {
