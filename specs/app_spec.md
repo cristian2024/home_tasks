@@ -158,17 +158,21 @@ home_utility_monorepo/
 │   │   ├── core_di/                  # Service Locator (GetIt) y DependencyModule
 │   │   ├── core_events/              # Contrato EventBus, StreamEventBus y EventSubscriptions
 │   │   ├── core_hardware/            # Contratos de Cámara, QR, NFC y permisos
+│   │   ├── core_app_shortcuts/       # Contrato AppShortcutService (accesos rápidos del icono)
 │   │   ├── core_secrets/             # Contrato SecretStore (§10.4)
 │   │   ├── core_share/               # Contrato ShareService (compartir, WhatsApp, guardar)
+│   │   ├── core_spaces/              # Contratos de los espacios de datos (§10.4.10)
 │   │   ├── core_sync/                # Contratos de la sincronización (§10.4)
 │   │   └── sync_engine/              # Motor de sincronización y simulador (§10.4)
 │   ├── adapters/                     # Adaptadores transversales (tecnologías reemplazables)
+│   │   ├── app_shortcuts_quick_actions/ # AppShortcutService con quick_actions
 │   │   ├── hardware_mobile_scanner/  # CameraIdentifierScanner con mobile_scanner
 │   │   ├── hardware_nfc_manager/     # NfcIdentifierScanner con nfc_manager
 │   │   ├── hardware_permission_handler/ # HardwarePermissions con permission_handler
 │   │   ├── secret_store_secure_storage/ # SecretStore con flutter_secure_storage
 │   │   ├── share_native/             # ShareService con share_plus, url_launcher y file_picker
-│   │   ├── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature
+│   │   ├── spaces_shared_preferences/ # Lista de espacios de datos con shared_preferences
+│   │   ├── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature, IsarSpaceStorage
 │   │   ├── sync_crypto_cryptography/ # SyncCipher con cryptography
 │   │   ├── sync_isar/                # Estado de la sincronización en Isar (IsarFeature)
 │   │   └── sync_lan/                 # SyncTransport en la red local (mDNS + WebSocket)
@@ -1069,8 +1073,8 @@ Los borrados de la lista de compras (items, categorías, deshacer compra) pasan 
 
 #### 10.4.6. Hogar, emparejamiento y cifrado
 
-- **Crear un hogar:** se generan `householdId` (UUID v4), una clave simétrica aleatoria de 256 bits y la época 1. La clave va al `SecretStore`; el resto, a `SyncStateRepository`. El dispositivo que lo crea queda como creador.
-- **Unirse:** se escanea con `CameraIdentifierScanner` un QR con `{versión, householdId, época, clave, creador, URL del relay (opcional, fase 2)}`. Los datos locales y los del hogar se **fusionan**; no se sobrescribe nada.
+- **Crear un hogar:** se generan `householdId` (UUID v4), una clave simétrica aleatoria de 256 bits y la época 1. La clave va al `SecretStore`, con un nombre por hogar (`sync.household.<householdId>.key`); el resto, a `SyncStateRepository`. El dispositivo que lo crea queda como creador.
+- **Unirse:** se escanea con `CameraIdentifierScanner` un QR con `{versión, householdId, época, clave, creador, URL del relay (opcional, fase 2)}`. Si el usuario lleva al hogar los datos del espacio abierto (§10.4.10), se **fusionan**; no se sobrescribe nada.
 - **Salir:** se borran la clave y el hogar; los datos locales se conservan.
 - **Expulsar:** solo el dispositivo creador. Abre una época nueva con una clave nueva y muestra el QR nuevo, que el resto vuelve a escanear. El expulsado se queda en la época vieja y no recibe ni descifra nada nuevo.
 - **Cifrado de extremo a extremo** (también en la LAN): AEAD XChaCha20-Poly1305 detrás de `SyncCipher`. Cada registro se cifra por separado (datos asociados: `householdId`, época, `deviceId` y `seq`), así que un relay podrá guardarlo sin leerlo. Las claves de cada uso se derivan con HKDF.
@@ -1122,6 +1126,18 @@ Los borrados de la lista de compras (items, categorías, deshacer compra) pasan 
 | S-10 | Los datos de antes de la migración se siguen leyendo (AC-02). |
 | S-11 | Plugins activados, tema e idioma no se sincronizan. |
 | S-12 | Sin red, la app funciona igual. |
+| S-13 | Un dispositivo en dos hogares: cada uno en su espacio, sus datos no se mezclan y cada hogar conserva su clave. |
+| S-14 | Al actualizar desde una versión con un solo hogar, el primer espacio usa la base de siempre: datos, hogar y clave se conservan. |
+
+#### 10.4.10. Varios hogares: espacios de datos
+
+- **Espacio de datos** (`core_spaces`): un conjunto de datos con su propia base Isar (`IsarStorage(name: space.databaseName)`), local o de un hogar. Como mucho un espacio por hogar. El dispositivo usa uno, el activo; solo se sincroniza ese. Los demás se ponen al día por gossip cuando el usuario los abre.
+- **Lista de espacios** (`DataSpaceDirectory`, adaptador `spaces_shared_preferences`): fuera de las bases, porque hay que leerla antes de abrir ninguna. Guarda la lista y el activo en una sola clave, así que nunca queda una lista sin activo.
+- **Por espacio:** los datos de cada plugin, el log, el vector, el HLC, los conflictos, la identidad del dispositivo y los plugins activos (personales, no se sincronizan). **Por dispositivo:** la lista de espacios, los accesos rápidos del icono, el tema y el idioma.
+- **Cambiar de espacio:** se para la sincronización, se liberan los plugins y se cierra la base; se abre la del otro espacio y solo entonces se marca como activo. Si no abre, se vuelve a abrir el anterior. La app vuelve a empezar en el inicio.
+- **Crear un hogar o unirse:** si el espacio abierto es local, el usuario elige si lleva sus datos al hogar (el espacio pasa a ser del hogar) o empieza un espacio nuevo y vacío. Si ya es de un hogar, siempre se usa un espacio nuevo. Unirse a un hogar que ya tiene espacio abre ese espacio. Nunca se copian datos entre bases.
+- **Borrar un espacio** (nunca el activo): primero se quita de la lista y después se borran su base (`DataSpaceStorage`, una base abierta no se borra) y la clave de su hogar. Si el proceso muere entre medias, el siguiente arranque borra las bases `space_*` que no están en la lista.
+- **Migración:** el primer arranque crea un espacio sobre la base de siempre, sin copiar nada, y anota su hogar. La clave antigua (`sync.household.key`) se copia a la del hogar la primera vez que se lee y se conserva mientras sea la del hogar actual, para que volver a una versión anterior siga sincronizando.
 
 
 ---
