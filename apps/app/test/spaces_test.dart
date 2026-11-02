@@ -7,6 +7,7 @@ import 'package:home_utility_app/bootstrap.dart';
 import 'package:home_utility_app/navigation/app_router.dart';
 import 'package:home_utility_app/spaces/space_defaults.dart';
 import 'package:home_utility_app/spaces/space_switcher.dart';
+import 'package:home_utility_app/spaces/space_title_cubit.dart';
 import 'package:home_utility_app/spaces/spaces_cubit.dart';
 import 'package:home_utility_app/sync/join_household_cubit.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
@@ -309,7 +310,35 @@ void main() {
       expect((await ana.spaces.spaces()).map((DataSpace space) => space.id), <String>[first]);
       expect(await ana.device.spaceStorage.databaseNames(), isNot(contains(other.databaseName)));
       expect(ana.secrets.values.keys, isNot(contains(HouseholdService.secretKeyFor(householdId))));
+
+      expect(await cubit.create('Taller'), isTrue);
+      expect((await switcher.activeSpace()).name, 'Taller');
       await cubit.close();
+    });
+  });
+
+  group('SpaceTitleCubit', () {
+    test('el inicio usa el nombre del espacio abierto, al día, salvo en el espacio inicial', () async {
+      final SpacePhone ana = phone('ana');
+      final SpaceSwitcher switcher = await ana.start();
+
+      final SpaceTitleCubit initial = SpaceTitleCubit(switcher);
+      await ana.until(() async => (await switcher.activeSpace()).databaseName == SpaceDefaults.legacyDatabaseName);
+      await Future<void>.delayed(Duration.zero);
+      expect(initial.state, isNull, reason: 'el espacio inicial conserva el título de la app');
+      await initial.close();
+
+      final DataSpace office = await switcher.createSpace(name: 'Oficina');
+      expect(await switcher.switchTo(office.id), isTrue);
+      final SpaceTitleCubit title = SpaceTitleCubit(switcher);
+      await expectLater(title.stream, emitsThrough('Oficina'));
+
+      final Future<void> renamed = expectLater(title.stream, emitsThrough('Taller'));
+      await switcher.rename(office.id, 'Taller');
+      await renamed;
+      await title.close();
+
+      expect(SpaceTitleCubit(null).state, isNull, reason: 'sin espacios, el título de la app');
     });
   });
 }

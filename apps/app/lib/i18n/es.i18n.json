@@ -107,7 +107,11 @@
         "qr_label": "Código QR para unirse al hogar",
         "message": "Escanéalo desde el otro dispositivo en «Configuración → Sincronización → Unirse a un hogar».",
         "warning": "Quien escanee este código podrá ver y cambiar los datos del hogar. Enséñalo solo a los tuyos.",
-        "loading": "Preparando el código…"
+        "loading": "Preparando el código…",
+        "code_label": "O compártelo y pégalo en el otro dispositivo:",
+        "copy": "Copiar el código",
+        "copied": "Código copiado.",
+        "share": "Compartir el código"
       },
       "join": {
         "title": "Unirse a un hogar",
@@ -115,6 +119,7 @@
         "camera_unavailable": "La cámara no está disponible. Pega el código del hogar.",
         "camera_denied": "Sin permiso para la cámara. Pega el código del hogar o da el permiso en Ajustes.",
         "open_settings": "Abrir Ajustes",
+        "retry_permission": "Dar permiso",
         "manual_field": "Código del hogar",
         "manual_submit": "Unirse",
         "joining": "Uniéndose al hogar…",
@@ -176,6 +181,8 @@
       "delete_message": "Se borran sus datos de este dispositivo. Si es un hogar, los demás dispositivos conservan los suyos.",
       "delete_confirm": "Borrar",
       "create": "Nuevo espacio",
+      "create_title": "Nuevo espacio",
+      "create_confirm": "Crear",
       "create_description": "Un conjunto de datos aparte, solo en este dispositivo.",
       "switching": "Cambiando de espacio…",
       "notice_switched": "Ahora estás en «{name}».",
