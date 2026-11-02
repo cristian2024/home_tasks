@@ -16,6 +16,7 @@ import '../i18n/strings.g.dart';
 import '../plugins/plugin_controller.dart';
 import '../settings/settings_screen.dart';
 import '../spaces/space_switcher.dart';
+import '../spaces/space_title_cubit.dart';
 import '../spaces/spaces_cubit.dart';
 import '../spaces/spaces_screen.dart';
 import '../sync/conflicts_cubit.dart';
@@ -80,8 +81,11 @@ GoRouter buildAppRouter({
     routes: withLanguageRebuild(<RouteBase>[
       GoRoute(
         path: AppRoutes.home,
-        builder: (BuildContext context, GoRouterState state) => BlocProvider<HomeBloc>(
-          create: (_) => HomeBloc(controller)..add(const HomeStarted()),
+        builder: (BuildContext context, GoRouterState state) => MultiBlocProvider(
+          providers: <BlocProvider<Object?>>[
+            BlocProvider<HomeBloc>(create: (_) => HomeBloc(controller)..add(const HomeStarted())),
+            BlocProvider<SpaceTitleCubit>(create: (_) => SpaceTitleCubit(spaces)),
+          ],
           child: const HomeDashboardScreen(),
         ),
       ),
