@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.2.0 - 2026-11-03
+
+### Añadido
+
+- Todos los tokens del sistema de diseño de Figma, se usen o no:
+  - `AppColors` con la paleta completa.
+  - `AppThemeColors`: extensión del tema con los 49 colores semánticos de claro y oscuro, incluidos éxito, información, hover y pressed.
+  - `AppSpacing.s0`…`s1600`, con `xs`…`xl` como nombres cortos.
+  - `AppRadii.none`, `extraSmall`, `extraLarge` y `full`.
+  - `AppSizes`: controles, iconos, `touchTarget` y trazos.
+  - `AppLayout`: márgenes, retículas, puntos de corte y anchos de referencia.
+  - `AppTypography`: familia, tamaños, alturas de línea y los estilos `web*` y `mobile*`.
+  - `AppElevation`: las sombras de claro y oscuro.
+- La fuente Inter, incluida en el paquete con los pesos 400, 500, 600 y 700. Quien depende del paquete no tiene que declararla.
+- `AppModuleCard`: tarjeta de un módulo en el inicio, con icono, título, resumen, etiquetas y acciones.
+- `AppIconBox`: icono en un recuadro de 56.
+- `AppButtonVariant.outline`: botón solo con borde.
+- `AppBadgeTone.brand` y `AppBadgeTone.success`.
+- `AppSettingsTile.destructive`, para acciones peligrosas como «Salir del hogar».
+- `AppChoiceSegment`: cada opción de `AppChoiceSelector`.
+
+### Cambiado
+
+- `AppTheme` usa la paleta morada y los neutros del sistema de diseño de Figma, con un `ColorScheme` explícito en claro y en oscuro. Los avisos son ámbar.
+- El `textTheme` usa Inter y los estilos `mobile*`: el título de la barra superior pasa de 22 a 18, los títulos de 16 con peso 600 y los interlineados los del sistema de diseño.
+- `AppButtonVariant.secondary` pasa a ser un botón relleno suave de marca. Para seguir mostrando solo el borde, usa `outline`.
+- `AppChoiceSelector` pasa a ser un control segmentado en lugar de `ChoiceChip`. Si las opciones no caben, se apilan.
+- `AppBadge` pasa a forma de píldora y usa los colores semánticos de cada tono.
+- `AppSettingsSection` usa radio de 12, y `AppSettingsTile` una flecha más pequeña y discreta y el tono de texto desactivado.
+- `AppSectionHeader` pasa a 14 en color secundario.
+- `AppStatusView` muestra el icono en un círculo de marca y un título de 18.
+- `AppShortcutTile` usa `AppIconBox`, y su título pasa a peso 500.
+- `AppSyncStatusCard` usa los colores semánticos, y su acción va a todo el ancho y sin icono.
+- `AppConflictCard` marca la opción aplicada con una fila de marca y muestra las demás como botones con borde.
+- Los `SnackBar` son flotantes, sobre la superficie elevada y con borde.
+- Los botones pasan a radio de 8, las tarjetas a un borde sin elevación, los campos de texto a fondo de superficie y la barra superior al color del fondo de la pantalla.
+
+### Eliminado
+
+- **Incompatible:** `AppShortcutTile.iconBoxSize`. Usa `AppIconBox.size`.
+- **Incompatible:** `AppColors.primary`, `primaryDark`, `secondary`, `backgroundLight`, `backgroundDark`, `surfaceLight`, `surfaceDark` y `error`. Ahora `AppColors` tiene los primitivos de Figma (`violet700`, `neutral50`…). Usa los colores de `Theme.of(context).colorScheme`.
+
+### Interno
+
+- Tests de contraste y opacidad de los colores de ambos temas, y de la carga de la fuente con el texto al 200 %. La galería muestra los colores nuevos y el README los describe.
+
 ## 0.1.4 - 2026-10-31
 
 ### Añadido

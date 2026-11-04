@@ -311,13 +311,13 @@ void main() {
 
       await openSettings(tester);
       expect(find.widgetWithText(AppBar, 'Configuración'), findsOneWidget);
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Oscuro'));
+      await tester.tap(find.widgetWithText(AppChoiceSegment, 'Oscuro'));
       await tester.pumpAndSettle();
 
       expect(themeMode(tester), ThemeMode.dark);
       expect(harness.settingsRepository.saved.theme, AppThemePreference.dark);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Claro'));
+      await tester.tap(find.widgetWithText(AppChoiceSegment, 'Claro'));
       await tester.pumpAndSettle();
       expect(themeMode(tester), ThemeMode.light);
     });
@@ -334,7 +334,7 @@ void main() {
       await harness.pump(tester);
       await openSettings(tester);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'English'));
+      await tester.tap(find.widgetWithText(AppChoiceSegment, 'English'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
       expect(harness.settingsRepository.saved.languageCode, 'en');
@@ -344,7 +344,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'System').last); // El primero es el del tema.
+      await tester.tap(find.widgetWithText(AppChoiceSegment, 'System').last); // El primero es el del tema.
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Configuración'), findsOneWidget);
       expect(harness.settingsRepository.saved.languageCode, isNull);

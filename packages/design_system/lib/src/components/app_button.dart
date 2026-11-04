@@ -3,7 +3,19 @@ import 'package:flutter/material.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 
-enum AppButtonVariant { primary, secondary, text }
+enum AppButtonVariant {
+  /// La acción principal de la pantalla.
+  primary,
+
+  /// Relleno suave de marca: acción importante, pero no la principal.
+  secondary,
+
+  /// Solo borde: acciones de menos peso, junto a otras más importantes.
+  outline,
+
+  /// Solo texto.
+  text,
+}
 
 /// Botón con texto. Mide al menos 48 dp de alto; con [isLoading] muestra un
 /// indicador y se desactiva, conservando su etiqueta para lectores de pantalla.
@@ -42,8 +54,11 @@ class AppButton extends StatelessWidget {
       (AppButtonVariant.primary, null) => FilledButton(onPressed: onPressed, child: text),
       (AppButtonVariant.primary, final Widget leading) =>
         FilledButton.icon(onPressed: onPressed, icon: leading, label: text),
-      (AppButtonVariant.secondary, null) => OutlinedButton(onPressed: onPressed, child: text),
+      (AppButtonVariant.secondary, null) => FilledButton.tonal(onPressed: onPressed, child: text),
       (AppButtonVariant.secondary, final Widget leading) =>
+        FilledButton.tonalIcon(onPressed: onPressed, icon: leading, label: text),
+      (AppButtonVariant.outline, null) => OutlinedButton(onPressed: onPressed, child: text),
+      (AppButtonVariant.outline, final Widget leading) =>
         OutlinedButton.icon(onPressed: onPressed, icon: leading, label: text),
       (AppButtonVariant.text, null) => TextButton(onPressed: onPressed, child: text),
       (AppButtonVariant.text, final Widget leading) =>

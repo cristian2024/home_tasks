@@ -58,7 +58,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Filtros y agrupación'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Urgencia'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Urgencia'));
     await tester.tap(find.byTooltip('Filtros y agrupación'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBadge, 'Comida'), findsOneWidget);

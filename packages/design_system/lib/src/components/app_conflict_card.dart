@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
+import '../tokens/app_theme_colors.dart';
 import 'app_badge.dart';
 import 'app_button.dart';
 import 'app_card.dart';
@@ -54,22 +56,30 @@ class AppConflictCard<T> extends StatelessWidget {
     final String? keepLabel = this.keepLabel;
     return AppCard(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Text(title, style: theme.textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.xs),
-          Text(message, style: theme.textTheme.bodyMedium),
-          const SizedBox(height: AppSpacing.sm),
-          for (final AppConflictOption<T> option in options)
-            _ConflictOptionTile(
-              label: option.label,
-              description: option.description,
-              appliedLabel: option.value == applied ? appliedLabel : null,
-              onTap: busy ? null : () => onSelected(option.value),
-            ),
+          const SizedBox(height: AppSpacing.s300),
+          Text(message, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          for (final AppConflictOption<T> option in options) ...<Widget>[
+            const SizedBox(height: AppSpacing.s300),
+            if (option.value == applied)
+              _AppliedOption(
+                label: option.label,
+                description: option.description,
+                appliedLabel: appliedLabel,
+                onTap: busy ? null : () => onSelected(option.value),
+              )
+            else
+              _OtherOption(
+                label: option.label,
+                description: option.description,
+                onTap: busy ? null : () => onSelected(option.value),
+              ),
+          ],
           if (keepLabel != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.sm),
-            AppButton(label: keepLabel, isLoading: busy, onPressed: onKeep),
+            const SizedBox(height: AppSpacing.s300),
+            AppButton(label: keepLabel, isLoading: busy, onPressed: onKeep, expand: true),
           ],
         ],
       ),
@@ -77,37 +87,82 @@ class AppConflictCard<T> extends StatelessWidget {
   }
 }
 
-class _ConflictOptionTile extends StatelessWidget {
-  const _ConflictOptionTile({required this.label, required this.description, required this.appliedLabel, required this.onTap});
+/// La opción que ya rige: fila de marca con su etiqueta. Sigue siendo pulsable.
+class _AppliedOption extends StatelessWidget {
+  const _AppliedOption({
+    required this.label,
+    required this.description,
+    required this.appliedLabel,
+    required this.onTap,
+  });
 
   final String label;
   final String? description;
-  final String? appliedLabel;
+  final String appliedLabel;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final AppThemeColors colors = AppThemeColors.of(context);
     final String? description = this.description;
-    final String? appliedLabel = this.appliedLabel;
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      minTileHeight: AppSizes.minTouchTarget,
-      enabled: onTap != null,
-      leading: Icon(appliedLabel == null ? Icons.radio_button_unchecked : Icons.radio_button_checked),
-      title: Text(label),
-      subtitle: description == null && appliedLabel == null
-          ? null
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (description != null) Text(description),
-                if (appliedLabel != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.xs),
-                  AppBadge(label: appliedLabel, icon: Icons.check),
+    return MergeSemantics(
+      child: Material(
+        color: colors.bgBrandSubtle,
+        borderRadius: BorderRadius.circular(AppRadii.small),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: AppSizes.minTouchTarget),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.s300),
+              child: Row(
+                children: <Widget>[
+                  ExcludeSemantics(child: Icon(Icons.check, size: AppSizes.iconCompact, color: colors.textBrand)),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(label, style: textTheme.labelLarge?.copyWith(color: colors.textPrimary)),
+                        if (description != null)
+                          Text(description, style: textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Flexible(child: AppBadge(label: appliedLabel, tone: AppBadgeTone.brand)),
                 ],
-              ],
+              ),
             ),
-      onTap: onTap,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OtherOption extends StatelessWidget {
+  const _OtherOption({required this.label, required this.description, required this.onTap});
+
+  final String label;
+  final String? description;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final String? description = this.description;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        AppButton(label: label, variant: AppButtonVariant.outline, expand: true, onPressed: onTap),
+        if (description != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.xs),
+          Text(description, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        ],
+      ],
     );
   }
 }
