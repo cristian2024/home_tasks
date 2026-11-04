@@ -28,13 +28,13 @@ class ShoppingListScreen extends StatelessWidget {
   final ShoppingExportSheet Function(ShoppingListState state)? exportSheet;
 
   Future<void> _confirmClearPurchased(BuildContext context) async {
-    final ShoppingListTranslations$shoppingList$list$es t = shoppingListStrings.shoppingList.list;
+    final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     final ShoppingListCubit cubit = context.read<ShoppingListCubit>();
     if (await showAppConfirmDialog(
       context,
-      title: t.clearPurchasedTitle,
-      message: t.clearPurchasedMessage,
-      confirmLabel: t.clearPurchased,
+      title: listStrings.clearPurchasedTitle,
+      message: listStrings.clearPurchasedMessage,
+      confirmLabel: listStrings.clearPurchased,
       destructive: true,
     )) {
       await cubit.clearPurchased();
@@ -47,7 +47,7 @@ class ShoppingListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$es t = shoppingListStrings.shoppingList;
+    final ShoppingListTranslations$shoppingList$es strings = shoppingListStrings.shoppingList;
     final ShoppingListCubit cubit = context.read<ShoppingListCubit>();
     final ShoppingExportSheet Function(ShoppingListState state)? exportSheet = this.exportSheet;
     return BlocConsumer<ShoppingListCubit, ShoppingListState>(
@@ -65,8 +65,8 @@ class ShoppingListScreen extends StatelessWidget {
           context,
           // Con acción, un SnackBar no se cierra solo salvo que se indique.
           SnackBar(
-            content: Text(t.list.purchasedSnack(name: state.lastPurchase!.previous.name)),
-            action: SnackBarAction(label: t.list.undo, onPressed: cubit.undoLastPurchase),
+            content: Text(strings.list.purchasedSnack(name: state.lastPurchase!.previous.name)),
+            action: SnackBarAction(label: strings.list.undo, onPressed: cubit.undoLastPurchase),
             duration: _undoDuration,
             persist: false,
           ),
@@ -74,12 +74,12 @@ class ShoppingListScreen extends StatelessWidget {
       },
       builder: (BuildContext context, ShoppingListState state) => Scaffold(
         appBar: AppBar(
-          title: Text(t.title),
+          title: Text(strings.title),
           actions: <Widget>[
             if (exportSheet != null)
               AppIconButton(
                 icon: Icons.ios_share,
-                tooltip: t.list.export,
+                tooltip: strings.list.export,
                 onPressed: () => showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
@@ -89,7 +89,7 @@ class ShoppingListScreen extends StatelessWidget {
               ),
             AppIconButton(
               icon: Icons.tune,
-              tooltip: t.list.filters,
+              tooltip: strings.list.filters,
               variant: state.filter.isEmpty && state.grouping == ShoppingGrouping.category
                   ? AppIconButtonVariant.standard
                   : AppIconButtonVariant.tonal,
@@ -108,7 +108,7 @@ class ShoppingListScreen extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: AppButton(
-              label: t.list.add,
+              label: strings.list.add,
               icon: Icons.add,
               expand: true,
               onPressed: () => context.push<String>(ShoppingListRoutes.create),
@@ -118,7 +118,7 @@ class ShoppingListScreen extends StatelessWidget {
         body: switch (state) {
           ShoppingListState(status: ShoppingListStatus.loading) => const AppLoadingView(),
           ShoppingListState(snapshot: ShoppingListSnapshot(entries: <ShoppingListEntry>[])) =>
-            AppStatusView(icon: Icons.shopping_cart_outlined, title: t.list.emptyTitle, message: t.list.emptyMessage),
+            AppStatusView(icon: Icons.shopping_cart_outlined, title: strings.list.emptyTitle, message: strings.list.emptyMessage),
           _ => _ListBody(state: state),
         },
       ),
@@ -134,20 +134,20 @@ class _ListMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$list$es t = shoppingListStrings.shoppingList.list;
+    final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     return PopupMenuButton<_ListMenuAction>(
       icon: const Icon(Icons.more_vert),
-      tooltip: t.moreActions,
+      tooltip: listStrings.moreActions,
       onSelected: onSelected,
       itemBuilder: (BuildContext context) => <PopupMenuEntry<_ListMenuAction>>[
         PopupMenuItem<_ListMenuAction>(
           value: _ListMenuAction.categories,
-          child: _MenuRow(icon: Icons.label_outline, label: t.categories),
+          child: _MenuRow(icon: Icons.label_outline, label: listStrings.categories),
         ),
         if (hasPurchased)
           PopupMenuItem<_ListMenuAction>(
             value: _ListMenuAction.clearPurchased,
-            child: _MenuRow(icon: Icons.delete_sweep_outlined, label: t.clearPurchased),
+            child: _MenuRow(icon: Icons.delete_sweep_outlined, label: listStrings.clearPurchased),
           ),
       ],
     );
@@ -179,21 +179,22 @@ class _ListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$list$es t = shoppingListStrings.shoppingList.list;
+    final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     final ShoppingListCubit cubit = context.read<ShoppingListCubit>();
     final List<ShoppingGroup> groups = state.groups;
+    final bool showFilters = state.showFilters;
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       children: <Widget>[
-        if (state.showFilters) _Filters(state: state),
-        if (!state.showFilters && !state.filter.isEmpty)
+        if (showFilters) _Filters(state: state),
+        if (!showFilters && !state.filter.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: <Widget>[
-                Expanded(child: Text(t.filtersActive)),
+                Expanded(child: Text(listStrings.filtersActive)),
                 AppButton(
-                  label: t.clearFilters,
+                  label: listStrings.clearFilters,
                   variant: AppButtonVariant.text,
                   onPressed: () => cubit.setFilter(const ShoppingListFilter()),
                 ),
@@ -205,9 +206,9 @@ class _ListBody extends StatelessWidget {
             height: 320,
             child: AppStatusView(
               icon: Icons.filter_alt_off_outlined,
-              title: t.noMatchesTitle,
+              title: listStrings.noMatchesTitle,
               action: AppButton(
-                label: t.clearFilters,
+                label: listStrings.clearFilters,
                 variant: AppButtonVariant.secondary,
                 onPressed: () => cubit.setFilter(const ShoppingListFilter()),
               ),
@@ -239,7 +240,7 @@ class _Filters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$list$es t = shoppingListStrings.shoppingList.list;
+    final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     final ShoppingListCubit cubit = context.read<ShoppingListCubit>();
     final ShoppingListFilter filter = state.filter;
     return Padding(
@@ -248,11 +249,11 @@ class _Filters extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           AppFilterChips<String>(
-            label: t.filterCategories,
+            label: listStrings.filterCategories,
             options: <AppChoice<String>>[
               for (final ShoppingCategory category in state.snapshot.categories)
                 AppChoice<String>(value: category.id, label: categoryName(category)),
-              AppChoice<String>(value: _uncategorized, label: t.uncategorized),
+              AppChoice<String>(value: _uncategorized, label: listStrings.uncategorized),
             ],
             selected: <String>{...filter.categoryIds, if (filter.includeUncategorized) _uncategorized},
             onChanged: (Set<String> selected) => cubit.setFilter(filter.copyWith(
@@ -262,7 +263,7 @@ class _Filters extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           AppFilterChips<Urgency>(
-            label: t.filterUrgency,
+            label: listStrings.filterUrgency,
             options: <AppChoice<Urgency>>[
               for (final Urgency urgency in Urgency.values)
                 AppChoice<Urgency>(value: urgency, label: urgencyLabel(urgency)),
@@ -272,7 +273,7 @@ class _Filters extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           AppFilterChips<ShoppingItemState>(
-            label: t.filterState,
+            label: listStrings.filterState,
             options: <AppChoice<ShoppingItemState>>[
               for (final ShoppingItemState itemState in ShoppingItemState.values)
                 AppChoice<ShoppingItemState>(value: itemState, label: stateLabel(itemState)),
@@ -282,11 +283,11 @@ class _Filters extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           AppChoiceSelector<ShoppingGrouping>(
-            label: t.groupBy,
+            label: listStrings.groupBy,
             padding: EdgeInsets.zero,
             options: <AppChoice<ShoppingGrouping>>[
-              AppChoice<ShoppingGrouping>(value: ShoppingGrouping.category, label: t.groupByCategory),
-              AppChoice<ShoppingGrouping>(value: ShoppingGrouping.urgency, label: t.groupByUrgency),
+              AppChoice<ShoppingGrouping>(value: ShoppingGrouping.category, label: listStrings.groupByCategory),
+              AppChoice<ShoppingGrouping>(value: ShoppingGrouping.urgency, label: listStrings.groupByUrgency),
             ],
             selected: state.grouping,
             onChanged: cubit.setGrouping,
@@ -305,7 +306,7 @@ class _EntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$list$es t = shoppingListStrings.shoppingList.list;
+    final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     final ShoppingItem item = entry.item;
     final Recurrence? recurrence = item.recurrence;
     final AppBadgeTone? urgency = urgencyTone(item.urgency);
@@ -320,7 +321,7 @@ class _EntryTile extends StatelessWidget {
       title: item.name,
       subtitle: subtitle.isEmpty ? null : subtitle,
       value: purchased,
-      checkboxLabel: purchased ? t.markPending(name: item.name) : t.markPurchased(name: item.name),
+      checkboxLabel: purchased ? listStrings.markPending(name: item.name) : listStrings.markPurchased(name: item.name),
       onChanged: (bool _) => context.read<ShoppingListCubit>().toggle(entry),
       onTap: () => context.push<String>(ShoppingListRoutes.edit(item.id)),
       badges: <Widget>[

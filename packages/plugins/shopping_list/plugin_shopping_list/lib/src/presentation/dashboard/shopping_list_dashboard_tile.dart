@@ -16,7 +16,7 @@ class ShoppingListDashboardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$es t = shoppingListStrings.shoppingList;
+    final ShoppingListTranslations$shoppingList$es strings = shoppingListStrings.shoppingList;
     return StreamBuilder<ShoppingListSnapshot>(
       stream: watchList(),
       builder: (BuildContext context, AsyncSnapshot<ShoppingListSnapshot> snapshot) {
@@ -24,11 +24,11 @@ class ShoppingListDashboardTile extends StatelessWidget {
         final int urgent = toBuy?.where((ShoppingListEntry entry) => entry.item.urgency.isUrgent).length ?? 0;
         return AppModuleCard(
           icon: Icons.shopping_cart_outlined,
-          title: t.title,
-          summary: toBuy == null ? t.description : t.dashboard.toBuyCount(n: toBuy.length),
+          title: strings.title,
+          summary: toBuy == null ? strings.description : strings.dashboard.toBuyCount(n: toBuy.length),
           badges: <Widget>[
             if (urgent > 0)
-              AppBadge(label: t.dashboard.urgentCount(n: urgent), tone: AppBadgeTone.critical, icon: Icons.priority_high),
+              AppBadge(label: strings.dashboard.urgentCount(n: urgent), tone: AppBadgeTone.critical, icon: Icons.priority_high),
           ],
           onTap: () => context.push<void>(ShoppingListRoutes.base),
         );

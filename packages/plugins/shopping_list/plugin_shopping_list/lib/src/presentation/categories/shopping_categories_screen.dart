@@ -33,7 +33,7 @@ class _ShoppingCategoriesScreenState extends State<ShoppingCategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$categories$es t = shoppingListStrings.shoppingList.categories;
+    final ShoppingListTranslations$shoppingList$categories$es categoryStrings = shoppingListStrings.shoppingList.categories;
     final ShoppingCategoriesCubit cubit = context.read<ShoppingCategoriesCubit>();
     return BlocConsumer<ShoppingCategoriesCubit, ShoppingCategoriesState>(
       listenWhen: (ShoppingCategoriesState previous, ShoppingCategoriesState current) =>
@@ -44,57 +44,60 @@ class _ShoppingCategoriesScreenState extends State<ShoppingCategoriesScreen> {
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(errorMessage(state.error!))));
       },
-      builder: (BuildContext context, ShoppingCategoriesState state) => Scaffold(
-        appBar: AppBar(title: Text(t.title)),
-        body: state.loading
-            ? const AppLoadingView()
-            : ListView(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: AppSpacing.sm,
-                    children: <Widget>[
-                      Expanded(
-                        child: AppTextField(
-                          label: t.newLabel,
-                          controller: _newName,
-                          maxLength: ShoppingValidator.maxCategoryNameLength,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (String _) => _create(cubit),
+      builder: (BuildContext context, ShoppingCategoriesState state) {
+        final ShoppingCategoriesState(:List<ShoppingCategory> categories) = state;
+        return Scaffold(
+          appBar: AppBar(title: Text(categoryStrings.title)),
+          body: state.loading
+              ? const AppLoadingView()
+              : ListView(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  children: <Widget>[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: AppSpacing.sm,
+                      children: <Widget>[
+                        Expanded(
+                          child: AppTextField(
+                            label: categoryStrings.newLabel,
+                            controller: _newName,
+                            maxLength: ShoppingValidator.maxCategoryNameLength,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (String _) => _create(cubit),
+                          ),
+                        ),
+                        AppIconButton(
+                          icon: Icons.add,
+                          tooltip: categoryStrings.add,
+                          variant: AppIconButtonVariant.filled,
+                          onPressed: () => _create(cubit),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    if (categories.isEmpty) Text(categoryStrings.empty),
+                    if (categories.isNotEmpty)
+                      AppCard(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          children: <Widget>[
+                            for (int i = 0; i < categories.length; i++) ...<Widget>[
+                              if (i > 0) const Divider(height: AppSizes.strokeThin),
+                              _CategoryRow(
+                                key: ValueKey<String>(categories[i].id),
+                                category: categories[i],
+                                isFirst: i == 0,
+                                isLast: i == categories.length - 1,
+                                onMove: (int offset) => cubit.move(i, offset),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      AppIconButton(
-                        icon: Icons.add,
-                        tooltip: t.add,
-                        variant: AppIconButtonVariant.filled,
-                        onPressed: () => _create(cubit),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  if (state.categories.isEmpty) Text(t.empty),
-                  if (state.categories.isNotEmpty)
-                    AppCard(
-                      padding: EdgeInsets.zero,
-                      child: Column(
-                        children: <Widget>[
-                          for (int i = 0; i < state.categories.length; i++) ...<Widget>[
-                            if (i > 0) const Divider(height: AppSizes.strokeThin),
-                            _CategoryRow(
-                              key: ValueKey<String>(state.categories[i].id),
-                              category: state.categories[i],
-                              isFirst: i == 0,
-                              isLast: i == state.categories.length - 1,
-                              onMove: (int offset) => cubit.move(i, offset),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-      ),
+                  ],
+                ),
+        );
+      },
     );
   }
 }
@@ -125,7 +128,7 @@ class _CategoryRow extends StatelessWidget {
   }
 
   Future<void> _delete(BuildContext context) async {
-    final ShoppingListTranslations$shoppingList$categories$es t = shoppingListStrings.shoppingList.categories;
+    final ShoppingListTranslations$shoppingList$categories$es categoryStrings = shoppingListStrings.shoppingList.categories;
     final ShoppingCategoriesCubit cubit = context.read<ShoppingCategoriesCubit>();
     final int usage = await cubit.usage(category.id);
     if (!context.mounted) {
@@ -134,9 +137,9 @@ class _CategoryRow extends StatelessWidget {
     final String name = categoryName(category);
     if (await showAppConfirmDialog(
       context,
-      title: t.deleteTitle(name: name),
-      message: usage == 0 ? t.deleteUnused : t.deleteInUse(n: usage),
-      confirmLabel: t.delete(name: name),
+      title: categoryStrings.deleteTitle(name: name),
+      message: usage == 0 ? categoryStrings.deleteUnused : categoryStrings.deleteInUse(n: usage),
+      confirmLabel: categoryStrings.delete(name: name),
       destructive: true,
     )) {
       await cubit.delete(category.id);
@@ -145,7 +148,7 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$categories$es t = shoppingListStrings.shoppingList.categories;
+    final ShoppingListTranslations$shoppingList$categories$es categoryStrings = shoppingListStrings.shoppingList.categories;
     final String name = categoryName(category);
     return ListTile(
       contentPadding: const EdgeInsets.only(left: AppSpacing.md),
@@ -154,16 +157,16 @@ class _CategoryRow extends StatelessWidget {
         children: <Widget>[
           AppIconButton(
             icon: Icons.arrow_upward,
-            tooltip: t.moveUp(name: name),
+            tooltip: categoryStrings.moveUp(name: name),
             onPressed: isFirst ? null : () => onMove(-1),
           ),
           AppIconButton(
             icon: Icons.arrow_downward,
-            tooltip: t.moveDown(name: name),
+            tooltip: categoryStrings.moveDown(name: name),
             onPressed: isLast ? null : () => onMove(1),
           ),
-          AppIconButton(icon: Icons.edit_outlined, tooltip: t.rename(name: name), onPressed: () => _rename(context)),
-          AppIconButton(icon: Icons.delete_outline, tooltip: t.delete(name: name), onPressed: () => _delete(context)),
+          AppIconButton(icon: Icons.edit_outlined, tooltip: categoryStrings.rename(name: name), onPressed: () => _rename(context)),
+          AppIconButton(icon: Icons.delete_outline, tooltip: categoryStrings.delete(name: name), onPressed: () => _delete(context)),
         ],
       ),
     );
@@ -191,11 +194,11 @@ class _RenameDialogState extends State<_RenameDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$categories$es t = shoppingListStrings.shoppingList.categories;
+    final ShoppingListTranslations$shoppingList$categories$es categoryStrings = shoppingListStrings.shoppingList.categories;
     return AlertDialog(
-      title: Text(t.renameTitle),
+      title: Text(categoryStrings.renameTitle),
       content: AppTextField(
-        label: t.name,
+        label: categoryStrings.name,
         controller: _name,
         autofocus: true,
         maxLength: ShoppingValidator.maxCategoryNameLength,
