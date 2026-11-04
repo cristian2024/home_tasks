@@ -21,11 +21,11 @@ class ItemListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$list$es t = itemTrackerStrings.itemTracker.list;
+    final ItemTrackerTranslations$itemTracker$list$es listStrings = itemTrackerStrings.itemTracker.list;
     return Scaffold(
       appBar: AppBar(
-        title: Text(t.title),
-        actions: <Widget>[AppIconButton(icon: Icons.add, tooltip: t.create, onPressed: () => _create(context))],
+        title: Text(listStrings.title),
+        actions: <Widget>[AppIconButton(icon: Icons.add, tooltip: listStrings.create, onPressed: () => _create(context))],
       ),
       body: BlocBuilder<ItemListCubit, ItemListState>(
         builder: (BuildContext context, ItemListState state) {
@@ -35,9 +35,9 @@ class ItemListScreen extends StatelessWidget {
           if (state.all.isEmpty) {
             return AppStatusView(
               icon: Icons.inventory_2_outlined,
-              title: t.emptyTitle,
-              message: t.emptyMessage,
-              action: AppButton(label: t.create, icon: Icons.add, onPressed: () => _create(context)),
+              title: listStrings.emptyTitle,
+              message: listStrings.emptyMessage,
+              action: AppButton(label: listStrings.create, icon: Icons.add, onPressed: () => _create(context)),
             );
           }
           final List<HouseholdItem> visible = state.visible;
@@ -46,14 +46,14 @@ class ItemListScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: AppTextField(
-                  label: t.search,
+                  label: listStrings.search,
                   textInputAction: TextInputAction.search,
                   onChanged: context.read<ItemListCubit>().search,
                 ),
               ),
               Expanded(
                 child: visible.isEmpty
-                    ? AppStatusView(icon: Icons.search_off, title: t.noResults)
+                    ? AppStatusView(icon: Icons.search_off, title: listStrings.noResults)
                     : ItemCardList(
                         items: visible,
                         subtitleBuilder: (HouseholdItem item) => <String>[
@@ -95,6 +95,7 @@ class ItemCardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppThemeColors colors = AppThemeColors.of(context);
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
       itemCount: items.length,
@@ -107,6 +108,7 @@ class ItemCardList extends StatelessWidget {
         return AppCard(
           semanticLabel: subtitle.isEmpty ? semanticLabel : '$semanticLabel. $subtitle',
           onTap: selectable ? () => onSelected!(item) : null,
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.s300, AppSpacing.sm, AppSpacing.s300),
           child: ExcludeSemantics(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
@@ -114,7 +116,7 @@ class ItemCardList extends StatelessWidget {
               leading: const Icon(Icons.inventory_2_outlined),
               title: Text(item.name),
               subtitle: subtitle.isEmpty ? null : Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
-              trailing: selectable ? const Icon(Icons.chevron_right) : null,
+              trailing: selectable ? Icon(Icons.chevron_right, size: AppSizes.iconCompact, color: colors.textTertiary) : null,
             ),
           ),
         );

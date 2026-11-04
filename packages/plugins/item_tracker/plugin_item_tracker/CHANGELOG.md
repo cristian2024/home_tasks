@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.1 - 2026-11-04
+
+### Cambiado
+
+- La tarjeta del inicio usa `AppModuleCard`, con las dos acciones a partes iguales.
+- El detalle sigue el orden del diseño: descripción, ubicación, contenido, datos, identificadores e historial, con las filas agrupadas en tarjetas.
+- Cada identificador muestra primero su tipo y debajo su valor.
+- Mover a… y Sacar del contenedor ocupan todo el ancho, y el segundo pasa a botón con borde.
+- Las tarjetas de la lista usan una flecha más pequeña y discreta.
+
 ## 3.0.0 - 2026-10-29
 
 ### Cambiado
