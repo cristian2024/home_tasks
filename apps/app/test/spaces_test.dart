@@ -11,9 +11,9 @@ import 'package:home_utility_app/spaces/space_title_cubit.dart';
 import 'package:home_utility_app/spaces/spaces_cubit.dart';
 import 'package:home_utility_app/sync/join_household_cubit.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
-import 'package:storage_isar/adapter.dart' show Isar;
 import 'package:sync_engine/sync_engine.dart';
 
+import 'helpers/isar_test_library.dart';
 import 'helpers/space_phone.dart';
 
 /// Espacios de datos de extremo a extremo, con Isar real y el arranque real:
@@ -24,9 +24,8 @@ void main() {
   final List<SpacePhone> phones = <SpacePhone>[];
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-    // bootstrapApp lee de rootBundle; el binding se inicia después de
-    // descargar libisar (ver ac02_persistence_test).
+    await initializeIsarForTests();
+    // bootstrapApp lee de rootBundle.
     TestWidgetsFlutterBinding.ensureInitialized();
   });
   setUp(() => network = InMemorySyncNetwork());
