@@ -1,110 +1,225 @@
+import 'dart:math';
+
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Widget host(Widget child, {ThemeData? theme, double textScale = 1}) => MaterialApp(
-      theme: theme ?? AppTheme.light,
-      home: MediaQuery(
-        data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
-        child: Scaffold(body: child),
-      ),
-    );
+import 'helpers/gallery.dart';
 
-Widget gallery() => ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      children: <Widget>[
-        const AppSectionHeader('Sección'),
-        AppButton(label: 'Guardar', onPressed: () {}),
-        AppButton(label: 'Secundario', icon: Icons.add, variant: AppButtonVariant.secondary, onPressed: () {}),
-        AppButton(label: 'Texto', variant: AppButtonVariant.text, onPressed: () {}),
-        AppIconButton(icon: Icons.delete, tooltip: 'Eliminar', onPressed: () {}),
-        AppIconButton(icon: Icons.add, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
-        const AppTextField(label: 'Nombre'),
-        AppCard(semanticLabel: 'Caja A', onTap: () {}, child: const Text('Caja A')),
-        SizedBox(
-          height: 240,
-          child: AppShortcutGrid(
-            children: <Widget>[
-              AppShortcutTile(icon: Icons.qr_code_scanner, label: 'Objetos', onTap: () {}),
-              AppShortcutTile(label: 'Falló', error: true, tooltip: 'No se pudo iniciar', onTap: () {}),
-              AppShortcutTile(icon: Icons.add, label: 'Añadir', onTap: () {}),
+void main() {
+  test('los tokens conservan los valores de Figma', () {
+    expect(AppColors.alphaViolet16, const Color(0x291E0E45));
+    expect(AppSpacing.s300, 12);
+    expect(AppSpacing.md, AppSpacing.s400);
+    expect(AppRadii.full, 999);
+    expect(AppSizes.iconCompact, 20);
+    expect(AppLayout.breakpointDesktop, 1024);
+    expect(AppElevation.dark3.single.color, AppColors.alphaBlack60);
+    expect(AppElevation.light2.single.spreadRadius, -2);
+
+    expect(AppTypography.webDisplay.fontSize, 56);
+    expect(AppTypography.webDisplay.height! * 56, closeTo(64, 0.001));
+    expect(AppTypography.webDisplay.letterSpacing, closeTo(-1.12, 0.001));
+    expect(AppTypography.mobileLabelS.fontWeight, FontWeight.w500);
+  });
+
+  group('botones', () {
+    testWidgets('secundario es relleno de marca y outline solo lleva borde', (WidgetTester tester) async {
+      for (final (ThemeData theme, AppThemeColors colors) in <(ThemeData, AppThemeColors)>[
+        (AppTheme.light, AppThemeColors.light),
+        (AppTheme.dark, AppThemeColors.dark),
+      ]) {
+        await tester.pumpWidget(
+          host(
+            Column(
+              children: <Widget>[
+                AppButton(label: 'Secundario', variant: AppButtonVariant.secondary, onPressed: () {}),
+                AppButton(label: 'Borde', variant: AppButtonVariant.outline, onPressed: () {}),
+              ],
+            ),
+            theme: theme,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final Material filled = tester.widget<Material>(
+          find.descendant(of: find.byType(FilledButton), matching: find.byType(Material)),
+        );
+        expect(filled.color, colors.actionSecondaryDefault);
+        expect(filled.textStyle?.color, colors.textOnBrandSubtle);
+        expect(find.byType(OutlinedButton), findsOneWidget);
+        final Material outlined = tester.widget<Material>(
+          find.descendant(of: find.byType(OutlinedButton), matching: find.byType(Material)),
+        );
+        expect((outlined.shape! as OutlinedBorder).side.color, colors.borderStrong);
+        expect(outlined.textStyle?.color, colors.textPrimary);
+      }
+    });
+  });
+
+  group('AppBadge', () {
+    for (final (AppBadgeTone tone, Color background, Color foreground) in <(AppBadgeTone, Color, Color)>[
+      (AppBadgeTone.critical, AppThemeColors.light.bgDangerSubtle, AppThemeColors.light.textDanger),
+      (AppBadgeTone.warning, AppThemeColors.light.bgWarningSubtle, AppThemeColors.light.textWarning),
+      (AppBadgeTone.brand, AppThemeColors.light.bgBrandSubtle, AppThemeColors.light.textBrand),
+      (AppBadgeTone.success, AppThemeColors.light.bgSuccessSubtle, AppThemeColors.light.textSuccess),
+    ]) {
+      testWidgets('el tono ${tone.name} usa sus colores y es una píldora', (WidgetTester tester) async {
+        await tester.pumpWidget(host(AppBadge(label: 'Etiqueta', tone: tone)));
+
+        final BoxDecoration decoration = tester
+            .widget<DecoratedBox>(find.descendant(of: find.byType(AppBadge), matching: find.byType(DecoratedBox)))
+            .decoration as BoxDecoration;
+        expect(decoration.color, background);
+        expect(decoration.borderRadius, BorderRadius.circular(AppRadii.full));
+        expect(tester.renderObject<RenderParagraph>(find.text('Etiqueta')).text.style?.color, foreground);
+      });
+    }
+  });
+
+  group('AppModuleCard', () {
+    testWidgets('con onTap es un botón que se anuncia con su título', (WidgetTester tester) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      int taps = 0;
+      await tester.pumpWidget(
+        host(
+          AppModuleCard(
+            icon: Icons.shopping_cart_outlined,
+            title: 'Lista de compras',
+            summary: '5 cosas por comprar',
+            badges: const <Widget>[AppBadge(label: '2 urgentes')],
+            onTap: () => taps++,
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('5 cosas por comprar'));
+
+      expect(taps, 1);
+      expect(find.text('2 urgentes'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('Lista de compras')), findsWidgets);
+      semantics.dispose();
+    });
+
+    testWidgets('reparte el ancho entre sus acciones', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        host(
+          AppModuleCard(
+            icon: Icons.qr_code_scanner,
+            title: 'Objetos',
+            actions: <Widget>[
+              AppButton(label: 'A', onPressed: () {}),
+              AppButton(label: 'Más largo', onPressed: () {}),
             ],
           ),
         ),
-        AppSettingsSection(
-          title: 'Ajustes',
-          children: <Widget>[
-            AppChoiceSelector<String>(
-              label: 'Tema',
-              icon: Icons.palette_outlined,
-              options: const <AppChoice<String>>[
-                AppChoice<String>(value: 'system', label: 'Sistema'),
-                AppChoice<String>(value: 'light', label: 'Claro'),
-                AppChoice<String>(value: 'dark', label: 'Oscuro'),
-              ],
-              selected: 'system',
-              onChanged: (String _) {},
-            ),
-            AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
-            const AppSettingsTile(
-              icon: Icons.import_export,
-              title: 'Exportar / importar datos',
-              subtitle: 'Próximamente',
-              enabled: false,
-            ),
-          ],
-        ),
-        AppFilterChips<String>(
-          label: 'Categorías',
-          options: const <AppChoice<String>>[
-            AppChoice<String>(value: 'food', label: 'Comida'),
-            AppChoice<String>(value: 'home', label: 'Hogar', icon: Icons.home_outlined),
-          ],
-          selected: const <String>{'food'},
-          onChanged: (Set<String> _) {},
-        ),
-        AppCheckTile(
-          title: 'Huevos',
-          subtitle: '2 docenas',
-          value: false,
-          checkboxLabel: 'Marcar como comprado',
-          onChanged: (bool _) {},
-          onTap: () {},
-          badges: const <Widget>[
-            AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
-            AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
-            AppBadge(label: 'Comida'),
-          ],
-        ),
-        AppCheckTile(title: 'Pan', value: true, checkboxLabel: 'Marcar como comprado', onChanged: (bool _) {}),
-        AppSyncStatusCard(
-          tone: AppSyncTone.idle,
-          title: 'Sincronizado hace 5 min',
-          details: const <String>['2 dispositivos a la vista'],
-          actionLabel: 'Sincronizar ahora',
-          onAction: () {},
-        ),
-        const AppSyncStatusCard(tone: AppSyncTone.error, title: 'No se pudo sincronizar', message: 'Revisa la WiFi.'),
-        AppConflictCard<String>(
-          title: 'Etiqueta en dos objetos',
-          message: 'La etiqueta NFC se asoció a la vez a dos objetos.',
-          options: const <AppConflictOption<String>>[
-            AppConflictOption<String>(value: 'a', label: 'Caja A', description: 'La etiqueta queda en «Caja A».'),
-            AppConflictOption<String>(value: 'b', label: 'Caja B'),
-          ],
-          applied: 'a',
-          appliedLabel: 'Aplicada ahora',
-          onSelected: (String _) {},
-          keepLabel: 'Dejarlo así',
-          onKeep: () {},
-        ),
-      ],
-    );
+      );
 
-void main() {
-  test('AppColors.error es opaco', () {
-    expect(AppColors.error.a, 1.0);
+      expect(tester.getSize(find.byType(Expanded).last).width, tester.getSize(find.byType(Expanded).at(1)).width);
+      expect(
+        tester.getSize(find.widgetWithText(AppButton, 'A')).width,
+        tester.getSize(find.widgetWithText(AppButton, 'Más largo')).width,
+      );
+    });
+
+    testWidgets('sin resumen ni acciones muestra solo el título', (WidgetTester tester) async {
+      await tester.pumpWidget(host(const AppModuleCard(icon: Icons.extension_outlined, title: 'Módulo')));
+
+      expect(find.byType(Wrap), findsNothing);
+      expect(find.byType(AppButton), findsNothing);
+    });
   });
+
+  testWidgets('el SnackBar usa la superficie elevada y un borde', (WidgetTester tester) async {
+    await tester.pumpWidget(host(Builder(
+      builder: (BuildContext context) => TextButton(
+        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guardado'))),
+        child: const Text('Mostrar'),
+      ),
+    )));
+    await tester.tap(find.text('Mostrar'));
+    await tester.pump();
+
+    final Material material = tester.widget<Material>(
+      find.descendant(of: find.byType(SnackBar), matching: find.byType(Material)).first,
+    );
+    expect(material.color, AppThemeColors.light.bgSurfaceRaised);
+    expect((material.shape! as RoundedRectangleBorder).side.color, AppThemeColors.light.borderDefault);
+    expect(AppTheme.light.snackBarTheme.behavior, SnackBarBehavior.floating);
+  });
+
+  group('AppThemeColors', () {
+    testWidgets('el tema expone los colores semánticos de claro y de oscuro', (WidgetTester tester) async {
+      late AppThemeColors colors;
+      await tester.pumpWidget(host(Builder(builder: (BuildContext context) {
+        colors = AppThemeColors.of(context);
+        return const SizedBox();
+      }), theme: AppTheme.dark));
+
+      expect(colors, AppThemeColors.dark);
+      expect(colors.bgCanvas, AppTheme.dark.scaffoldBackgroundColor);
+      expect(AppTheme.light.extension<AppThemeColors>(), AppThemeColors.light);
+    });
+
+    testWidgets('un componente funciona en un tema sin esos colores', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        host(AppSettingsTile(icon: Icons.tune, title: 'Módulos', onTap: () {}), theme: ThemeData.dark()),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(tester.widget<Icon>(find.byIcon(Icons.chevron_right)).color, AppThemeColors.dark.textTertiary);
+    });
+
+    test('copyWith cambia solo lo indicado', () {
+      final AppThemeColors changed = AppThemeColors.light.copyWith(textInfo: AppColors.red700);
+
+      expect(changed.textInfo, AppColors.red700);
+      expect(changed.bgCanvas, AppThemeColors.light.bgCanvas);
+    });
+
+    test('lerp interpola entre temas y sin otro tema se queda igual', () {
+      expect(AppThemeColors.light.lerp(AppThemeColors.dark, 1).bgCanvas, AppThemeColors.dark.bgCanvas);
+      expect(AppThemeColors.light.lerp(null, 0.5), AppThemeColors.light);
+    });
+  });
+
+  test('los temas usan el morado del sistema de diseño', () {
+    expect(AppTheme.light.colorScheme.primary, AppColors.violet700);
+    expect(AppTheme.dark.colorScheme.primary, AppColors.violet400);
+  });
+
+  for (final (String name, ColorScheme scheme, AppThemeColors colors) in <(String, ColorScheme, AppThemeColors)>[
+    ('claro', AppTheme.light.colorScheme, AppThemeColors.light),
+    ('oscuro', AppTheme.dark.colorScheme, AppThemeColors.dark),
+  ]) {
+    test('tema $name: los colores son opacos y los textos tienen contraste de 4,5:1', () {
+      final List<(Color, Color)> pairs = <(Color, Color)>[
+        (scheme.onPrimary, scheme.primary),
+        (scheme.onPrimaryContainer, scheme.primaryContainer),
+        (scheme.onSecondaryContainer, scheme.secondaryContainer),
+        (scheme.onTertiaryContainer, scheme.tertiaryContainer),
+        (scheme.onError, scheme.error),
+        (scheme.onErrorContainer, scheme.errorContainer),
+        (scheme.onSurface, scheme.surface),
+        (scheme.onSurfaceVariant, scheme.surface),
+        (scheme.onSurfaceVariant, scheme.surfaceContainerHighest),
+        (colors.textOnBrandSubtle, colors.actionSecondaryDefault),
+        (colors.textBrand, colors.bgBrandSubtle),
+        (colors.textSuccess, colors.bgSuccessSubtle),
+        (colors.textDanger, colors.bgDangerSubtle),
+        (colors.textWarning, colors.bgWarningSubtle),
+        (colors.textSecondary, colors.bgBrandSubtle),
+      ];
+      for (final (Color foreground, Color background) in pairs) {
+        expect(foreground.a, 1.0);
+        expect(background.a, 1.0);
+        final double lighter = max(foreground.computeLuminance(), background.computeLuminance());
+        final double darker = min(foreground.computeLuminance(), background.computeLuminance());
+        expect((lighter + 0.05) / (darker + 0.05), greaterThanOrEqualTo(4.5));
+      }
+    });
+  }
 
   for (final (String name, ThemeData theme) in <(String, ThemeData)>[('claro', AppTheme.light), ('oscuro', AppTheme.dark)]) {
     testWidgets('tema $name: cumple las guías de accesibilidad', (WidgetTester tester) async {
@@ -362,7 +477,8 @@ void main() {
       await tester.tap(find.text('English'));
 
       expect(changes, <String>['en']);
-      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Español')).selected, isTrue);
+      expect(tester.widget<AppChoiceSegment>(find.widgetWithText(AppChoiceSegment, 'Español')).selected, isTrue);
+      expect(tester.widget<AppChoiceSegment>(find.widgetWithText(AppChoiceSegment, 'English')).selected, isFalse);
     });
 
     testWidgets('AppChoiceSelector sin onChanged queda desactivado', (WidgetTester tester) async {
@@ -370,7 +486,87 @@ void main() {
         host(const AppChoiceSelector<String>(label: 'Idioma', options: languages, selected: 'es', onChanged: null)),
       );
 
-      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'English')).onSelected, isNull);
+      expect(tester.widget<AppChoiceSegment>(find.widgetWithText(AppChoiceSegment, 'English')).onTap, isNull);
+    });
+
+    testWidgets('AppChoiceSelector pone las opciones en fila si caben y, si no, las apila', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      const List<AppChoice<String>> short = <AppChoice<String>>[
+        AppChoice<String>(value: 'a', label: 'A'),
+        AppChoice<String>(value: 'b', label: 'B'),
+      ];
+
+      Widget selector({required double textScale}) => host(
+            AppChoiceSelector<String>(label: 'Letra', options: short, selected: 'a', onChanged: (String _) {}),
+            textScale: textScale,
+          );
+      await tester.pumpWidget(selector(textScale: 1));
+      double top(String label) => tester.getTopLeft(find.widgetWithText(AppChoiceSegment, label)).dy;
+      expect(top('A'), top('B'));
+
+      await tester.pumpWidget(
+        host(
+          AppChoiceSelector<String>(
+            label: 'Modo',
+            options: const <AppChoice<String>>[
+              AppChoice<String>(value: 'a', label: 'Una opción con una etiqueta muy larga'),
+              AppChoice<String>(value: 'b', label: 'B'),
+            ],
+            selected: 'a',
+            onChanged: (String _) {},
+          ),
+        ),
+      );
+      expect(top('B'), greaterThan(top('Una opción con una etiqueta muy larga')));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AppChoiceSelector anuncia la opción elegida como seleccionada', (WidgetTester tester) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        host(AppChoiceSelector<String>(label: 'Idioma', options: languages, selected: 'es', onChanged: (String _) {})),
+      );
+
+      expect(
+        tester.getSemantics(find.widgetWithText(AppChoiceSegment, 'Español')),
+        matchesSemantics(
+          label: 'Español',
+          isButton: true,
+          isSelected: true,
+          hasSelectedState: true,
+          isInMutuallyExclusiveGroup: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          isFocusable: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+        ),
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('AppSettingsTile tiene tono de peligro y de desactivado', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        host(
+          Column(
+            children: <Widget>[
+              AppSettingsTile(icon: Icons.logout, title: 'Salir', destructive: true, onTap: () {}),
+              const AppSettingsTile(icon: Icons.import_export, title: 'Exportar', subtitle: 'Pronto', enabled: false),
+              AppSettingsTile(icon: Icons.tune, title: 'Módulos', onTap: () {}),
+            ],
+          ),
+        ),
+      );
+      Color? textColor(String text) => tester.renderObject<RenderParagraph>(find.text(text)).text.style?.color;
+
+      expect(textColor('Salir'), AppThemeColors.light.textDanger);
+      expect(textColor('Exportar'), AppThemeColors.light.textDisabled);
+      expect(textColor('Pronto'), AppThemeColors.light.textDisabled);
+      expect(tester.widget<Icon>(find.byIcon(Icons.import_export)).color ?? IconTheme.of(tester.element(find.byIcon(Icons.import_export))).color,
+          AppThemeColors.light.textDisabled);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget, reason: 'solo la fila normal lleva flecha');
     });
 
     testWidgets('AppChoiceSelector no desborda con el texto al 200 %', (WidgetTester tester) async {
@@ -564,9 +760,14 @@ void main() {
       await tester.pumpWidget(host(conflict(onSelected: selected.add, onKeep: () => keeps++)));
 
       expect(find.text('Aplicada ahora'), findsOneWidget);
+      expect(find.widgetWithText(AppButton, 'Caja A'), findsNothing, reason: 'la aplicada no es un botón más');
       expect(
-        find.descendant(of: find.widgetWithText(ListTile, 'Caja A'), matching: find.text('Aplicada ahora')),
+        find.descendant(of: find.widgetWithText(InkWell, 'Caja A'), matching: find.text('Aplicada ahora')),
         findsOneWidget,
+      );
+      expect(
+        tester.widget<AppBadge>(find.widgetWithText(AppBadge, 'Aplicada ahora')).tone,
+        AppBadgeTone.brand,
       );
       expect(find.text('La etiqueta queda en «Caja A».'), findsOneWidget);
 
@@ -604,7 +805,7 @@ void main() {
         )),
       );
 
-      expect(find.byType(AppButton), findsNothing);
+      expect(find.widgetWithText(AppButton, 'Dejarlo así'), findsNothing);
     });
 
     testWidgets('las tarjetas de sincronización no desbordan con el texto al 200 %', (WidgetTester tester) async {

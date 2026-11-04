@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_radii.dart';
 import 'app_section_header.dart';
 
 /// Grupo de ajustes con título: los [children] (normalmente
@@ -13,12 +14,17 @@ class AppSettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         AppSectionHeader(title),
         Card(
           clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            side: BorderSide(color: colors.outlineVariant),
+          ),
           child: Column(
             children: <Widget>[
               for (final (int index, Widget child) in children.indexed) ...<Widget>[

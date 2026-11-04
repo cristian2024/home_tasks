@@ -97,12 +97,12 @@ class _GalleryPage extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: <Widget>[
-              _Swatch('primary', AppColors.primary),
-              _Swatch('primaryDark', AppColors.primaryDark),
-              _Swatch('secondary', AppColors.secondary),
-              _Swatch('error', AppColors.error),
-              _Swatch('surfaceDark', AppColors.surfaceDark),
-              _Swatch('backgroundDark', AppColors.backgroundDark),
+              _Swatch('violet700', AppColors.violet700),
+              _Swatch('violet400', AppColors.violet400),
+              _Swatch('neutral50', AppColors.neutral50),
+              _Swatch('neutral950', AppColors.neutral950),
+              _Swatch('red700', AppColors.red700),
+              _Swatch('amber700', AppColors.amber700),
             ],
           ),
           const AppSectionHeader('Espaciados'),
@@ -118,7 +118,7 @@ class _GalleryPage extends StatelessWidget {
               child: Row(
                 children: <Widget>[
                   SizedBox(width: 48, child: Text(name)),
-                  Container(width: value * 4, height: AppSpacing.sm, color: AppColors.primary),
+                  Container(width: value * 4, height: AppSpacing.sm, color: AppColors.violet700),
                 ],
               ),
             ),
@@ -132,6 +132,12 @@ class _GalleryPage extends StatelessWidget {
                 label: commonStrings.common.retry,
                 icon: Icons.refresh,
                 variant: AppButtonVariant.secondary,
+                onPressed: () {},
+              ),
+              AppButton(
+                label: commonStrings.common.confirm,
+                icon: Icons.save_alt,
+                variant: AppButtonVariant.outline,
                 onPressed: () {},
               ),
               AppButton(label: commonStrings.common.cancel, variant: AppButtonVariant.text, onPressed: () {}),
@@ -173,6 +179,31 @@ class _GalleryPage extends StatelessWidget {
               subtitle: Text('Estante superior del armario principal'),
             ),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          AppModuleCard(
+            icon: Icons.shopping_cart_outlined,
+            title: 'Lista de compras',
+            summary: '5 cosas por comprar',
+            badges: const <Widget>[
+              AppBadge(label: '2 urgentes', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+            ],
+            onTap: () {},
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppModuleCard(
+            icon: Icons.qr_code_scanner,
+            title: 'Seguimiento de Objetos',
+            summary: '12 objetos registrados',
+            actions: <Widget>[
+              AppButton(label: 'Escanear', icon: Icons.qr_code_scanner, onPressed: () {}),
+              AppButton(
+                label: 'Ver objetos',
+                icon: Icons.inventory_2_outlined,
+                variant: AppButtonVariant.secondary,
+                onPressed: () {},
+              ),
+            ],
+          ),
           AppSettingsSection(
             title: 'Ajustes',
             children: <Widget>[
@@ -187,6 +218,7 @@ class _GalleryPage extends StatelessWidget {
                 onChanged: onDarkChanged,
               ),
               AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
+              AppSettingsTile(icon: Icons.logout, title: 'Salir del hogar', destructive: true, onTap: () {}),
               const AppSettingsTile(
                 icon: Icons.import_export,
                 title: 'Exportar / importar datos',
@@ -324,6 +356,8 @@ class _ListsDemoState extends State<_ListsDemo> {
               AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
               AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
               AppBadge(label: 'Comida'),
+              AppBadge(label: 'Activo', tone: AppBadgeTone.success),
+              AppBadge(label: 'Aplicada ahora', tone: AppBadgeTone.brand),
             ],
           ),
         ],
