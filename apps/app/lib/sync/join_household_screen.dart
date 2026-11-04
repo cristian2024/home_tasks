@@ -127,10 +127,18 @@ class _CameraArea extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(t.cameraDenied, style: theme.textTheme.bodyLarge),
-            if (state.canOpenSettings) ...<Widget>[
-              const SizedBox(height: AppSpacing.sm),
-              AppButton(label: t.openSettings, variant: AppButtonVariant.secondary, onPressed: cubit.openSettings),
-            ],
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: <Widget>[
+                // Vuelve a pedir el permiso o, si se dio desde Ajustes, lo
+                // comprueba y arranca la cámara.
+                AppButton(label: t.retryPermission, variant: AppButtonVariant.secondary, onPressed: cubit.start),
+                if (state.canOpenSettings)
+                  AppButton(label: t.openSettings, variant: AppButtonVariant.secondary, onPressed: cubit.openSettings),
+              ],
+            ),
           ],
         );
       case JoinPhase.scanning:

@@ -9,6 +9,7 @@ import '../../i18n/strings.g.dart';
 import '../../navigation/app_router.dart';
 import '../../settings/app_settings.dart';
 import '../../settings/app_settings_controller.dart';
+import '../../spaces/space_title_cubit.dart';
 import '../bloc/home_bloc.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
@@ -20,9 +21,10 @@ class HomeDashboardScreen extends StatelessWidget {
     final bool grid = context.select<AppSettingsController, bool>(
       (AppSettingsController settings) => settings.state.homeLayout == HomeLayout.grid,
     );
+    final String title = context.watch<SpaceTitleCubit>().state ?? appStrings.app.title;
     return Scaffold(
       appBar: AppBar(
-        title: Text(appStrings.app.title),
+        title: Text(title),
         actions: <Widget>[
           AppIconButton(
             icon: grid ? Icons.view_list_outlined : Icons.grid_view_outlined,

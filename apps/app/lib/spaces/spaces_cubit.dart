@@ -36,8 +36,8 @@ class SpacesCubit extends Cubit<SpacesState> {
 
   Future<bool> switchTo(String spaceId) => _run(() => _switcher.switchTo(spaceId));
 
-  /// Crea un espacio local vacío y lo abre.
-  Future<bool> create() => _run(_switcher.createAndSwitch);
+  /// Crea un espacio local vacío llamado [name] y lo abre.
+  Future<bool> create(String name) => _run(() => _switcher.createAndSwitch(name: name));
 
   Future<bool> rename(String spaceId, String name) => _run(() async {
         await _switcher.rename(spaceId, name);
