@@ -34,7 +34,7 @@ class SpacesScreen extends StatelessWidget {
               variant: AppButtonVariant.secondary,
               expand: true,
               isLoading: state.busy,
-              onPressed: () => _run(context, context.read<SpacesCubit>().create()),
+              onPressed: () => _create(context, spaceCount: state.spaces.length),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(t.createDescription, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
@@ -42,6 +42,23 @@ class SpacesScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Pide el nombre del espacio nuevo y, si no se cancela, lo crea.
+Future<void> _create(BuildContext context, {required int spaceCount}) async {
+  final AppTranslations$app$spaces$es t = appStrings.app.spaces;
+  final SpacesCubit cubit = context.read<SpacesCubit>();
+  final String? name = await showDialog<String>(
+    context: context,
+    builder: (BuildContext context) => _SpaceNameDialog(
+      title: t.createTitle,
+      initialName: t.newSpaceName(n: spaceCount + 1),
+      confirmLabel: t.createConfirm,
+    ),
+  );
+  if (name != null && name.trim().isNotEmpty && context.mounted) {
+    await _run(context, cubit.create(name.trim()));
   }
 }
 
@@ -80,7 +97,11 @@ class _SpaceTile extends StatelessWidget {
     final SpacesCubit cubit = context.read<SpacesCubit>();
     final String? name = await showDialog<String>(
       context: context,
-      builder: (BuildContext context) => _RenameDialog(initialName: space.name),
+      builder: (BuildContext context) => _SpaceNameDialog(
+        title: appStrings.app.spaces.renameTitle,
+        initialName: space.name,
+        confirmLabel: appStrings.app.spaces.save,
+      ),
     );
     if (name != null && name.trim().isNotEmpty && context.mounted) {
       await _run(context, cubit.rename(space.id, name.trim()));
@@ -131,16 +152,20 @@ class _SpaceTile extends StatelessWidget {
   }
 }
 
-class _RenameDialog extends StatefulWidget {
-  const _RenameDialog({required this.initialName});
+/// Pide el nombre de un espacio. Devuelve el texto escrito, o `null` si se
+/// cancela.
+class _SpaceNameDialog extends StatefulWidget {
+  const _SpaceNameDialog({required this.title, required this.initialName, required this.confirmLabel});
 
+  final String title;
   final String initialName;
+  final String confirmLabel;
 
   @override
-  State<_RenameDialog> createState() => _RenameDialogState();
+  State<_SpaceNameDialog> createState() => _SpaceNameDialogState();
 }
 
-class _RenameDialogState extends State<_RenameDialog> {
+class _SpaceNameDialogState extends State<_SpaceNameDialog> {
   late final TextEditingController _controller = TextEditingController(text: widget.initialName);
 
   @override
@@ -153,7 +178,7 @@ class _RenameDialogState extends State<_RenameDialog> {
   Widget build(BuildContext context) {
     final AppTranslations$app$spaces$es t = appStrings.app.spaces;
     return AlertDialog(
-      title: Text(t.renameTitle),
+      title: Text(widget.title),
       content: AppTextField(
         label: t.renameField,
         controller: _controller,
@@ -162,7 +187,8 @@ class _RenameDialogState extends State<_RenameDialog> {
         onSubmitted: (String value) => Navigator.of(context).pop(value),
       ),
       actions: <Widget>[
-        AppButton(label: t.save, onPressed: () => Navigator.of(context).pop(_controller.text)),
+        AppButton(label: t.cancel, variant: AppButtonVariant.text, onPressed: () => Navigator.of(context).pop()),
+        AppButton(label: widget.confirmLabel, onPressed: () => Navigator.of(context).pop(_controller.text)),
       ],
     );
   }

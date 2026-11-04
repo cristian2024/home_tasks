@@ -1,6 +1,6 @@
 name: hardware_mobile_scanner
 description: Adaptador de core_hardware con mobile_scanner - escaneo de QR y códigos de barras con la cámara.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:

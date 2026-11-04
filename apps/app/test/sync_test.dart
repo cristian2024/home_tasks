@@ -1,10 +1,13 @@
 import 'package:core_hardware/core_hardware.dart';
+import 'package:core_share/testing.dart';
 import 'package:core_hardware/testing.dart';
 import 'package:core_sync/core_sync.dart';
 import 'package:core_sync/testing.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:home_utility_app/sync/invitation_cubit.dart';
 import 'package:home_utility_app/sync/join_household_cubit.dart';
 import 'package:home_utility_app/sync/join_household_screen.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
@@ -91,6 +94,23 @@ void main() {
     final HouseholdInvitation invitation = HouseholdInvitation.parse(qr.data);
     expect(invitation.household, await a.sync.households.current());
     expect(find.bySemanticsLabel('Código QR para unirse al hogar'), findsOneWidget);
+
+    // El mismo código, como texto para copiarlo.
+    final List<String?> copied = <String?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (MethodCall call) async {
+      if (call.method == 'Clipboard.setData') {
+        copied.add((call.arguments as Map<Object?, Object?>)['text'] as String?);
+      }
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+    await tester.scrollUntilVisible(find.text('Copiar el código'), 200, scrollable: find.byType(Scrollable).last);
+    expect(find.text(qr.data), findsOneWidget);
+    await tester.tap(find.text('Copiar el código'));
+    await tester.pump();
+    expect(copied, <String?>[qr.data]);
+    expect(find.text('Código copiado.'), findsOneWidget);
+    expect(find.text('Compartir el código'), findsNothing, reason: 'sin adaptador para compartir');
 
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
@@ -254,6 +274,26 @@ void main() {
       expect(permissions.openSettingsCalls, 1);
     });
 
+    syncTest('si se denegó la cámara, se puede volver a pedir el permiso', (WidgetTester tester) async {
+      final FakeCameraScanner scanner = FakeCameraScanner();
+      final FakeHardwarePermissions permissions = FakeHardwarePermissions(status: HardwarePermissionStatus.denied);
+      await setUpDevices(camera: () => scanner, permissions: permissions);
+      await openJoin(tester);
+
+      expect(permissions.requestCalls, 1);
+      expect(find.text('Abrir Ajustes'), findsNothing, reason: 'todavía se puede pedir desde la app');
+      expect(find.byType(TextField), findsOneWidget, reason: 'sigue pudiendo pegar el código');
+
+      permissions.statusAfterRequest = HardwarePermissionStatus.granted;
+      await tester.tap(find.text('Dar permiso'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(permissions.requestCalls, 2);
+      expect(find.byKey(FakeCameraScanner.previewKey), findsOneWidget);
+      expect(scanner.isScanning, isTrue);
+    });
+
     syncTest('si ya está en otro hogar, lo explica', (WidgetTester tester) async {
       await setUpDevices();
       await joiner.sync.households.create();
@@ -267,6 +307,20 @@ void main() {
 
       expect(find.text('Este dispositivo ya está en otro hogar. Sal de él antes de unirte a uno nuevo.'), findsOneWidget);
     });
+  });
+
+  syncTest('la invitación se comparte con el adaptador de compartir', (WidgetTester tester) async {
+    final SyncedDevice a = await device('Teléfono A');
+    final String code = (await a.sync.households.create()).encode();
+    final FakeShareService share = FakeShareService();
+    final InvitationCubit cubit = InvitationCubit(a.sync.households, share: share);
+    addTearDown(cubit.close);
+    await tester.runAsync(() => cubit.stream.first);
+
+    expect(cubit.canShare, isTrue);
+    await cubit.share(subject: 'Código del hogar');
+    expect(share.sharedTexts, <String>[code]);
+    expect(InvitationCubit(a.sync.households).canShare, isFalse);
   });
 
   group('conflictos', () {
