@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- quick_actions busca los iconos de los accesos rápidos por nombre
+     (getIdentifier) y el código Kotlin no los nombra: sin esto, el
+     reductor de recursos del build de release los quitaría. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/shortcut_*" />

@@ -1,5 +1,61 @@
 # Changelog
 
+## 1.8.1+13 - 2026-11-01
+
+### Cambiado
+
+- «Nuevo espacio» pide primero el nombre (con uno propuesto) y no crea nada si se cancela. El diálogo de cambiar el nombre también tiene «Cancelar».
+- El código del hogar se muestra también como texto, con «Copiar el código» y, si hay un adaptador para compartir, «Compartir el código»: se puede mandar y pegar en el otro dispositivo sin escanear el QR.
+- El título del inicio es el nombre del espacio abierto, y cambia si se renombra. El espacio inicial (el de la base de siempre) conserva el título de la app.
+- En «Unirse a un hogar», sin permiso para la cámara aparece «Dar permiso», que lo vuelve a pedir o, si se dio desde Ajustes, arranca la cámara. Pegar el código sigue disponible.
+
+## 1.8.0+12 - 2026-10-31
+
+### Añadido
+
+- Varios espacios de datos (Configuración → Espacios): cada uno es local o de un hogar, con su propia base Isar y sus propios plugins activos. Cambiar de espacio vuelve a empezar la app con sus datos; solo se sincroniza el abierto. Se pueden crear, renombrar y borrar (salvo el abierto, que nunca se borra).
+- Crear un hogar o unirse a uno pregunta, si el espacio abierto no tiene hogar, si sus datos van al hogar o se empieza un espacio vacío. Unirse a un hogar que ya tiene espacio cambia a él; desde el espacio de otro hogar, se une en uno nuevo.
+- Avisos al cambiar de espacio (al que se ha cambiado, que elija los plugins de un espacio nuevo, o que no se pudo abrir) y el nombre del espacio en Sincronización.
+
+### Cambiado
+
+- `appAdapters` pasa a ser `appAdaptersFor({space, deviceName})`; la lista de espacios y los accesos rápidos van en `deviceAdapters`, que se componen una vez y sobreviven a los cambios de espacio. `bootstrapApp` recibe `device` y `space`.
+- El primer arranque crea un espacio sobre la base de siempre: los datos, la sincronización y las preferencias de los plugins se siguen leyendo sin copiar nada, y su hogar se anota en la lista.
+- `core_spaces`, `spaces_shared_preferences`, `storage_isar` ^0.2.2 y `sync_engine` ^0.1.2 (una clave por hogar). `core_secrets` pasa a dependencia.
+
+### Interno
+
+- `SpacePhone` en los tests: teléfonos con Isar real y el arranque real con espacios.
+
+## 1.7.0+11 - 2026-10-31
+
+### Añadido
+
+- Accesos rápidos del icono de la app (pulsación larga en el lanzador de Android e iOS): los plugins del inicio con pantalla principal, como mucho 4 y en su orden, con su nombre traducido. Cada uno abre su pantalla principal, también con la app cerrada. Se actualizan al activar o desactivar plugins y al cambiar de idioma.
+- `appAdapters` incluye `QuickActionsShortcuts` (`app_shortcuts_quick_actions`). `bootstrapApp` crea `AppShortcutsPublisher` si hay un `AppShortcutService` registrado y `AppEnvironment.dispose()` lo libera.
+- Icono del acceso de la lista de compras como recurso nativo (Android `res/drawable`, iOS `Assets.xcassets`) y `res/raw/keep.xml` para que el build de release no lo quite.
+
+### Interno
+
+- `AppHarness` acepta `shortcuts:` (p. ej. `FakeAppShortcutService`).
+
+## 1.6.0+10 - 2026-10-31
+
+### Añadido
+
+- Sincronización entre los dispositivos de casa por la WiFi, en Configuración → Sincronización: estado y «Sincronizar ahora», hogar (crear y mostrar su código QR, unirse escaneándolo o pegándolo, renombrar este dispositivo, ver los demás, salir y, solo el creador, expulsar) y bandeja de conflictos.
+- `appAdapters` compone la sincronización: `SyncIsar` dentro de `IsarStorage`, `SecureStorageSecrets`, `CryptographySyncCipher`, `LanSyncTransport` y `SyncModule` al final. `bootstrapApp` arranca el controlador y la app lo pausa en segundo plano y lo reanuda al volver.
+- Permisos de red en Android y `NSLocalNetworkUsageDescription` y `NSBonjourServices` en iOS.
+
+### Cambiado
+
+- Android no hace copias de seguridad de la app (`allowBackup="false"`): la clave del hogar no se descifraría en otro teléfono y la copia duplicaría la identidad del dispositivo.
+- `item_tracker_isar` ^0.1.2 y `shopping_list_isar` ^0.1.2, que registran los cambios para la sincronización. `plugin_shopping_list` pasa a ^0.2.0 (borrados lógicos). `design_system` ^0.1.4.
+
+### Interno
+
+- `SyncedDevice` en los tests: varios dispositivos con la sincronización sobre dobles en memoria. `AppHarness` acepta repositorios y la sincronización.
+
 ## 1.5.2+9 - 2026-10-29
 
 ### Interno

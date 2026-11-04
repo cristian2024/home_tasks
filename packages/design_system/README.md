@@ -25,6 +25,8 @@ Los componentes no conocen la app: reciben todo por parámetros y devuelven resu
 | `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). |
 | `AppBadge` | Etiqueta corta con tono `critical`, `warning` o `neutral`. |
 | `AppCheckTile` | Fila que se marca como hecha con su casilla. |
+| `AppSyncStatusCard` | Estado de una sincronización (`AppSyncTone`: `off`, `idle`, `syncing`, `error`), con detalles, mensaje de error y acción. El título se anuncia al cambiar. |
+| `AppConflictCard<T>` | Conflicto entre dispositivos con sus opciones (`AppConflictOption<T>`): marca la que ya rige (`applied`), avisa de la elegida (`onSelected`) y confirma la actual (`keepLabel`, `onKeep`). |
 
 **Diálogos**
 - `showAppConfirmDialog`: sí o no. Devuelve `true` solo si se confirma.

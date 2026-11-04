@@ -9,4 +9,5 @@
 library;
 
 export 'src/isar_feature.dart' show IsarFeature;
+export 'src/isar_space_storage.dart';
 export 'src/isar_storage.dart';

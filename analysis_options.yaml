@@ -8,9 +8,8 @@ analyzer:
     missing_required_param: error
     body_might_complete_normally: error
     todo: ignore
-    # Aviso no bloqueante mientras se tipa el código existente: `melos run
-    # analyze` lo cuenta pero no falla. Pasará a ser obligatorio cuando queden
-    # pocos casos.
+    # Obligatorio: `melos run analyze` (tool/analyze.dart) falla con cualquier
+    # diagnóstico, también con los warnings.
     always_specify_types: warning
   exclude:
     - "**/*.g.dart"

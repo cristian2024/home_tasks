@@ -148,22 +148,19 @@ import 'package:sqflite/sqflite.dart';
     expect(rules(), <String>['Regla 3']);
   });
 
-  test('Regla 4: solo los adaptadores (y core_hardware) importan SDKs nativos de hardware', () {
+  test('Regla 4: solo los adaptadores importan SDKs nativos de hardware', () {
     package('packages/core/core_hardware', 'core_hardware');
     package('packages/adapters/hardware_mobile_scanner', 'hardware_mobile_scanner');
-    source('packages/adapters/hardware_mobile_scanner/lib/a.dart', "import 'package:mobile_scanner/mobile_scanner.dart';\n");
     package('packages/plugins/plugin_a', 'plugin_a');
-    source('packages/core/core_hardware/lib/a.dart', '''
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
-''');
+    source('packages/adapters/hardware_mobile_scanner/lib/a.dart', "import 'package:mobile_scanner/mobile_scanner.dart';\n");
+    source('packages/core/core_hardware/lib/a.dart', "import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';\n");
     source('packages/plugins/plugin_a/lib/src/presentation/scan.dart', '''
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 ''');
 
-    expect(rules(), <String>['Regla 4', 'Regla 4', 'Regla 4']);
+    expect(rules(), <String>['Regla 4', 'Regla 4', 'Regla 4', 'Regla 4']);
   });
 
   group('Regla 5', () {
@@ -255,11 +252,13 @@ import 'package:app/bootstrap.dart';
     featureFolder();
     package('packages/adapters/share_native', 'share_native');
     package('packages/core/core_share', 'core_share');
+    package('apps/app', 'app');
     source('packages/adapters/share_native/lib/a.dart', '''
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:quick_actions/quick_actions.dart';
 ''');
     source('packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart', '''
 import 'package:share_plus/share_plus.dart';
@@ -269,8 +268,38 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 ''');
+    source('apps/app/lib/a.dart', '''
+import 'package:quick_actions/quick_actions.dart';
+import 'package:quick_actions_platform_interface/quick_actions_platform_interface.dart';
+''');
 
-    expect(rules(), <String>['Regla 9', 'Regla 9', 'Regla 9', 'Regla 9']);
+    expect(rules(), <String>['Regla 9', 'Regla 9', 'Regla 9', 'Regla 9', 'Regla 9', 'Regla 9']);
+  });
+
+  test('Regla 10: solo los adaptadores importan las librerías de la sincronización', () {
+    featureFolder();
+    package('packages/adapters/sync_lan', 'sync_lan');
+    package('packages/adapters/sync_crypto_cryptography', 'sync_crypto_cryptography');
+    package('packages/adapters/secret_store_secure_storage', 'secret_store_secure_storage');
+    package('packages/core/core_sync', 'core_sync');
+    package('packages/core/sync_engine', 'sync_engine');
+    source('packages/adapters/sync_lan/lib/a.dart', "import 'package:bonsoir/bonsoir.dart';\n");
+    source('packages/adapters/sync_crypto_cryptography/lib/a.dart', "import 'package:cryptography/cryptography.dart';\n");
+    source(
+      'packages/adapters/secret_store_secure_storage/lib/a.dart',
+      "import 'package:flutter_secure_storage/flutter_secure_storage.dart';\n",
+    );
+    source('packages/core/core_sync/lib/a.dart', '''
+import 'package:cryptography/cryptography.dart';
+import 'package:cryptography_flutter/cryptography_flutter.dart';
+''');
+    source('packages/core/sync_engine/lib/a.dart', "import 'package:bonsoir_platform_interface/bonsoir_platform_interface.dart';\n");
+    source(
+      'packages/plugins/item_tracker/plugin_item_tracker/lib/a.dart',
+      "import 'package:flutter_secure_storage/flutter_secure_storage.dart';\n",
+    );
+
+    expect(rules(), List<String>.filled(4, 'Regla 10'));
   });
 
   test('ignora enlaces simbólicos, directorios ocultos y build/', () {

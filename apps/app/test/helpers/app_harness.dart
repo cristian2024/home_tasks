@@ -1,3 +1,4 @@
+import 'package:core_app_shortcuts/core_app_shortcuts.dart';
 import 'package:core_contracts/core_contracts.dart';
 import 'package:core_contracts/testing.dart';
 import 'package:core_di/core_di.dart';
@@ -14,6 +15,8 @@ import 'package:home_utility_app/i18n/strings.g.dart' as app_i18n;
 import 'package:home_utility_app/plugins/plugin_controller.dart';
 import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:home_utility_app/settings/app_settings_controller.dart';
+import 'package:home_utility_app/shortcuts/app_shortcuts_publisher.dart';
+import 'package:home_utility_app/sync/sync_services.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
@@ -74,14 +77,23 @@ class FakeHomePlugin implements HomePlugin {
 /// repositorio en memoria registrado en el locator (como lo haría un
 /// adaptador), más los [extraPlugins] que se indiquen. Con
 /// [includeShoppingList] registra también la lista de compras real, con su
-/// repositorio en memoria.
+/// repositorio en memoria. Con [sync] (ver `SyncedDevice`), la
+/// sincronización compuesta sobre [locator], con [items] y [shoppingItems]
+/// sincronizados. Con [shortcuts] (p. ej. `FakeAppShortcutService`), los
+/// accesos rápidos del icono.
 class AppHarness {
   AppHarness({
     List<HomePlugin> extraPlugins = const <HomePlugin>[],
     AppSettings savedSettings = const AppSettings(),
     bool includeShoppingList = false,
     ServiceLocator? locator,
+    InMemoryHouseholdItemRepository? items,
+    InMemoryShoppingListRepository? shoppingItems,
+    SyncServices? sync,
+    AppShortcutService? shortcuts,
   })  : extraPlugins = extraPlugins,
+        items = items ?? InMemoryHouseholdItemRepository(),
+        shoppingItems = shoppingItems ?? InMemoryShoppingListRepository(),
         locator = locator ?? ServiceLocator(),
         preferences = InMemoryPluginPreferenceRepository(),
         settingsRepository = InMemoryAppSettingsRepository(savedSettings) {
@@ -89,8 +101,8 @@ class AppHarness {
     // todos los plugins.
     this.locator
       ..registerSingleton<EventBus>(EventBus(), dispose: (EventBus bus) => bus.dispose())
-      ..registerSingleton<HouseholdItemRepository>(items)
-      ..registerSingleton<ShoppingListRepository>(shoppingItems);
+      ..registerSingleton<HouseholdItemRepository>(this.items)
+      ..registerSingleton<ShoppingListRepository>(this.shoppingItems);
     localization.register(
       'app',
       (String code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
@@ -121,17 +133,23 @@ class AppHarness {
         for (final HomePlugin plugin in extraPlugins) (_, _) => plugin,
       ],
     );
+    final PluginController plugins =
+        PluginController(PluginLifecycleManager(registry: registry, preferences: preferences));
     environment = AppEnvironment(
       locator: this.locator,
       localization: localization,
       registry: registry,
-      plugins: PluginController(PluginLifecycleManager(registry: registry, preferences: preferences)),
+      plugins: plugins,
       settings: AppSettingsController(
         repository: settingsRepository,
         localization: localization,
         initial: savedSettings,
         systemLanguageCode: 'es',
       ),
+      sync: sync,
+      shortcuts: shortcuts == null
+          ? null
+          : AppShortcutsPublisher(service: shortcuts, plugins: plugins, localization: localization),
     );
   }
 
@@ -140,14 +158,17 @@ class AppHarness {
   final InMemoryAppSettingsRepository settingsRepository;
   final ServiceLocator locator;
   final LocalizationCoordinator localization = LocalizationCoordinator();
-  final InMemoryHouseholdItemRepository items = InMemoryHouseholdItemRepository();
-  final InMemoryShoppingListRepository shoppingItems = InMemoryShoppingListRepository();
+  final InMemoryHouseholdItemRepository items;
+  final InMemoryShoppingListRepository shoppingItems;
   late final AppEnvironment environment;
 
   PluginController get plugins => environment.plugins;
 
   Future<void> pump(WidgetTester tester, {String initialLocation = '/'}) async {
     await plugins.load();
+    // Como bootstrapApp.
+    await environment.sync?.controller.start();
+    environment.shortcuts?.start();
     await tester.pumpWidget(HomeUtilityApp(environment: environment, initialLocation: initialLocation));
     await tester.pumpAndSettle();
   }

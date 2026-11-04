@@ -1,0 +1,24 @@
+name: app_shortcuts_quick_actions
+description: Adaptador de core_app_shortcuts con quick_actions - accesos rápidos del icono de la app en Android e iOS.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.38.0"
+
+resolution: workspace
+
+dependencies:
+  core_app_shortcuts: ^0.1.0
+  core_di: ^0.1.1
+  flutter:
+    sdk: flutter
+  quick_actions: ^1.1.1
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+  quick_actions_platform_interface: ^1.1.0

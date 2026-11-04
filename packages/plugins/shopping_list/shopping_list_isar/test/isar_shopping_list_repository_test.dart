@@ -27,7 +27,7 @@ void main() {
 
     expect(
       const ShoppingListIsar().schemas.map((CollectionSchema<dynamic> schema) => schema.name),
-      <String>['IsarShoppingItem', 'IsarShoppingCategory', 'IsarShoppingPurchase', 'IsarShoppingListFlag'],
+      <String>['IsarShoppingItem', 'IsarShoppingCategory', 'IsarShoppingPurchase', 'IsarShoppingListFlag', 'IsarShoppingListSynced'],
     );
     expect(storage.repository, isA<IsarShoppingListRepository>());
   });

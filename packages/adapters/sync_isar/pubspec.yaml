@@ -1,0 +1,25 @@
+name: sync_isar
+description: Adaptador Isar de la sincronización - registros de cambio, vector, estado, dispositivos conocidos y conflictos sobre storage_isar.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.2
+  core_sync: ^0.1.0
+  flutter:
+    sdk: flutter
+  storage_isar: ^0.2.1
+
+dev_dependencies:
+  async: ^2.13.1
+  build_runner: ">=2.4.0 <3.0.0"
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  isar_community_generator: 3.3.2

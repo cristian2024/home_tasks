@@ -25,11 +25,11 @@ class TestUseCases {
   CreateShoppingItem get createItem => CreateShoppingItem(repository, ids, clock);
   UpdateShoppingItem get updateItem => UpdateShoppingItem(repository, clock);
   GetShoppingItem get getItem => GetShoppingItem(repository);
-  DeleteShoppingItems get deleteItems => DeleteShoppingItems(repository);
+  DeleteShoppingItems get deleteItems => DeleteShoppingItems(repository, clock);
   MarkShoppingItemPurchased get markPurchased => MarkShoppingItemPurchased(repository, ids, clock, eventBus);
   UndoShoppingPurchase get undoPurchase => UndoShoppingPurchase(repository, clock);
   MarkShoppingItemPending get markPending => MarkShoppingItemPending(repository, clock);
-  ClearPurchasedShoppingItems get clearPurchased => ClearPurchasedShoppingItems(repository);
+  ClearPurchasedShoppingItems get clearPurchased => ClearPurchasedShoppingItems(repository, clock);
   CreateShoppingCategory get createCategory => CreateShoppingCategory(repository, ids, testCategoryName);
   RenameShoppingCategory get renameCategory => RenameShoppingCategory(repository, testCategoryName);
   CountShoppingCategoryUsage get countUsage => CountShoppingCategoryUsage(repository);

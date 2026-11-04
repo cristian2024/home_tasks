@@ -1,0 +1,23 @@
+name: sync_lan
+description: Adaptador de SyncTransport (core_sync) para la red local - descubrimiento mDNS con bonsoir y canales WebSocket con dart:io.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  bonsoir: ^7.1.6
+  core_di: ^0.1.2
+  core_sync: ^0.1.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  async: ^2.13.1
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter

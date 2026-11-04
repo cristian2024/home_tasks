@@ -13,4 +13,8 @@ class IsarShoppingPurchase {
   late String itemId;
 
   late DateTime purchasedAt;
+
+  /// Borrado lógico (compra deshecha, item borrado o compra que no cuenta):
+  /// `null` si está activa.
+  DateTime? deletedAt;
 }

@@ -1,6 +1,6 @@
 name: core_share
 description: Contrato para compartir texto, abrir WhatsApp y compartir o guardar archivos, en Dart puro. Las implementaciones van en packages/adapters/.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:

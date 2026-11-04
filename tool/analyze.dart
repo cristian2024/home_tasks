@@ -5,7 +5,7 @@ import 'src/analysis_report.dart';
 /// Reglas que se están adoptando poco a poco: se avisan, pero no hacen fallar
 /// el análisis. Cuando queden pocos casos, se quitan de aquí y pasan a ser
 /// obligatorias.
-const Set<String> toleratedCodes = <String>{'always_specify_types'};
+const Set<String> toleratedCodes = <String>{};
 
 /// Análisis estático del workspace. Equivale a `dart analyze --fatal-infos .`
 /// salvo por [toleratedCodes].

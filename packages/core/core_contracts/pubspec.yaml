@@ -1,6 +1,6 @@
 name: core_contracts
 description: Contratos base del sistema de plugins (HomePlugin, registro, preferencias y ciclo de vida).
-version: 0.1.2
+version: 0.1.3
 publish_to: none
 
 environment:

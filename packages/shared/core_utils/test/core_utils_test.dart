@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('UuidV4Generator', () {
     test('genera UUID v4 canónicos y distintos', () {
-      const generator = UuidV4Generator();
-      final ids = {for (var i = 0; i < 100; i++) generator.newId()};
+      const UuidV4Generator generator = UuidV4Generator();
+      final Set<String> ids = <String>{for (int i = 0; i < 100; i++) generator.newId()};
 
       expect(ids, hasLength(100));
       expect(ids.every(isUuidV4), isTrue);
@@ -27,7 +27,7 @@ void main() {
     });
 
     test('FixedClock normaliza a UTC y avanza', () {
-      final clock = FixedClock(DateTime.utc(2026, 10, 21, 14, 30));
+      final FixedClock clock = FixedClock(DateTime.utc(2026, 10, 21, 14, 30));
       clock.advance(const Duration(minutes: 30));
 
       expect(clock.nowUtc(), DateTime.utc(2026, 10, 21, 15));

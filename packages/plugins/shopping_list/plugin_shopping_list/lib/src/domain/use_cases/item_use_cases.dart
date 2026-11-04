@@ -102,9 +102,10 @@ class GetShoppingItem {
 
 /// Borra items y su historial.
 class DeleteShoppingItems {
-  const DeleteShoppingItems(this._repository);
+  const DeleteShoppingItems(this._repository, [this._clock = const SystemClock()]);
 
   final ShoppingListRepository _repository;
+  final Clock _clock;
 
-  Future<void> call(List<String> itemIds) => _repository.deleteItems(itemIds);
+  Future<void> call(List<String> itemIds) => _repository.deleteItems(itemIds, deletedAt: _clock.nowUtc());
 }

@@ -41,6 +41,8 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 - Descarga y ejecución dinámica de código Dart en tiempo de ejecución (Over-The-Air / Dynamic Code Loading).
 - Comunicación P2P local (Bluetooth/Wi-Fi Direct) entre dispositivos.
 
+La sincronización entre dispositivos (P2P en la WiFi de casa, con resolución de conflictos) se añade después de `v1.0.0`: ver §10.4.
+
 ---
 
 ## 3. Decisiones Arquitectónicas Obligatorias
@@ -50,7 +52,7 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
   - Android sube de API 21 a **24** porque lo exige `nfc_manager` 4.x (`mobile_scanner` 7.x exige 23). Además hay que compilar contra la **API 37** (`compileSdk = 37`), que exige `permission_handler_android` 14.x.
   - iOS 15.0 es el mínimo de la plantilla de Flutter 3.47.
 - **Configuración nativa de referencia**: `packages/core/core_hardware/example` (ver su README). En iOS los plugins se integran con **Swift Package Manager**; `isar_community_flutter_libs` aún no lo admite, así que en las apps que usan Isar Flutter genera un Podfile solo para él (modo mixto). En cualquier caso: `permission_handler` activa el permiso de cámara solo porque detecta `NSCameraUsageDescription` en el `Info.plist`. La lectura NFC requiere el entitlement `com.apple.developer.nfc.readersession.formats` (NDEF, TAG) y `NFCReaderUsageDescription`.
-- **Abstracción de Hardware**: La invocación a hardware (Cámara y NFC) debe estar aislada detrás de contratos abstractos (`IdentifierScanner`) ubicados en `packages/core/core_hardware`. La capa de presentación y dominio **nunca** importará paquetes nativos directos (`mobile_scanner` o `nfc_manager`).
+- **Abstracción de Hardware**: La invocación a hardware (Cámara y NFC) debe estar aislada detrás de contratos abstractos (`IdentifierScanner`) ubicados en `packages/core/core_hardware`. Las implementaciones nativas están en los adaptadores `packages/adapters/hardware_*`. La capa de presentación y dominio **nunca** importará paquetes nativos directos (`mobile_scanner` o `nfc_manager`).
 - **Diferencias y Limitaciones de Plataforma**:
   
 | Capacidad / Escenario | Android | iOS | Comportamiento del Sistema |
@@ -115,9 +117,9 @@ El documento actúa como contrato formal de arquitectura y **fuente única de ve
 | **flutter_bloc (>=8.1.3)** | Gestión de Estado | Predicibilidad de estados, separación entre eventos/UI, facilidad de pruebas unitarias. | `packages/plugins/*`, `apps/app` | [bloclibrary.dev](https://bloclibrary.dev) |
 | **isar_community (3.3.2)** | Persistencia Local | Fork mantenido de Isar: NoSQL nativa de alto rendimiento con reactividad por `Streams`. Versión fijada: `isar_community_generator` 3.3.2 exige `analyzer` <11, lo que limita `build_runner` a 2.15.x. | Solo adaptadores: `packages/adapters/storage_isar` (reexporta la API) e `item_tracker_isar` | [pub.dev/packages/isar_community](https://pub.dev/packages/isar_community) |
 | **go_router (>=14.0.0)** | Navegación Declarativa | Integración declarativa basada en URLs, soporte nativo para sub-rutas de plugins y `ShellRoute`. | `apps/app`, `packages/core/core_contracts` | [pub.dev/packages/go_router](https://pub.dev/packages/go_router) |
-| **mobile_scanner (>=7.4.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/core/core_hardware` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
-| **nfc_manager (>=4.2.0)** + **nfc_manager_ndef (>=1.1.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). En 4.x la lectura/escritura NDEF vive en `nfc_manager_ndef`. | `packages/core/core_hardware` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
-| **permission_handler (>=13.0.0)** | Permisos en runtime | Distingue denegación temporal y permanente y abre los Ajustes de la app (§3.1, AC-06). | `packages/core/core_hardware` | [pub.dev/packages/permission_handler](https://pub.dev/packages/permission_handler) |
+| **mobile_scanner (>=7.4.0)** | Lectura QR / Barras | Basado en ML Kit (Android) y AVFoundation (iOS). Escaneo nativo rápido. | `packages/adapters/hardware_mobile_scanner` | [pub.dev/packages/mobile_scanner](https://pub.dev/packages/mobile_scanner) |
+| **nfc_manager (>=4.2.0)** + **nfc_manager_ndef (>=1.1.0)** | Lectura / Escritura NFC | Abstracción de CoreNFC (iOS) y NfcAdapter (Android). En 4.x la lectura/escritura NDEF vive en `nfc_manager_ndef`. | `packages/adapters/hardware_nfc_manager` | [pub.dev/packages/nfc_manager](https://pub.dev/packages/nfc_manager) |
+| **permission_handler (>=13.0.0)** | Permisos en runtime | Distingue denegación temporal y permanente y abre los Ajustes de la app (§3.1, AC-06). | `packages/adapters/hardware_permission_handler` | [pub.dev/packages/permission_handler](https://pub.dev/packages/permission_handler) |
 | **slang (>=4.0.0)** | Internacionalización | Tipo-seguro, soporta múltiples archivos JSON por paquete independientemente de `BuildContext`. | `packages/shared/core_ui` | [pub.dev/packages/slang](https://pub.dev/packages/slang) |
 | **get_it (>=8.0.0)** | Service Locator | Inyección de dependencias liviana y rápida para resolver contratos de plugins y repositorios. | `packages/core/core_di` | [pub.dev/packages/get_it](https://pub.dev/packages/get_it) |
 | **equatable (>=3.0.0)** | Igualdad por valor | Evita sobrescribir `==`/`hashCode` a mano en entidades, value objects y estados. | `packages/core/*`, `packages/plugins/*` | [pub.dev/packages/equatable](https://pub.dev/packages/equatable) |
@@ -155,11 +157,25 @@ home_utility_monorepo/
 │   │   ├── core_contracts/           # Abstracciones de Plugins y Módulos
 │   │   ├── core_di/                  # Service Locator (GetIt) y DependencyModule
 │   │   ├── core_events/              # Contrato EventBus, StreamEventBus y EventSubscriptions
-│   │   ├── core_hardware/            # Abstracciones de Cámara, QR y NFC
-│   │   └── core_share/               # Contrato ShareService (compartir, WhatsApp, guardar)
+│   │   ├── core_hardware/            # Contratos de Cámara, QR, NFC y permisos
+│   │   ├── core_app_shortcuts/       # Contrato AppShortcutService (accesos rápidos del icono)
+│   │   ├── core_secrets/             # Contrato SecretStore (§10.4)
+│   │   ├── core_share/               # Contrato ShareService (compartir, WhatsApp, guardar)
+│   │   ├── core_spaces/              # Contratos de los espacios de datos (§10.4.10)
+│   │   ├── core_sync/                # Contratos de la sincronización (§10.4)
+│   │   └── sync_engine/              # Motor de sincronización y simulador (§10.4)
 │   ├── adapters/                     # Adaptadores transversales (tecnologías reemplazables)
+│   │   ├── app_shortcuts_quick_actions/ # AppShortcutService con quick_actions
+│   │   ├── hardware_mobile_scanner/  # CameraIdentifierScanner con mobile_scanner
+│   │   ├── hardware_nfc_manager/     # NfcIdentifierScanner con nfc_manager
+│   │   ├── hardware_permission_handler/ # HardwarePermissions con permission_handler
+│   │   ├── secret_store_secure_storage/ # SecretStore con flutter_secure_storage
 │   │   ├── share_native/             # ShareService con share_plus, url_launcher y file_picker
-│   │   └── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature
+│   │   ├── spaces_shared_preferences/ # Lista de espacios de datos con shared_preferences
+│   │   ├── storage_isar/             # Base de datos Isar: IsarStorage, IsarFeature, IsarSpaceStorage
+│   │   ├── sync_crypto_cryptography/ # SyncCipher con cryptography
+│   │   ├── sync_isar/                # Estado de la sincronización en Isar (IsarFeature)
+│   │   └── sync_lan/                 # SyncTransport en la red local (mDNS + WebSocket)
 │   ├── contracts/                    # API pública de cada funcionalidad para otras (§11.2)
 │   │   └── shopping_list_contract/   # Eventos y capacidades de la lista de compras
 │   ├── design_system/                # Sistema de Diseño UI Centralizado
@@ -170,7 +186,9 @@ home_utility_monorepo/
 │   ├── shared/                       # Código Compartido Neutral
 │   │   ├── core_ui/                  # Slang L10n helpers y componentes base
 │   │   ├── core_utils/               # Formatters, Extensions, UUID
+│   │   ├── hlc/                      # Reloj lógico híbrido (§10.4)
 │   │   ├── list_export/              # Formateadores de listas para WhatsApp y Markdown
+│   │   ├── qr_display/               # Widget de código QR (§10.4)
 │   │   ├── recurrence/               # Recurrencia aproximada (entre X e Y días)
 │   │   └── urgency/                  # Niveles de urgencia comunes
 │   └── plugins/                      # Módulos Funcionales Autónomos
@@ -254,14 +272,15 @@ El verificador deduce el rol de cada paquete por su ruta y su nombre:
 1. **Regla 1**: Un paquete de una funcionalidad (`packages/plugins/<funcionalidad>/*`) **NUNCA** importa paquetes de otra funcionalidad. Los hosts sí, porque componen varias.
 2. **Regla 2**: El dominio (los paquetes `<funcionalidad>_domain` y las carpetas `lib/src/domain/` o `lib/domain/` de cualquier paquete) **NUNCA** importa código de Flutter (`package:flutter*/...`, `dart:ui`) ni motores de base de datos.
 3. **Regla 3**: `packages/design_system` **SOLO** depende de Flutter SDK y de `packages/shared/core_ui`. Prohibido importar paquetes de infraestructura o plugins.
-4. **Regla 4**: Solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`. `core_hardware` se admite mientras sus implementaciones pasan a esos adaptadores.
+4. **Regla 4**: Solo los adaptadores (`packages/adapters/hardware_*`) importan `mobile_scanner`, `nfc_manager*` o `permission_handler`.
 5. **Regla 5**: Solo los adaptadores importan motores de base de datos (`isar*`, `sqflite*`, `sqlite3*`, `drift*`, `hive*`, `objectbox*`, `realm*`, `sembast*`).
 6. **Regla 6**: Solo los hosts y otros adaptadores importan adaptadores. Un plugin nunca conoce su adaptador: pide el contrato al `ServiceLocator`.
 7. **Regla 7**: Un adaptador o un dominio **NUNCA** importa el plugin.
 8. **Regla 8**: Un contrato es Dart puro (sin `package:flutter*` ni `dart:ui`) y **NUNCA** importa plugins, dominios, otros paquetes de funcionalidades ni apps. Solo otros contratos y paquetes comunes (`core_events`, `urgency`…). Los adaptadores ya los prohíbe la regla 6.
 9. **Regla 9**: Solo los adaptadores importan SDKs de plataforma: `share_plus*`, `url_launcher*`, `file_picker` y `path_provider*`.
+10. **Regla 10**: Solo los adaptadores importan las librerías de la sincronización: descubrimiento en red (`bonsoir*`), criptografía (`cryptography*`) y almacén seguro (`flutter_secure_storage*`) (§10.4).
 
-Las nueve reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
+Las diez reglas se verifican con `melos run verify:arch` (`tool/verify_architecture.dart`, lógica en `tool/src/architecture_rules.dart`).
 
 ### 5.3. Archivos de Configuración del Monorepo
 
@@ -310,7 +329,7 @@ melos:
 
 - **Código generado**: los `*.g.dart` (Isar y slang) no se versionan. `melos bs` los genera al terminar, y `melos run gen` los regenera tras cambiar un modelo o un JSON de traducciones.
 - **`build_runner` y apps de ejemplo**: un paquete con `build_runner` y `example/` necesita un `build.yaml` que excluya `example/**`. Si no, build_runner sigue `example/ios/.symlinks` hasta `~/.pub-cache` y borra archivos generados de otros paquetes.
-- **`tool/analyze.dart`**: ejecuta `dart analyze` y falla con cualquier diagnóstico (como `--fatal-infos`) salvo los de las reglas en adopción gradual (`toleratedCodes`), que solo cuenta por proyecto. Hoy es `always_specify_types`; cuando queden pocos casos se quita de la lista y pasa a ser obligatoria.
+- **`tool/analyze.dart`**: ejecuta `dart analyze` y falla con cualquier diagnóstico (como `--fatal-infos`) salvo los de las reglas en adopción gradual (`toleratedCodes`), que solo cuenta por proyecto. Hoy la lista está vacía: `always_specify_types` ya es obligatoria.
 - **Versiones y CHANGELOG**: cada paquete y `apps/app` siguen [SemVer](https://semver.org/lang/es/) en la `version:` de su `pubspec.yaml` y llevan un `CHANGELOG.md` en su raíz (las apps de `example/`, `tool/` y la raíz no). Toda rama que cambie un paquete sube su versión y añade una entrada; el primer cambio a un paquete sin CHANGELOG lo crea. En `0.x.y`, un cambio incompatible sube el minor y cualquier otro el patch; en `apps/app` también sube el build (`+n`). Entre paquetes del workspace se usa `^x.y.z` (nunca `any`); si una subida deja fuera la restricción de un dependiente, la misma rama la actualiza en todos los `pubspec.yaml` que dependen del paquete. En un plugin, `HomePlugin.version` coincide con la versión del `pubspec.yaml`. Formato, basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), con los tipos en este orden y omitiendo los vacíos:
 
 ```markdown
@@ -345,7 +364,7 @@ analyzer:
     missing_required_param: error
     body_might_complete_normally: error # sustituye a missing_return (inexistente con null-safety)
     todo: ignore
-    always_specify_types: warning # en adopción gradual (ver tool/analyze.dart)
+    always_specify_types: warning # obligatoria: tool/analyze.dart falla con cualquier diagnóstico
   exclude:
     - "**/*.g.dart"
     - "**/*.i18n.json"
@@ -546,7 +565,7 @@ graph LR
 
 ## 8. Primera Funcionalidad: Identificación de Objetos (`plugin_item_tracker`)
 
-### 8.1. Abstracciones de Hardware (`packages/core/core_hardware`)
+### 8.1. Abstracciones de Hardware (`packages/core/core_hardware` y adaptadores `hardware_*`)
 
 La cámara y el NFC tienen disponibilidad, permisos y UI distintos (un iPad tiene cámara pero no NFC), así que se modelan como dos escáneres más un servicio de permisos. Cada escáner pertenece a una pantalla: se crea al entrar y se libera con `dispose()` al salir (§16).
 
@@ -956,7 +975,172 @@ const List<DependencyModule> appAdapters = <DependencyModule>[
 Para garantizar que la adición de un servidor remoto no quiebre la arquitectura:
 1. **Campos Inmutables**: `id` y `createdAt` jamás cambian tras su creación local.
 2. **Soft Deletes**: Los elementos no se borran físicamente mediante `DELETE`, sino que se marcan como borrados para propagar el borrado a la nube. **Implementado para los identificadores**: `deletedId` (el propio `id`, para que el índice único admita varios quitados del mismo valor) y `deletedAt` en UTC. **Y para los objetos**: `IsarHouseholdItem.deletedAt` en UTC; al borrar un objeto también se marcan sus identificadores activos. Las consultas y los streams solo devuelven los activos.
-3. **Control de Modificación**: El campo `updatedAt` se actualiza localmente en cada escritura. La futura sincronización utilizará este campo para el algoritmo de resolución de conflictos *Last-Write-Wins (LWW)*.
+3. **Control de Modificación**: El campo `updatedAt` se actualiza localmente en cada escritura y es lo que ve el usuario. La sincronización no lo usa para resolver conflictos: cada campo lleva su propio HLC (§10.4.2).
+
+### 10.4. Sincronización entre Dispositivos (fase 1: P2P en la red local)
+
+Los dispositivos de un hogar (Android e iOS, normalmente más de tres y rara vez encendidos a la vez) comparten los datos de los plugins. Isar sigue siendo la fuente de verdad de cada dispositivo: la sincronización solo intercambia **registros de cambio**, y la app funciona igual sin red. En la fase 1 el único transporte es la WiFi de casa (mDNS y WebSocket entre las apps, solo con la app en primer plano). La fase 2 añadirá un buzón remoto (Supabase) como otro transporte, sin cambiar el motor (§21).
+
+#### 10.4.1. Paquetes
+
+| Paquete | Rol | Contenido |
+| :--- | :--- | :--- |
+| `packages/shared/hlc` | Dart puro | `Hlc` (tiempo de pared, contador y `deviceId`; orden total, serializable) y `HlcClock` (`now()`, `receive(remoto)`), que usa el `Clock` de `core_utils`. |
+| `packages/core/core_sync` | contratos, Dart puro | Registro de cambio, vector de versiones, `SyncMetadata`, hogar, dispositivo y conflicto. Contratos `SyncTransport`, `SyncParticipant`, `SyncCipher`, `ChangeLog`, `SyncStateRepository` y `ConflictRepository`, con sus baterías y dobles en memoria en `testing.dart`. De él dependen los dominios. |
+| `packages/core/core_secrets` | contrato, Dart puro | `SecretStore` (guardar, leer y borrar secretos por clave), con su batería y `InMemorySecretStore`. |
+| `packages/core/sync_engine` | motor, Dart puro | `SyncEngine` (sesiones, fusión y gossip), bandeja de conflictos, servicio del hogar, planificador y estado. `SyncModule` (`DependencyModule`) lo compone a partir del locator. En `testing.dart`, el simulador de N dispositivos. |
+| `packages/adapters/sync_crypto_cryptography` | adaptador | `SyncCipher` con [`cryptography`](https://pub.dev/packages/cryptography) en Dart puro. |
+| `packages/adapters/secret_store_secure_storage` | adaptador | `SecretStore` con [`flutter_secure_storage`](https://pub.dev/packages/flutter_secure_storage) (Keychain y Keystore). |
+| `packages/adapters/sync_lan` | adaptador | `SyncTransport` LAN: anuncio y descubrimiento con [`bonsoir`](https://pub.dev/packages/bonsoir); servidor y conexión con `dart:io` (`HttpServer`, `WebSocket`). |
+| `packages/adapters/sync_isar` | `IsarFeature` | Log de cambios, vector, pares conocidos, hogar (sin la clave), conflictos e identidad del dispositivo. |
+| `packages/shared/qr_display` | UI agnóstica | `AppQrCode` con [`qr`](https://pub.dev/packages/qr) y un `CustomPainter`. |
+
+Quien compone la app solo elige adaptadores:
+
+```dart
+const List<DependencyModule> appAdapters = <DependencyModule>[
+  IsarStorage(features: <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), SyncIsar()]),
+  SecureStorageSecrets(),
+  CryptographySyncCipher(),
+  LanSyncTransport(),
+  // …compartir y hardware…
+  SyncModule(), // toma del locator transportes, cifrador, estado y participantes
+];
+```
+
+La regla 10 del §5.2 impide importar `bonsoir`, `cryptography` o `flutter_secure_storage` fuera de los adaptadores.
+
+#### 10.4.2. Modelo de cambios
+
+- **Registro de cambio** (inmutable):
+  - `opId` (UUID v4) y `deviceId`;
+  - `seq`: contador del dispositivo, sin huecos;
+  - colección y `entityId`;
+  - los campos cambiados, cada uno con su valor;
+  - el `Hlc`.
+  - Puede incluir referencias a binarios por `sha256` (`BlobRef`), reservadas y sin implementar.
+  - No lleva el hogar: se registra también antes de pertenecer a uno. El `householdId` va en los datos asociados del cifrado al enviarlo (§10.4.6).
+- **HLC:** orden total; el desempate final es por `deviceId`. Cada dispositivo avanza su reloj con los HLC que recibe.
+- **Vector de versiones:** `{deviceId: último seq}`. Dice qué cambios tiene un dispositivo de cada autor, sirve para el gossip y, en la fase 2, como cursor del buzón remoto.
+- **Metadatos en las entidades** (`SyncMetadata`, value object con `Equatable`):
+  - un mapa campo → HLC;
+  - para los campos que son conjuntos (p. ej. `categoryIds`), un HLC por elemento añadido o quitado;
+  - la menor marca aplicada (`createdHlc`), de la que sale `originDeviceId`.
+- **Tombstone:** `deletedAt` es un campo más de la entidad. Como nadie lo vuelve a poner a `null`, el borrado gana a cualquier edición.
+- **Escritura local:** el repositorio estampa el HLC de los campos que cambian y escribe el registro de cambio **en la misma transacción** que la entidad. Los casos de uso no cambian. Se registra todo lo local, aunque el dispositivo aún no pertenezca a un hogar.
+- **Aplicar cambios remotos** (`applyRemote`, atómico) es **idempotente y conmutativo**: el mismo conjunto de cambios, en cualquier orden y con duplicados, da el mismo estado. No genera registros nuevos (sin eco), salvo las resoluciones provisionales de conflictos (§10.4.4).
+- **El formato permite:**
+  - compactar el log más adelante, con una instantánea cuando todos los dispositivos conocidos confirmaron un tramo;
+  - reutilizarlo para exportar e importar por archivo (§21.3).
+
+#### 10.4.3. Fusión
+
+- **Campos:** gana el valor con mayor HLC (*last-write-wins* por campo).
+- **Conjuntos:** unión por elemento. Un elemento está presente si su último cambio (por HLC) fue añadirlo.
+- **Borrado contra edición:** gana el borrado (`deletedAt`). Los repositorios filtran los borrados.
+- **Datos de solo añadir:** se unen sin conflicto. Son los eventos del historial de `item_tracker` y las compras de `shopping_list`, salvo el caso de compra doble.
+- **Gossip:** cada dispositivo guarda y reenvía los cambios de todos. Si A se sincroniza con B y luego B con C, C recibe los de A.
+
+#### 10.4.4. Conflictos de reglas de negocio
+
+Cuando la fusión rompería un invariante, el participante de la funcionalidad aplica una **resolución provisional determinista**: todos los dispositivos llegan a la misma, en cualquier orden. Además marca la entidad «en conflicto» y añade una entrada a la **bandeja de conflictos**. Desde la bandeja se puede confirmar la provisional («Resolver automáticamente») o elegir otra opción a mano. La resolución es a su vez un cambio que se sincroniza. Las reglas viven en cada `<funcionalidad>_domain`.
+
+**item_tracker:**
+
+| Situación | Resolución provisional | ¿Conflicto? |
+| :--- | :--- | :--- |
+| La misma etiqueta o código asociado a dos objetos | Se queda la asociación de HLC menor; la otra queda quitada | Sí, en los dos objetos |
+| Movimientos concurrentes que forman un ciclo o superan `ContainmentPolicy` | Se revierte el movimiento de HLC mayor | Sí |
+| Meter algo en un contenedor borrado, o borrarlo mientras otro mete algo | Gana el borrado; el contenido pasa al contenedor del borrado o queda suelto | Sí |
+| Asociar un identificador a un objeto borrado | Gana el borrado; el identificador queda libre | No |
+
+**shopping_list:**
+
+| Situación | Resolución provisional | ¿Conflicto? |
+| :--- | :--- | :--- |
+| Dos compras del mismo item dentro de la misma ventana (antes de que vuelva a la lista) | Cuenta la de HLC menor | Sí («¿fueron dos compras?») |
+| Deshacer una compra mientras otro edita el item | Deshacer es un cambio de campos con HLC nuevo; fusión normal por campo | No |
+| Categoría borrada mientras otro la añade a un item | Gana el borrado; la referencia se ignora al leer | No |
+| Categorías por defecto sembradas en varios dispositivos | Se unen por `defaultKey`: queda la de id menor y se remapean los items | No |
+| Dos items o dos categorías con el mismo nombre | Quedan los dos | No |
+
+Los borrados de la lista de compras (items, categorías, deshacer compra) pasan a ser tombstones.
+
+#### 10.4.5. Participantes
+
+- Cada funcionalidad que se sincroniza implementa `SyncParticipant`, con sus colecciones, su códec y sus reglas. La clase vive en su `_domain` y trabaja sobre el contrato de su repositorio, así que la prueban el repositorio en memoria y el de Isar.
+- Su adaptador (`<funcionalidad>_isar`) la registra en el **scope raíz** al abrir la base. Por eso un plugin desactivado sigue recibiendo y guardando sus cambios, igual que `IsarStorage` abre los esquemas de todos los plugins.
+- En la fase 1 participan `item_tracker` y `shopping_list`.
+- **No se sincroniza:** qué plugins están activados (`PluginPreferenceRepository`), el tema ni el idioma (`AppSettingsRepository`).
+
+#### 10.4.6. Hogar, emparejamiento y cifrado
+
+- **Crear un hogar:** se generan `householdId` (UUID v4), una clave simétrica aleatoria de 256 bits y la época 1. La clave va al `SecretStore`, con un nombre por hogar (`sync.household.<householdId>.key`); el resto, a `SyncStateRepository`. El dispositivo que lo crea queda como creador.
+- **Unirse:** se escanea con `CameraIdentifierScanner` un QR con `{versión, householdId, época, clave, creador, URL del relay (opcional, fase 2)}`. Si el usuario lleva al hogar los datos del espacio abierto (§10.4.10), se **fusionan**; no se sobrescribe nada.
+- **Salir:** se borran la clave y el hogar; los datos locales se conservan.
+- **Expulsar:** solo el dispositivo creador. Abre una época nueva con una clave nueva y muestra el QR nuevo, que el resto vuelve a escanear. El expulsado se queda en la época vieja y no recibe ni descifra nada nuevo.
+- **Cifrado de extremo a extremo** (también en la LAN): AEAD XChaCha20-Poly1305 detrás de `SyncCipher`. Cada registro se cifra por separado (datos asociados: `householdId`, época, `deviceId` y `seq`), así que un relay podrá guardarlo sin leerlo. Las claves de cada uso se derivan con HKDF.
+- **Autenticación de los pares:** antes de intercambiar nada, cada lado demuestra que conoce la clave con un desafío HMAC sobre los nonces de los dos.
+- **Anuncio mDNS:** publica un identificador derivado de la clave de la época (HMAC truncado), nunca el `householdId`. Un dispositivo de otro hogar, o uno expulsado, no encuentra a los del hogar.
+- `householdId` y `deviceId` son conceptos de primera clase, para que la autenticación futura (contraseña del hogar, administrador) sea otro adaptador. Ambas quedan fuera de esta fase.
+
+#### 10.4.7. Transporte LAN y planificación
+
+- `_hometasks._tcp` por mDNS y un servidor WebSocket en un puerto libre, solo con la app en primer plano.
+- **Sesión:**
+  1. desafío;
+  2. intercambio de vectores (cifrado);
+  3. cada lado envía, en lotes, los registros que le faltan al otro;
+  4. cada lado los aplica y confirma.
+- **Cuándo sincroniza:** al arrancar, al volver a primer plano, tras un cambio local (con debounce) y con «Sincronizar ahora». No se cuenta con el segundo plano.
+- **Estado visible:** última sincronización, cambios pendientes, dispositivos visibles y errores. Se llega a él, a la bandeja y al emparejamiento desde Configuración.
+- **Configuración nativa:**
+  - iOS: `NSLocalNetworkUsageDescription` y `NSBonjourServices` (`_hometasks._tcp`). Si se deniega el permiso de red local, el estado lo explica.
+  - Android: `INTERNET`, `CHANGE_WIFI_MULTICAST_STATE` y `ACCESS_NETWORK_STATE`. Las preferencias de `flutter_secure_storage` quedan fuera del backup automático.
+
+#### 10.4.8. Migración
+
+- Se conservan los nombres de colección y de base de datos.
+- Los campos nuevos tienen valor por defecto.
+- Al abrir la base, una migración idempotente (con una marca para no repetirla) hace dos cosas:
+  - da a lo existente metadatos iniciales: HLC derivado de `updatedAt`, y el `deviceId` local como origen;
+  - genera sus registros de cambio, para que viajen al unirse a un hogar.
+
+#### 10.4.9. Pruebas
+
+- **Simulador de convergencia** (`sync_engine/testing.dart`): N dispositivos con ediciones concurrentes, entregas desordenadas y duplicadas, y particiones de red, con semillas aleatorias reproducibles. Al final, todos tienen el mismo estado y se cumplen los invariantes.
+- **Cobertura del 100 %:** `hlc`, el motor, los `_domain` (reglas de conflicto incluidas) y los mappers.
+- **Baterías de contrato:** las pasan todas las implementaciones (transporte en memoria y LAN, cifrador, almacén de secretos, estado e Isar).
+- **Tests de la app:** varios entornos de `AppHarness` conectados por el transporte en memoria.
+- **Criterios de aceptación de la sincronización:**
+
+| AC | Criterio |
+| :--- | :--- |
+| S-01 | Dos dispositivos en la misma WiFi con la app abierta convergen tras editar en ambos. |
+| S-02 | Ediciones sin conexión en dos dispositivos convergen cuando vuelven a verse. |
+| S-03 | Gossip: A↔B y después B↔C; C recibe los cambios de A sin haber visto nunca a A. |
+| S-04 | Borrar en uno y editar en otro deja el dato borrado en todos. |
+| S-05 | La misma etiqueta NFC asociada en dos dispositivos a objetos distintos cumple los invariantes, aparece en la bandeja de ambos y «Resolver automáticamente» converge en todos. |
+| S-06 | Los movimientos concurrentes de contenedores nunca dejan un ciclo ni superan la profundidad máxima. |
+| S-07 | Un dispositivo de otro hogar en la misma WiFi no ve ni descifra nada. |
+| S-08 | Expulsar un dispositivo rota la clave; el expulsado deja de recibir cambios nuevos. |
+| S-09 | Unirse a un hogar con datos locales los fusiona sin perder nada. |
+| S-10 | Los datos de antes de la migración se siguen leyendo (AC-02). |
+| S-11 | Plugins activados, tema e idioma no se sincronizan. |
+| S-12 | Sin red, la app funciona igual. |
+| S-13 | Un dispositivo en dos hogares: cada uno en su espacio, sus datos no se mezclan y cada hogar conserva su clave. |
+| S-14 | Al actualizar desde una versión con un solo hogar, el primer espacio usa la base de siempre: datos, hogar y clave se conservan. |
+
+#### 10.4.10. Varios hogares: espacios de datos
+
+- **Espacio de datos** (`core_spaces`): un conjunto de datos con su propia base Isar (`IsarStorage(name: space.databaseName)`), local o de un hogar. Como mucho un espacio por hogar. El dispositivo usa uno, el activo; solo se sincroniza ese. Los demás se ponen al día por gossip cuando el usuario los abre.
+- **Lista de espacios** (`DataSpaceDirectory`, adaptador `spaces_shared_preferences`): fuera de las bases, porque hay que leerla antes de abrir ninguna. Guarda la lista y el activo en una sola clave, así que nunca queda una lista sin activo.
+- **Por espacio:** los datos de cada plugin, el log, el vector, el HLC, los conflictos, la identidad del dispositivo y los plugins activos (personales, no se sincronizan). **Por dispositivo:** la lista de espacios, los accesos rápidos del icono, el tema y el idioma.
+- **Cambiar de espacio:** se para la sincronización, se liberan los plugins y se cierra la base; se abre la del otro espacio y solo entonces se marca como activo. Si no abre, se vuelve a abrir el anterior. La app vuelve a empezar en el inicio.
+- **Crear un hogar o unirse:** si el espacio abierto es local, el usuario elige si lleva sus datos al hogar (el espacio pasa a ser del hogar) o empieza un espacio nuevo y vacío. Si ya es de un hogar, siempre se usa un espacio nuevo. Unirse a un hogar que ya tiene espacio abre ese espacio. Nunca se copian datos entre bases.
+- **Borrar un espacio** (nunca el activo): primero se quita de la lista y después se borran su base (`DataSpaceStorage`, una base abierta no se borra) y la clave de su hogar. Si el proceso muere entre medias, el siguiente arranque borra las bases `space_*` que no están en la lista.
+- **Migración:** el primer arranque crea un espacio sobre la base de siempre, sin copiar nada, y anota su hogar. La clave antigua (`sync.household.key`) se copia a la del hogar la primera vez que se lee y se conserva mientras sea la del hogar actual, para que volver a una versión anterior siga sincronizando.
+
 
 ---
 
@@ -1053,9 +1237,9 @@ graph TD
 
 ### 12.2. Definición del Plugin (`plugin_item_tracker/lib/plugin_definition.dart`)
 `ItemTrackerPlugin implements HomePlugin`:
-- **Del scope base de `core_di` toma**: `HouseholdItemRepository` (obligatorio; lo registra el adaptador que elige la app, p. ej. `ItemTrackerIsar`), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos). No conoce el motor de base de datos.
+- **Del scope base de `core_di` toma**: `HouseholdItemRepository` (obligatorio; lo registra el adaptador que elige la app, p. ej. `ItemTrackerIsar`), `CameraIdentifierScanner` y `NfcIdentifierScanner` (factorías) y `HardwarePermissions` (obligatorios; los registran los adaptadores `hardware_*`; si falta alguno, `initialize()` falla), y `EventBus`, `IdGenerator` y `Clock` (opcionales; si faltan usa los suyos). No conoce el motor de base de datos ni los SDK de hardware.
 - **`initialize()`**: registra su idioma en `LocalizationCoordinator` y crea su scope `item_tracker` con `ItemTrackerDependencies` (casos de uso, factorías de escáner y permisos). **`dispose()`** descarta ese scope.
-- **Inyección por constructor**: factorías de escáner y `HardwarePermissions`, para poder probarlo con los fakes de `core_hardware/testing.dart`. En los tests se registra en el locator el `InMemoryHouseholdItemRepository` de `item_tracker_domain/testing.dart`, que `plugin_item_tracker/testing.dart` reexporta.
+- **Sustitutos por constructor**: factorías de escáner y `HardwarePermissions`, que reemplazan a los del locator, p. ej. por los fakes de `core_hardware/testing.dart`. En los tests se registra en el locator el `InMemoryHouseholdItemRepository` de `item_tracker_domain/testing.dart`, que `plugin_item_tracker/testing.dart` reexporta.
 - `nameKey` / `descriptionKey` son rutas de slang (`itemTracker.title`). En la Fase 4 hay que decidir cómo resuelve el catálogo esas claves entre paquetes.
 - **App de ejemplo**: `plugin_item_tracker/example` arranca igual que `apps/app` (servicios base, sus propios adaptadores, `IsarStorage(features: <IsarFeature>[ItemTrackerIsar()])` con una base separada de la de la app, e idioma del dispositivo) e incluye datos de ejemplo para recorrer AC-03/04/05 a mano.
 
@@ -1280,5 +1464,11 @@ Antes de dar por completada la implementación de la primera iteración, verific
 ## 21. Decisiones Pendientes de Validación Futura
 
 1. **Cifrado de Base de Datos Local**: Evaluar en la versión `v1.1.0` la inclusión de la clave de cifrado Isar mediante `flutter_secure_storage` si se añaden datos con nivel alto de sensibilidad personal.
-2. **Sincronización Cloud**: La arquitectura de repositorios actual admite la futura adición de un paquete `core_network` con soporte Dio / GraphQL sin requerir cambios estructurales en los plugins funcionales existentes.
-3. **Exportar / importar datos**: la entrada ya está en Configuración, desactivada. Falta decidir el formato, qué incluye (datos de los plugins, preferencias de módulos y de la app) y cómo participa cada plugin. La lista de compras ya exporta su contenido como texto o Markdown (§9.5); un export de copia de seguridad es otra cosa.
+2. **Sincronización, fase 2**: la fase 1 (P2P en la red local) está en el §10.4. Queda pendiente:
+   - **Supabase como buzón remoto:** un adaptador más de `SyncTransport`. Hace push de los registros cifrados y pull desde el vector de versiones como cursor. El QR ya reserva la URL del relay.
+   - **Compactación del log:** una instantánea cuando todos los dispositivos conocidos confirmaron un tramo.
+   - **Volver a poblar un servidor vacío** desde un dispositivo.
+   - **Tamaño máximo por cambio.**
+   - **Binarios (fotos):** referencias por `sha256` ya reservadas en el formato.
+   - **Autenticación del hogar:** contraseña y administrador, como adaptadores sobre `householdId` y `deviceId`.
+3. **Exportar / importar datos**: la entrada ya está en Configuración, desactivada. El formato de los registros de cambio de la sincronización (§10.4.2) puede reutilizarse para la copia de seguridad. Falta decidir el formato, qué incluye (datos de los plugins, preferencias de módulos y de la app) y cómo participa cada plugin. La lista de compras ya exporta su contenido como texto o Markdown (§9.5); un export de copia de seguridad es otra cosa.

@@ -4,13 +4,16 @@ import 'package:storage_isar/adapter.dart';
 import '../models/isar_household_item.dart';
 import '../models/isar_item_event.dart';
 import '../models/isar_physical_identifier.dart';
+import '../sync/isar_item_tracker_sync.dart';
 
 /// Acceso a las colecciones Isar de item_tracker. Toda escritura va en una
-/// transacción explícita (spec §10.1).
+/// transacción explícita (spec §10.1). Con [IsarItemTrackerSync], cada
+/// escritura registra sus cambios en esa misma transacción.
 class IsarLocalDataSource {
-  IsarLocalDataSource(this._isar);
+  IsarLocalDataSource(this._isar, [this._sync]);
 
   final Isar _isar;
+  final IsarItemTrackerSync? _sync;
 
   IsarCollection<IsarHouseholdItem> get _items => _isar.isarHouseholdItems;
   IsarCollection<IsarPhysicalIdentifier> get _identifiers => _isar.isarPhysicalIdentifiers;
@@ -24,11 +27,17 @@ class IsarLocalDataSource {
     List<IsarItemEvent> events = const <IsarItemEvent>[],
   }) async {
     await _isar.writeTxn(() async {
+      await _sync?.prepare();
       await _items.putById(item);
       if (identifier != null) {
         await _identifiers.putById(identifier);
       }
       await _events.putAllById(events);
+      await _sync?.record(
+        items: <IsarHouseholdItem>[item],
+        identifiers: <IsarPhysicalIdentifier>[?identifier],
+        events: events,
+      );
     });
   }
 
@@ -36,8 +45,10 @@ class IsarLocalDataSource {
   /// existente.
   Future<void> saveIdentifierWithEvent(IsarPhysicalIdentifier identifier, IsarItemEvent event) async {
     await _isar.writeTxn(() async {
+      await _sync?.prepare();
       await _identifiers.putById(identifier);
       await _events.putById(event);
+      await _sync?.record(identifiers: <IsarPhysicalIdentifier>[identifier], events: <IsarItemEvent>[event]);
     });
   }
 
@@ -45,6 +56,7 @@ class IsarLocalDataSource {
   /// transacción. No hace nada si el identificador no existe.
   Future<void> softDeleteIdentifierWithEvent(String identifierId, DateTime deletedAt, IsarItemEvent event) async {
     await _isar.writeTxn(() async {
+      await _sync?.prepare();
       final IsarPhysicalIdentifier? identifier = await _identifiers.getById(identifierId);
       if (identifier == null || identifier.isDeleted) {
         return;
@@ -54,6 +66,7 @@ class IsarLocalDataSource {
         ..deletedAt = deletedAt;
       await _identifiers.putById(identifier);
       await _events.putById(event);
+      await _sync?.record(identifiers: <IsarPhysicalIdentifier>[identifier], events: <IsarItemEvent>[event]);
     });
   }
 
@@ -67,6 +80,9 @@ class IsarLocalDataSource {
     required List<IsarItemEvent> events,
   }) async {
     await _isar.writeTxn(() async {
+      await _sync?.prepare();
+      final List<IsarHouseholdItem> deleted = <IsarHouseholdItem>[];
+      final List<IsarPhysicalIdentifier> unbound = <IsarPhysicalIdentifier>[];
       for (final String id in itemIds) {
         final IsarHouseholdItem? item = await _items.getById(id);
         if (item == null || item.isDeleted) {
@@ -74,6 +90,7 @@ class IsarLocalDataSource {
         }
         item.deletedAt = deletedAt;
         await _items.putById(item);
+        deleted.add(item);
         final List<IsarPhysicalIdentifier> identifiers =
             await _identifiers.where().itemIdEqualTo(id).filter().deletedIdIsNull().findAll();
         for (final IsarPhysicalIdentifier identifier in identifiers) {
@@ -82,14 +99,20 @@ class IsarLocalDataSource {
             ..deletedAt = deletedAt;
         }
         await _identifiers.putAllById(identifiers);
+        unbound.addAll(identifiers);
       }
       await _items.putAllById(moved);
       await _events.putAllById(events);
+      await _sync?.record(items: <IsarHouseholdItem>[...deleted, ...moved], identifiers: unbound, events: events);
     });
   }
 
   Future<void> saveEvent(IsarItemEvent event) async {
-    await _isar.writeTxn(() => _events.putById(event));
+    await _isar.writeTxn(() async {
+      await _sync?.prepare();
+      await _events.putById(event);
+      await _sync?.record(events: <IsarItemEvent>[event]);
+    });
   }
 
   /// Objeto activo con ese [id].

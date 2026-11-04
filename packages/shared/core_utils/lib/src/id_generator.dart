@@ -10,13 +10,13 @@ abstract interface class IdGenerator {
 class UuidV4Generator implements IdGenerator {
   const UuidV4Generator();
 
-  static const _uuid = Uuid();
+  static const Uuid _uuid = Uuid();
 
   @override
   String newId() => _uuid.v4();
 }
 
-final _uuidV4Pattern = RegExp(
+final RegExp _uuidV4Pattern = RegExp(
   r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
 );
 

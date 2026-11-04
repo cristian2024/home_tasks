@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 - 2026-10-30
+
+### Cambiado
+
+- **Incompatible:** reexporta shopping_list_domain 0.2.0, cuyos borrados son lógicos (`deleteItems` y `undoPurchase` reciben `deletedAt`).
+- Borrar items, «Borrar comprados» y deshacer una compra pasan la fecha del borrado al repositorio. `DeleteShoppingItems` y `ClearPurchasedShoppingItems` aceptan un `Clock` (por defecto, `SystemClock`).
+
+## 0.1.1 - 2026-10-29
+
+### Añadido
+
+- README del paquete.
+
 ## 0.1.0 - 2026-10-28
 
 ### Añadido
