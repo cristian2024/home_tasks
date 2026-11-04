@@ -4,7 +4,7 @@ import 'package:core_events/core_events.dart';
 import 'package:test/test.dart';
 
 class _Event extends CrossPluginEvent {
-  _Event(this.value);
+  _Event(this.value) : super(emittedAt: DateTime.utc(2026, 10, 29));
 
   final int value;
 }

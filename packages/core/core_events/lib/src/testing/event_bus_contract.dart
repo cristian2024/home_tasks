@@ -5,13 +5,17 @@ import 'package:test/test.dart';
 import '../cross_plugin_event.dart';
 import '../event_bus.dart';
 
+final DateTime _t0 = DateTime.utc(2026, 10, 29);
+
 class _EventA extends CrossPluginEvent {
-  _EventA(this.value, {super.emittedAt});
+  _EventA(this.value, {DateTime? emittedAt}) : super(emittedAt: emittedAt ?? _t0);
 
   final int value;
 }
 
-class _EventB extends CrossPluginEvent {}
+class _EventB extends CrossPluginEvent {
+  _EventB() : super(emittedAt: _t0);
+}
 
 class _SubEventA extends _EventA {
   _SubEventA(super.value);

@@ -13,7 +13,7 @@ dependencies:
   bloc: ^9.2.0
   core_contracts: ^0.1.2
   core_di: ^0.1.1
-  core_events: ^0.1.1
+  core_events: ^0.2.0
   core_share: ^0.1.0
   core_ui: ^0.1.1
   core_utils: ^0.1.0

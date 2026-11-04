@@ -3,10 +3,9 @@
 /// Los eventos de cada plugin se definen en su contrato
 /// (`packages/contracts/<funcionalidad>_contract`), nunca en el plugin.
 abstract class CrossPluginEvent {
-  /// Quien publica pasa siempre [emittedAt] desde su `Clock`, para que los
-  /// tests puedan fijarlo. Si falta se usa la hora actual (respaldo). Siempre
-  /// se guarda en UTC.
-  CrossPluginEvent({DateTime? emittedAt}) : emittedAt = (emittedAt ?? DateTime.now()).toUtc();
+  /// [emittedAt] viene del `Clock` de quien publica, para que los tests
+  /// puedan fijarlo. Siempre se guarda en UTC.
+  CrossPluginEvent({required DateTime emittedAt}) : emittedAt = emittedAt.toUtc();
 
   final DateTime emittedAt;
 }
@@ -15,5 +14,5 @@ class ItemCreatedCrossEvent extends CrossPluginEvent {
   final String itemId;
   final String itemName;
 
-  ItemCreatedCrossEvent({required this.itemId, required this.itemName, super.emittedAt});
+  ItemCreatedCrossEvent({required this.itemId, required this.itemName, required super.emittedAt});
 }

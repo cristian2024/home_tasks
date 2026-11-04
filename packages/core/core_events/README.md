@@ -4,7 +4,7 @@ Comunicación entre plugins por eventos, sin acoplarlos: un plugin publica un he
 
 ## Contenido
 
-- `CrossPluginEvent`: base de todo evento. Lleva `emittedAt` (UTC). Quien publica lo pasa siempre desde su `Clock` (`core_utils`), para que los tests puedan fijarlo; si falta, se usa la hora actual.
+- `CrossPluginEvent`: base de todo evento. Lleva `emittedAt` (UTC), que quien publica toma de su `Clock` (`core_utils`).
 - `EventBus`: `publish`, `on<T>()` (stream de los eventos de ese tipo) y `dispose`. `EventBus()` crea la implementación por defecto, `StreamEventBus`, en memoria.
 - `EventSubscriptions`: junta las suscripciones de un plugin para cancelarlas todas (`cancelAll`) al liberar su scope.
 
