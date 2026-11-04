@@ -4,6 +4,7 @@ import '../tokens/app_colors.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
+import '../tokens/app_theme_colors.dart';
 
 /// Temas claro y oscuro construidos a partir de los tokens.
 ///
@@ -79,11 +80,11 @@ abstract final class AppTheme {
     inversePrimary: AppColors.violet700,
   );
 
-  static ThemeData get light => _build(_lightScheme, scaffoldBackground: AppColors.neutral50);
+  static ThemeData get light => _build(_lightScheme, AppThemeColors.light);
 
-  static ThemeData get dark => _build(_darkScheme, scaffoldBackground: AppColors.neutral950);
+  static ThemeData get dark => _build(_darkScheme, AppThemeColors.dark);
 
-  static ThemeData _build(ColorScheme scheme, {required Color scaffoldBackground}) {
+  static ThemeData _build(ColorScheme scheme, AppThemeColors colors) {
     const Size minimumButtonSize = Size(AppSizes.minTouchTarget, AppSizes.minTouchTarget);
     final RoundedRectangleBorder buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.small));
     const EdgeInsets buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm);
@@ -91,11 +92,12 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: scaffoldBackground,
+      extensions: <ThemeExtension<dynamic>>[colors],
+      scaffoldBackgroundColor: colors.bgCanvas,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
       appBarTheme: AppBarTheme(
-        backgroundColor: scaffoldBackground,
+        backgroundColor: colors.bgCanvas,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
       ),

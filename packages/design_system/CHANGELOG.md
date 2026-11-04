@@ -4,8 +4,15 @@
 
 ### Añadido
 
-- `AppColors` con la paleta completa del sistema de diseño de Figma.
-- `AppRadii.extraLarge` (24), usado en las hojas inferiores.
+- Todos los tokens del sistema de diseño de Figma, se usen o no:
+  - `AppColors` con la paleta completa.
+  - `AppThemeColors`: extensión del tema con los 49 colores semánticos de claro y oscuro, incluidos éxito, información, hover y pressed.
+  - `AppSpacing.s0`…`s1600`, con `xs`…`xl` como nombres cortos.
+  - `AppRadii.none`, `extraSmall`, `extraLarge` y `full`.
+  - `AppSizes`: controles, iconos, `touchTarget` y trazos.
+  - `AppLayout`: márgenes, retículas, puntos de corte y anchos de referencia.
+  - `AppTypography`: familia, tamaños, alturas de línea y los estilos `web*` y `mobile*`.
+  - `AppElevation`: las sombras de claro y oscuro.
 
 ### Cambiado
 

@@ -104,6 +104,48 @@ Widget gallery() => ListView(
     );
 
 void main() {
+  test('los tokens conservan los valores de Figma', () {
+    expect(AppColors.alphaViolet16, const Color(0x291E0E45));
+    expect(AppSpacing.s300, 12);
+    expect(AppSpacing.md, AppSpacing.s400);
+    expect(AppRadii.full, 999);
+    expect(AppSizes.iconCompact, 20);
+    expect(AppLayout.breakpointDesktop, 1024);
+    expect(AppElevation.dark3.single.color, AppColors.alphaBlack60);
+    expect(AppElevation.light2.single.spreadRadius, -2);
+
+    expect(AppTypography.webDisplay.fontSize, 56);
+    expect(AppTypography.webDisplay.height! * 56, closeTo(64, 0.001));
+    expect(AppTypography.webDisplay.letterSpacing, closeTo(-1.12, 0.001));
+    expect(AppTypography.mobileLabelS.fontWeight, FontWeight.w500);
+  });
+
+  group('AppThemeColors', () {
+    testWidgets('el tema expone los colores semánticos de claro y de oscuro', (WidgetTester tester) async {
+      late AppThemeColors colors;
+      await tester.pumpWidget(host(Builder(builder: (BuildContext context) {
+        colors = AppThemeColors.of(context);
+        return const SizedBox();
+      }), theme: AppTheme.dark));
+
+      expect(colors, AppThemeColors.dark);
+      expect(colors.bgCanvas, AppTheme.dark.scaffoldBackgroundColor);
+      expect(AppTheme.light.extension<AppThemeColors>(), AppThemeColors.light);
+    });
+
+    test('copyWith cambia solo lo indicado', () {
+      final AppThemeColors changed = AppThemeColors.light.copyWith(textInfo: AppColors.red700);
+
+      expect(changed.textInfo, AppColors.red700);
+      expect(changed.bgCanvas, AppThemeColors.light.bgCanvas);
+    });
+
+    test('lerp interpola entre temas y sin otro tema se queda igual', () {
+      expect(AppThemeColors.light.lerp(AppThemeColors.dark, 1).bgCanvas, AppThemeColors.dark.bgCanvas);
+      expect(AppThemeColors.light.lerp(null, 0.5), AppThemeColors.light);
+    });
+  });
+
   test('los temas usan el morado del sistema de diseño', () {
     expect(AppTheme.light.colorScheme.primary, AppColors.violet700);
     expect(AppTheme.dark.colorScheme.primary, AppColors.violet400);
