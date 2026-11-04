@@ -237,6 +237,8 @@ class _ContentsSection extends StatelessWidget {
     final ItemTrackerTranslations$itemTracker$detail$es detailStrings = itemTrackerStrings.itemTracker.detail;
     final ThemeData theme = Theme.of(context);
     final List<HouseholdItem> children = state.children;
+    final bool canHoldMore = state.canHoldMore;
+    final int maxDepth = state.maxDepth;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -246,7 +248,7 @@ class _ContentsSection extends StatelessWidget {
             label: detailStrings.addInside,
             icon: Icons.add_box_outlined,
             variant: AppButtonVariant.text,
-            onPressed: state.canHoldMore ? () => context.push<String>(ItemTrackerRoutes.createInside(item.id)) : null,
+            onPressed: canHoldMore ? () => context.push<String>(ItemTrackerRoutes.createInside(item.id)) : null,
           ),
         ),
         if (state.isOverflowing)
@@ -255,12 +257,12 @@ class _ContentsSection extends StatelessWidget {
               children: <Widget>[
                 Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(child: Text(detailStrings.overflowing(depth: state.depth, max: state.maxDepth))),
+                Expanded(child: Text(detailStrings.overflowing(depth: state.depth, max: maxDepth))),
               ],
             ),
           )
-        else if (!state.canHoldMore)
-          Text(detailStrings.full(max: state.maxDepth), style: theme.textTheme.bodySmall),
+        else if (!canHoldMore)
+          Text(detailStrings.full(max: maxDepth), style: theme.textTheme.bodySmall),
         if (children.isEmpty)
           Text(detailStrings.noContents)
         else
@@ -318,13 +320,11 @@ class _IdentifiersSection extends StatelessWidget {
   Future<void> _remove(BuildContext context, PhysicalIdentifier identifier) async {
     final ItemTrackerTranslations$itemTracker$detail$es detailStrings = itemTrackerStrings.itemTracker.detail;
     final ItemDetailCubit cubit = context.read<ItemDetailCubit>();
+    final String type = identifierTypeLabel(identifier.type);
     final bool confirmed = await showAppConfirmDialog(
       context,
       title: detailStrings.removeIdentifierTitle,
-      message: detailStrings.removeIdentifierMessage(
-        type: identifierTypeLabel(identifier.type),
-        value: identifier.rawValue,
-      ),
+      message: detailStrings.removeIdentifierMessage(type: type, value: identifier.rawValue),
       confirmLabel: detailStrings.removeIdentifierConfirm,
       destructive: true,
     );
@@ -362,26 +362,37 @@ class _IdentifiersSection extends StatelessWidget {
           _DetailGroup(
             children: <Widget>[
               for (final PhysicalIdentifier identifier in identifiers)
-                AppSettingsTile(
-                  icon: switch (identifier.type) {
-                    IdentifierType.nfc => Icons.nfc,
-                    IdentifierType.barcode => Icons.barcode_reader,
-                    IdentifierType.qr => Icons.qr_code,
-                  },
-                  title: identifierTypeLabel(identifier.type),
-                  subtitle: identifier.rawValue,
-                  trailing: AppIconButton(
-                    icon: Icons.link_off,
-                    tooltip: detailStrings.removeIdentifier(
-                      type: identifierTypeLabel(identifier.type),
-                      value: identifier.rawValue,
-                    ),
-                    onPressed: () => _remove(context, identifier),
-                  ),
-                ),
+                _IdentifierTile(identifier: identifier, onRemove: () => _remove(context, identifier)),
             ],
           ),
       ],
+    );
+  }
+}
+
+class _IdentifierTile extends StatelessWidget {
+  const _IdentifierTile({required this.identifier, required this.onRemove});
+
+  final PhysicalIdentifier identifier;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final String type = identifierTypeLabel(identifier.type);
+    final String value = identifier.rawValue;
+    return AppSettingsTile(
+      icon: switch (identifier.type) {
+        IdentifierType.nfc => Icons.nfc,
+        IdentifierType.barcode => Icons.barcode_reader,
+        IdentifierType.qr => Icons.qr_code,
+      },
+      title: type,
+      subtitle: value,
+      trailing: AppIconButton(
+        icon: Icons.link_off,
+        tooltip: itemTrackerStrings.itemTracker.detail.removeIdentifier(type: type, value: value),
+        onPressed: onRemove,
+      ),
     );
   }
 }
