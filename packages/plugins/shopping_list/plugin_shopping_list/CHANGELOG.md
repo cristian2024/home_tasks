@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 - 2026-11-04
+
+### Cambiado
+
+- La tarjeta del inicio usa `AppModuleCard`.
+- La barra de la lista deja a la vista Exportar y Filtros. Categorías y Borrar comprados pasan a un menú.
+- Exportar marca Compartir archivo y Guardar archivo como botones con borde.
+- El formulario quita los iconos de los selectores y pone el mínimo y el máximo de días en una fila.
+- Categorías añade con un botón de icono y agrupa la lista en una tarjeta.
+- `recurrence_range` pasa a «Entre X e Y». Clave nueva: `more_actions`.
+
 ## 0.2.0 - 2026-10-30
 
 ### Cambiado
