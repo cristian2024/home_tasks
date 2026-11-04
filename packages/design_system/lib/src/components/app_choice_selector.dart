@@ -16,10 +16,11 @@ class AppChoice<T> {
   final IconData? icon;
 }
 
-/// Elegir una opción entre pocas (tema, idioma…) con un control segmentado. Si
-/// las opciones no caben en una fila (etiquetas largas o texto ampliado), se
-/// apilan, así que no desborda. Los lectores de pantalla anuncian [label] y qué
-/// opción está elegida.
+/// Elegir una opción entre pocas (tema, idioma…) con un control segmentado. Las
+/// opciones van en una fila, con el icono o la marca solo si caben. Si ni el
+/// texto cabe (etiquetas largas o texto ampliado), se apilan, así que no
+/// desborda. Los lectores de pantalla anuncian [label] y qué opción está
+/// elegida.
 class AppChoiceSelector<T> extends StatelessWidget {
   const AppChoiceSelector({
     super.key,
@@ -28,6 +29,7 @@ class AppChoiceSelector<T> extends StatelessWidget {
     required this.selected,
     required this.onChanged,
     this.icon,
+    this.padding = const EdgeInsets.all(AppSpacing.md),
   });
 
   final String label;
@@ -39,7 +41,11 @@ class AppChoiceSelector<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
   final IconData? icon;
 
-  bool _fitsInRow(BuildContext context, double width) {
+  /// Margen alrededor del selector. Dentro de una tarjeta o de una fila de
+  /// ajustes conviene el de por defecto; suelto en una pantalla, `EdgeInsets.zero`.
+  final EdgeInsetsGeometry padding;
+
+  double _widestLabel(BuildContext context) {
     final TextScaler scaler = MediaQuery.textScalerOf(context);
     final TextDirection direction = Directionality.of(context);
     final TextStyle? style = Theme.of(context).textTheme.labelLarge;
@@ -54,7 +60,7 @@ class AppChoiceSelector<T> extends StatelessWidget {
       widestLabel = math.max(widestLabel, painter.width);
       painter.dispose();
     }
-    return (widestLabel + AppChoiceSegment.chromeWidth) * options.length <= width;
+    return widestLabel;
   }
 
   @override
@@ -62,23 +68,8 @@ class AppChoiceSelector<T> extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ValueChanged<T>? onChanged = this.onChanged;
     final IconData? icon = this.icon;
-    final List<AppChoiceSegment> segments = <AppChoiceSegment>[
-      for (final AppChoice<T> option in options)
-        AppChoiceSegment(
-          label: option.label,
-          icon: option.icon,
-          selected: option.value == selected,
-          onTap: onChanged == null
-              ? null
-              : () {
-                  if (option.value != selected) {
-                    onChanged(option.value);
-                  }
-                },
-        ),
-    ];
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -103,27 +94,48 @@ class AppChoiceSelector<T> extends StatelessWidget {
                 side: BorderSide(color: theme.colorScheme.outlineVariant),
               ),
               child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) => _fitsInRow(context, constraints.maxWidth)
-                    ? IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            for (final (int index, AppChoiceSegment segment) in segments.indexed) ...<Widget>[
-                              if (index > 0) const VerticalDivider(width: AppSizes.strokeThin),
-                              Expanded(child: segment),
-                            ],
-                          ],
-                        ),
-                      )
-                    : Column(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final double cellWidth = constraints.maxWidth / options.length;
+                  final double widestLabel = _widestLabel(context);
+                  final List<AppChoiceSegment> segments = <AppChoiceSegment>[
+                    for (final AppChoice<T> option in options)
+                      AppChoiceSegment(
+                        label: option.label,
+                        icon: option.icon,
+                        selected: option.value == selected,
+                        showIcon: widestLabel + AppChoiceSegment.textPadding + AppChoiceSegment.iconWidth <= cellWidth,
+                        onTap: onChanged == null
+                            ? null
+                            : () {
+                                if (option.value != selected) {
+                                  onChanged(option.value);
+                                }
+                              },
+                      ),
+                  ];
+                  if (widestLabel + AppChoiceSegment.textPadding <= cellWidth) {
+                    return IntrinsicHeight(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
                           for (final (int index, AppChoiceSegment segment) in segments.indexed) ...<Widget>[
-                            if (index > 0) const Divider(height: AppSizes.strokeThin),
-                            segment,
+                            if (index > 0) const VerticalDivider(width: AppSizes.strokeThin),
+                            Expanded(child: segment),
                           ],
                         ],
                       ),
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      for (final (int index, AppChoiceSegment segment) in segments.indexed) ...<Widget>[
+                        if (index > 0) const Divider(height: AppSizes.strokeThin),
+                        segment,
+                      ],
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -134,7 +146,8 @@ class AppChoiceSelector<T> extends StatelessWidget {
 }
 
 /// Una opción de [AppChoiceSelector]. La elegida muestra su icono o, sin él, una
-/// marca de verificación.
+/// marca de verificación, salvo con [showIcon] en `false`, donde solo cambia de
+/// color: se anuncia igualmente como seleccionada.
 class AppChoiceSegment extends StatelessWidget {
   const AppChoiceSegment({
     super.key,
@@ -142,20 +155,25 @@ class AppChoiceSegment extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.icon,
+    this.showIcon = true,
   });
 
-  /// Lo que ocupa una opción, además de su texto: márgenes, icono y separación.
-  static const double chromeWidth = AppSpacing.sm * 2 + AppSizes.iconSmall + AppSpacing.s150 + AppSizes.strokeThin;
+  /// Lo que ocupa una opción, además de su texto: márgenes y separador.
+  static const double textPadding = AppSpacing.sm * 2 + AppSizes.strokeThin;
+
+  /// Lo que añaden el icono y su separación.
+  static const double iconWidth = AppSizes.iconSmall + AppSpacing.s150;
 
   final String label;
   final bool selected;
   final VoidCallback? onTap;
   final IconData? icon;
+  final bool showIcon;
 
   @override
   Widget build(BuildContext context) {
     final AppThemeColors colors = AppThemeColors.of(context);
-    final IconData? leading = icon ?? (selected ? Icons.check : null);
+    final IconData? leading = showIcon ? icon ?? (selected ? Icons.check : null) : null;
     final Color foreground = switch ((onTap != null, selected)) {
       (false, _) => colors.textDisabled,
       (true, true) => colors.textBrand,

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 - 2026-11-04
+
+### Añadido
+
+- `AppChoiceSelector.padding`, para usarlo suelto en una pantalla sin margen propio.
+- `AppChoiceSegment.showIcon`.
+
+### Cambiado
+
+- `AppChoiceSelector` quita el icono o la marca de las opciones cuando no caben, antes de apilarlas. Así caben cuatro opciones cortas en una fila.
+
 ## 0.2.0 - 2026-11-03
 
 ### Añadido
