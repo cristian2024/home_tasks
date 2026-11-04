@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/app_spacing.dart';
+import '../tokens/app_theme_colors.dart';
 import 'app_button.dart';
 import 'app_card.dart';
 
@@ -50,15 +51,15 @@ class AppSyncStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
+    final AppThemeColors colors = AppThemeColors.of(context);
     final TextStyle? bodyStyle = theme.textTheme.bodyMedium;
     final String? message = this.message;
     final String? actionLabel = this.actionLabel;
     final (IconData icon, Color color) = switch (tone) {
-      AppSyncTone.off => (Icons.sync_disabled, colors.onSurfaceVariant),
-      AppSyncTone.idle => (Icons.sync, colors.primary),
-      AppSyncTone.syncing => (Icons.sync, colors.primary),
-      AppSyncTone.error => (Icons.sync_problem, colors.error),
+      AppSyncTone.off => (Icons.sync_disabled, colors.textSecondary),
+      AppSyncTone.idle => (Icons.sync, colors.textBrand),
+      AppSyncTone.syncing => (Icons.sync, colors.textBrand),
+      AppSyncTone.error => (Icons.sync_problem, colors.textDanger),
     };
     return AppCard(
       child: Column(
@@ -67,7 +68,7 @@ class AppSyncStatusCard extends StatelessWidget {
           Row(
             children: <Widget>[
               ExcludeSemantics(child: Icon(icon, color: color)),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.s300),
               Expanded(
                 child: Semantics(
                   liveRegion: true,
@@ -76,20 +77,18 @@ class AppSyncStatusCard extends StatelessWidget {
               ),
             ],
           ),
-          for (final String detail in details) ...<Widget>[
-            const SizedBox(height: AppSpacing.xs),
-            Text(detail, style: bodyStyle?.copyWith(color: colors.onSurfaceVariant)),
-          ],
+          if (details.isNotEmpty) const SizedBox(height: AppSpacing.s300),
+          for (final String detail in details) Text(detail, style: bodyStyle?.copyWith(color: colors.textSecondary)),
           if (message != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.sm),
-            Text(message, style: bodyStyle?.copyWith(color: tone == AppSyncTone.error ? colors.error : null)),
+            const SizedBox(height: AppSpacing.s300),
+            Text(message, style: bodyStyle?.copyWith(color: tone == AppSyncTone.error ? colors.textDanger : null)),
           ],
           if (actionLabel != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: actionLabel,
-              icon: Icons.sync,
               variant: AppButtonVariant.secondary,
+              expand: true,
               isLoading: tone == AppSyncTone.syncing,
               onPressed: onAction,
             ),

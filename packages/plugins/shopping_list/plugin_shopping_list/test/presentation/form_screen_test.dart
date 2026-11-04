@@ -15,7 +15,11 @@ void main() {
 
   Future<void> scrollTo(WidgetTester tester, Finder finder, {bool up = false}) async {
     await tester.scrollUntilVisible(finder, up ? -200 : 200, scrollable: find.byType(Scrollable).first);
-    await tester.pumpAndSettle();
+    // ListView calcula su alto al construir las filas: el primer intento se queda corto.
+    for (int attempt = 0; attempt < 2; attempt++) {
+      await tester.ensureVisible(finder);
+      await tester.pumpAndSettle();
+    }
   }
 
   testWidgets('crea un item con categorías, urgencia y recurrencia, y vuelve a la lista', (WidgetTester tester) async {
@@ -26,10 +30,10 @@ void main() {
 
     await tester.enterText(field('Nombre'), 'Huevos');
     await tester.enterText(field('Cantidad'), '2 docenas');
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Alta'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Alta'));
     await tester.tap(find.widgetWithText(FilterChip, 'Comida'));
-    await scrollTo(tester, find.widgetWithText(ChoiceChip, 'Entre X e Y días'));
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Entre X e Y días'));
+    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
     await tester.pumpAndSettle();
     await scrollTo(tester, field('Máximo de días'));
     await tester.enterText(field('Mínimo de días'), '8');
@@ -52,8 +56,8 @@ void main() {
   ) async {
     await harness.pump(tester, initialLocation: ShoppingListRoutes.create);
 
-    await scrollTo(tester, find.widgetWithText(ChoiceChip, 'Cada N días'));
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Cada N días'));
+    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Cada N días'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Cada N días'));
     await tester.pumpAndSettle();
     await scrollTo(tester, find.text('Guardar'));
     await tester.tap(find.text('Guardar'));
@@ -66,8 +70,8 @@ void main() {
     await scrollTo(tester, field('Nombre'), up: true);
     expect(find.text('Este campo es obligatorio.'), findsOneWidget);
 
-    await scrollTo(tester, find.widgetWithText(ChoiceChip, 'Entre X e Y días'));
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Entre X e Y días'));
+    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
     await tester.pumpAndSettle();
     await scrollTo(tester, field('Máximo de días'));
     await tester.enterText(field('Mínimo de días'), '9');

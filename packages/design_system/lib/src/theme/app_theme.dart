@@ -126,13 +126,30 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(minimumSize: minimumButtonSize, shape: buttonShape, padding: buttonPadding),
+        style: FilledButton.styleFrom(
+          minimumSize: minimumButtonSize,
+          shape: buttonShape,
+          padding: buttonPadding,
+          iconSize: AppSizes.iconCompact,
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: minimumButtonSize, shape: buttonShape, padding: buttonPadding),
+        style: OutlinedButton.styleFrom(
+          minimumSize: minimumButtonSize,
+          shape: buttonShape,
+          padding: buttonPadding,
+          iconSize: AppSizes.iconCompact,
+          foregroundColor: colors.textPrimary,
+        ).copyWith(
+          side: WidgetStateBorderSide.resolveWith(
+            (Set<WidgetState> states) => BorderSide(
+              color: states.contains(WidgetState.disabled) ? colors.borderDisabled : colors.borderStrong,
+            ),
+          ),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(minimumSize: minimumButtonSize, shape: buttonShape),
+        style: TextButton.styleFrom(minimumSize: minimumButtonSize, shape: buttonShape, iconSize: AppSizes.iconCompact),
       ),
       iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(minimumSize: minimumButtonSize)),
       cardTheme: CardThemeData(
@@ -149,6 +166,16 @@ abstract final class AppTheme {
         filled: true,
         fillColor: scheme.surface,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadii.small)),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: colors.bgSurfaceRaised,
+        contentTextStyle: AppTypography.mobileBodyS.copyWith(color: colors.textPrimary),
+        actionTextColor: colors.textBrand,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.small),
+          side: BorderSide(color: colors.borderDefault),
+        ),
       ),
       dialogTheme: DialogThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),

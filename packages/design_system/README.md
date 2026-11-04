@@ -12,7 +12,7 @@ Replican el sistema de diseño de Figma.
 - `AppThemeColors`: colores semánticos de cada tema, con lo que `ColorScheme` no cubre (éxito, información, hover, pressed). Se leen con `AppThemeColors.of(context)`.
 - `AppSpacing` (`s0`…`s1600`, y `xs`…`xl` como nombres cortos), `AppRadii`, `AppSizes` (`minTouchTarget` de 48) y `AppLayout`.
 - `AppTypography` (estilos `web*` y `mobile*`) y `AppElevation`.
-- `AppTheme.light` y `AppTheme.dark`. Los componentes y las pantallas leen los colores del tema, nunca `AppColors`, y los textos de `textTheme`, que usa los estilos `mobile*`.
+- `AppTheme.light` y `AppTheme.dark`, con los `SnackBar` en la superficie elevada, flotantes y con borde. Los componentes y las pantallas leen los colores del tema, nunca `AppColors`, y los textos de `textTheme`, que usa los estilos `mobile*`.
 
 **Fuente**
 El paquete incluye Inter 4.1 (pesos 400, 500, 600 y 700, bajo la licencia de `assets/fonts/OFL.txt`). Quien depende del paquete la recibe sin declarar nada. Un `TextStyle` propio debe indicar `package: AppTypography.fontPackage`; sin eso, Flutter no la encuentra y usa la del sistema.
@@ -23,19 +23,21 @@ Algunos nombres no coinciden con Figma y están documentados en cada clase: `rad
 
 | Componente | Para qué |
 | :--- | :--- |
-| `AppButton` | Botón principal, secundario o de texto (`AppButtonVariant`), con icono opcional. |
+| `AppButton` | Botón `primary`, `secondary` (relleno suave), `outline` o `text` (`AppButtonVariant`), con icono opcional. |
 | `AppIconButton` | Botón de icono con `tooltip` obligatorio. |
 | `AppTextField` | Campo de texto con etiqueta y error. |
 | `AppCard` | Tarjeta, pulsable si recibe `onTap` (con `semanticLabel`). |
+| `AppIconBox` | Icono en un recuadro de 56, de marca o de error. |
+| `AppModuleCard` | Tarjeta de un módulo en el inicio: icono, título, resumen, etiquetas y acciones. Pulsable con `onTap`, o con acciones, pero no ambas. |
 | `AppSectionHeader` | Título de sección con acción opcional a la derecha. |
-| `AppStatusView`, `AppLoadingView` | Estados vacío, de error y de carga. |
+| `AppStatusView`, `AppLoadingView` | Estados vacío, de error y de carga. El icono va en un círculo de marca. |
 | `AppShortcutTile`, `AppShortcutGrid` | Accesos rápidos en una grilla adaptable (`columnsFor`). |
-| `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración y elección entre pocas opciones. |
+| `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración (`destructive` para acciones peligrosas) y elección entre pocas opciones con un control segmentado (`AppChoiceSegment`), que las apila si no caben. |
 | `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). |
-| `AppBadge` | Etiqueta corta con tono `critical`, `warning` o `neutral`. |
+| `AppBadge` | Etiqueta corta con tono `critical`, `warning`, `neutral`, `brand` o `success`. |
 | `AppCheckTile` | Fila que se marca como hecha con su casilla. |
 | `AppSyncStatusCard` | Estado de una sincronización (`AppSyncTone`: `off`, `idle`, `syncing`, `error`), con detalles, mensaje de error y acción. El título se anuncia al cambiar. |
-| `AppConflictCard<T>` | Conflicto entre dispositivos con sus opciones (`AppConflictOption<T>`): marca la que ya rige (`applied`), avisa de la elegida (`onSelected`) y confirma la actual (`keepLabel`, `onKeep`). |
+| `AppConflictCard<T>` | Conflicto entre dispositivos con sus opciones (`AppConflictOption<T>`): marca la que ya rige (`applied`) con una fila de marca y su etiqueta, avisa de la elegida (`onSelected`) y confirma la actual (`keepLabel`, `onKeep`). |
 
 **Diálogos**
 - `showAppConfirmDialog`: sí o no. Devuelve `true` solo si se confirma.

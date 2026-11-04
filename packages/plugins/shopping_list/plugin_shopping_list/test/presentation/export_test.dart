@@ -1,4 +1,5 @@
 import 'package:core_share/core_share.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
@@ -68,7 +69,7 @@ void main() {
     expect(harness.share.sharedTexts, <String>[whatsAppText]);
 
     await openSheet(tester);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Urgencia'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Urgencia'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Compartir archivo .md'));
     await tester.pumpAndSettle();

@@ -15,6 +15,7 @@ Widget gallery() => ListView(
         const AppSectionHeader('Sección'),
         AppButton(label: 'Guardar', onPressed: () {}),
         AppButton(label: 'Secundario', icon: Icons.add, variant: AppButtonVariant.secondary, onPressed: () {}),
+        AppButton(label: 'Borde', icon: Icons.save_alt, variant: AppButtonVariant.outline, onPressed: () {}),
         AppButton(label: 'Texto', variant: AppButtonVariant.text, onPressed: () {}),
         AppIconButton(icon: Icons.delete, tooltip: 'Eliminar', onPressed: () {}),
         AppIconButton(icon: Icons.add, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
@@ -45,6 +46,7 @@ Widget gallery() => ListView(
               onChanged: (String _) {},
             ),
             AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
+            AppSettingsTile(icon: Icons.logout, title: 'Salir del hogar', destructive: true, onTap: () {}),
             const AppSettingsTile(
               icon: Icons.import_export,
               title: 'Exportar / importar datos',
@@ -73,9 +75,27 @@ Widget gallery() => ListView(
             AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
             AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
             AppBadge(label: 'Comida'),
+            AppBadge(label: 'Nuevo', tone: AppBadgeTone.brand),
+            AppBadge(label: 'Activo', tone: AppBadgeTone.success),
           ],
         ),
         AppCheckTile(title: 'Pan', value: true, checkboxLabel: 'Marcar como comprado', onChanged: (bool _) {}),
+        AppModuleCard(
+          icon: Icons.shopping_cart_outlined,
+          title: 'Lista de compras',
+          summary: '5 cosas por comprar',
+          badges: const <Widget>[AppBadge(label: '2 urgentes', tone: AppBadgeTone.critical)],
+          onTap: () {},
+        ),
+        AppModuleCard(
+          icon: Icons.qr_code_scanner,
+          title: 'Seguimiento de Objetos',
+          summary: '12 objetos registrados',
+          actions: <Widget>[
+            AppButton(label: 'Escanear', icon: Icons.qr_code_scanner, onPressed: () {}),
+            AppButton(label: 'Ver objetos', variant: AppButtonVariant.secondary, onPressed: () {}),
+          ],
+        ),
         AppSyncStatusCard(
           tone: AppSyncTone.idle,
           title: 'Sincronizado hace 5 min',

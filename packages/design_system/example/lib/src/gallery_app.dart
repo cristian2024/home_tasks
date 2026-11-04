@@ -134,6 +134,12 @@ class _GalleryPage extends StatelessWidget {
                 variant: AppButtonVariant.secondary,
                 onPressed: () {},
               ),
+              AppButton(
+                label: commonStrings.common.confirm,
+                icon: Icons.save_alt,
+                variant: AppButtonVariant.outline,
+                onPressed: () {},
+              ),
               AppButton(label: commonStrings.common.cancel, variant: AppButtonVariant.text, onPressed: () {}),
               AppButton(label: commonStrings.common.save, isLoading: true, onPressed: () {}),
               AppButton(label: commonStrings.common.save, onPressed: null),
@@ -173,6 +179,31 @@ class _GalleryPage extends StatelessWidget {
               subtitle: Text('Estante superior del armario principal'),
             ),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          AppModuleCard(
+            icon: Icons.shopping_cart_outlined,
+            title: 'Lista de compras',
+            summary: '5 cosas por comprar',
+            badges: const <Widget>[
+              AppBadge(label: '2 urgentes', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+            ],
+            onTap: () {},
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppModuleCard(
+            icon: Icons.qr_code_scanner,
+            title: 'Seguimiento de Objetos',
+            summary: '12 objetos registrados',
+            actions: <Widget>[
+              AppButton(label: 'Escanear', icon: Icons.qr_code_scanner, onPressed: () {}),
+              AppButton(
+                label: 'Ver objetos',
+                icon: Icons.inventory_2_outlined,
+                variant: AppButtonVariant.secondary,
+                onPressed: () {},
+              ),
+            ],
+          ),
           AppSettingsSection(
             title: 'Ajustes',
             children: <Widget>[
@@ -187,6 +218,7 @@ class _GalleryPage extends StatelessWidget {
                 onChanged: onDarkChanged,
               ),
               AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
+              AppSettingsTile(icon: Icons.logout, title: 'Salir del hogar', destructive: true, onTap: () {}),
               const AppSettingsTile(
                 icon: Icons.import_export,
                 title: 'Exportar / importar datos',
@@ -324,6 +356,8 @@ class _ListsDemoState extends State<_ListsDemo> {
               AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
               AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
               AppBadge(label: 'Comida'),
+              AppBadge(label: 'Activo', tone: AppBadgeTone.success),
+              AppBadge(label: 'Aplicada ahora', tone: AppBadgeTone.brand),
             ],
           ),
         ],

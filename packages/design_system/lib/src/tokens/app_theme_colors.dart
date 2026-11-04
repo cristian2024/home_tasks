@@ -164,7 +164,12 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     shadowStrong: AppColors.alphaBlack60,
   );
 
-  static AppThemeColors of(BuildContext context) => Theme.of(context).extension<AppThemeColors>()!;
+  /// Los colores del tema actual. Fuera de [AppTheme], los del brillo del tema,
+  /// para que los componentes no fallen en un `MaterialApp` sin configurar.
+  static AppThemeColors of(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return theme.extension<AppThemeColors>() ?? (theme.brightness == Brightness.dark ? dark : light);
+  }
 
   final Color bgCanvas;
   final Color bgSurface;

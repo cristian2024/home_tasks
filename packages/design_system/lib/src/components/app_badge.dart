@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/app_radii.dart';
+import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
+import '../tokens/app_theme_colors.dart';
 
 /// Importancia de un [AppBadge].
 enum AppBadgeTone {
@@ -13,6 +15,12 @@ enum AppBadgeTone {
 
   /// Información sin urgencia (p. ej. una categoría).
   neutral,
+
+  /// Un dato destacado, sin ser un aviso.
+  brand,
+
+  /// Algo que está bien (p. ej. un módulo activo).
+  success,
 }
 
 /// Etiqueta corta para ver de un vistazo un estado o una clasificación. Los
@@ -27,22 +35,24 @@ class AppBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
+    final AppThemeColors colors = AppThemeColors.of(context);
     final (Color background, Color foreground) = switch (tone) {
-      AppBadgeTone.critical => (colors.errorContainer, colors.onErrorContainer),
-      AppBadgeTone.warning => (colors.tertiaryContainer, colors.onTertiaryContainer),
-      AppBadgeTone.neutral => (colors.surfaceContainerHighest, colors.onSurfaceVariant),
+      AppBadgeTone.critical => (colors.bgDangerSubtle, colors.textDanger),
+      AppBadgeTone.warning => (colors.bgWarningSubtle, colors.textWarning),
+      AppBadgeTone.neutral => (theme.colorScheme.surfaceContainerHighest, colors.textSecondary),
+      AppBadgeTone.brand => (colors.bgBrandSubtle, colors.textBrand),
+      AppBadgeTone.success => (colors.bgSuccessSubtle, colors.textSuccess),
     };
     final IconData? icon = this.icon;
     return DecoratedBox(
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppRadii.small)),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppRadii.full)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.s50),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             if (icon != null) ...<Widget>[
-              ExcludeSemantics(child: Icon(icon, size: 16, color: foreground)),
+              ExcludeSemantics(child: Icon(icon, size: AppSizes.iconSmall, color: foreground)),
               const SizedBox(width: AppSpacing.xs),
             ],
             Flexible(child: Text(label, style: theme.textTheme.labelMedium?.copyWith(color: foreground))),

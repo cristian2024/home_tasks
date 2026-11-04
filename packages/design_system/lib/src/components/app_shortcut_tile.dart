@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/app_radii.dart';
-import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
+import 'app_icon_box.dart';
 
 /// Acceso rápido: icono destacado con su título debajo, pensado para
 /// [AppShortcutGrid].
@@ -22,9 +22,6 @@ class AppShortcutTile extends StatelessWidget {
 
   static const IconData fallbackIcon = Icons.extension_outlined;
 
-  /// Lado del recuadro del icono.
-  static const double iconBoxSize = 56.0;
-
   final String label;
   final IconData? icon;
   final VoidCallback? onTap;
@@ -34,7 +31,6 @@ class AppShortcutTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
     final String? tooltip = this.tooltip;
     final Widget tile = MergeSemantics(
       child: Semantics(
@@ -48,26 +44,14 @@ class AppShortcutTile extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Container(
-                  width: iconBoxSize,
-                  height: iconBoxSize,
-                  decoration: BoxDecoration(
-                    color: error ? colors.errorContainer : colors.primaryContainer,
-                    borderRadius: BorderRadius.circular(AppRadii.large),
-                  ),
-                  child: Icon(
-                    icon ?? fallbackIcon,
-                    size: AppSizes.iconMedium,
-                    color: error ? colors.onErrorContainer : colors.onPrimaryContainer,
-                  ),
-                ),
+                AppIconBox(icon: icon ?? fallbackIcon, error: error),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   label,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall,
+                  style: theme.textTheme.labelMedium,
                 ),
               ],
             ),
