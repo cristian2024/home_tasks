@@ -22,102 +22,85 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$settings$es t = appStrings.app.settings;
+    final AppTranslations$app$settings$es settingsStrings = appStrings.app.settings;
     final AppSettingsController controller = context.read<AppSettingsController>();
+    final AppTranslations$app$languages$es languages = appStrings.app.languages;
+    final AppTranslations$app$spaces$es spacesStrings = appStrings.app.spaces;
+    final AppTranslations$app$sync$es syncStrings = appStrings.app.sync;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppBar(title: Text(settingsStrings.title)),
       body: BlocBuilder<AppSettingsController, AppSettings>(
         builder: (BuildContext context, AppSettings settings) => ListView(
           padding: const EdgeInsets.all(AppSpacing.md),
           children: <Widget>[
-            AppSettingsSection(
-              title: t.appearance,
-              children: <Widget>[
-                AppChoiceSelector<AppThemePreference>(
-                  label: t.theme,
-                  icon: Icons.palette_outlined,
-                  options: <AppChoice<AppThemePreference>>[
-                    AppChoice<AppThemePreference>(
-                      value: AppThemePreference.system,
-                      label: t.themeSystem,
-                      icon: Icons.brightness_auto_outlined,
-                    ),
-                    AppChoice<AppThemePreference>(
-                      value: AppThemePreference.light,
-                      label: t.themeLight,
-                      icon: Icons.light_mode_outlined,
-                    ),
-                    AppChoice<AppThemePreference>(
-                      value: AppThemePreference.dark,
-                      label: t.themeDark,
-                      icon: Icons.dark_mode_outlined,
-                    ),
-                  ],
-                  selected: settings.theme,
-                  onChanged: controller.setTheme,
-                ),
+            AppSectionHeader(settingsStrings.appearance),
+            AppChoiceSelector<AppThemePreference>(
+              label: settingsStrings.theme,
+              padding: EdgeInsets.zero,
+              options: <AppChoice<AppThemePreference>>[
+                AppChoice<AppThemePreference>(value: AppThemePreference.system, label: settingsStrings.themeSystem),
+                AppChoice<AppThemePreference>(value: AppThemePreference.light, label: settingsStrings.themeLight),
+                AppChoice<AppThemePreference>(value: AppThemePreference.dark, label: settingsStrings.themeDark),
               ],
+              selected: settings.theme,
+              onChanged: controller.setTheme,
+            ),
+            AppSectionHeader(settingsStrings.languageSection),
+            AppChoiceSelector<String?>(
+              label: settingsStrings.language,
+              padding: EdgeInsets.zero,
+              options: <AppChoice<String?>>[
+                AppChoice<String?>(value: null, label: settingsStrings.languageSystem),
+                // Cada idioma con su propio nombre, para encontrarlo aunque
+                // la app esté en otro.
+                AppChoice<String?>(value: 'es', label: languages.es),
+                AppChoice<String?>(value: 'en', label: languages.en),
+              ],
+              selected: settings.languageCode,
+              onChanged: controller.setLanguage,
             ),
             AppSettingsSection(
-              title: t.languageSection,
-              children: <Widget>[
-                AppChoiceSelector<String?>(
-                  label: t.language,
-                  icon: Icons.language,
-                  options: <AppChoice<String?>>[
-                    AppChoice<String?>(value: null, label: t.languageSystem),
-                    // Cada idioma con su propio nombre, para encontrarlo aunque
-                    // la app esté en otro.
-                    AppChoice<String?>(value: 'es', label: appStrings.app.languages.es),
-                    AppChoice<String?>(value: 'en', label: appStrings.app.languages.en),
-                  ],
-                  selected: settings.languageCode,
-                  onChanged: controller.setLanguage,
-                ),
-              ],
-            ),
-            AppSettingsSection(
-              title: t.modulesSection,
+              title: settingsStrings.modulesSection,
               children: <Widget>[
                 AppSettingsTile(
                   icon: Icons.extension_outlined,
-                  title: t.modules,
-                  subtitle: t.modulesDescription,
+                  title: settingsStrings.modules,
+                  subtitle: settingsStrings.modulesDescription,
                   onTap: () => context.push(AppRoutes.catalog),
                 ),
               ],
             ),
             if (showSpaces)
               AppSettingsSection(
-                title: appStrings.app.spaces.section,
+                title: spacesStrings.section,
                 children: <Widget>[
                   AppSettingsTile(
                     icon: Icons.workspaces_outlined,
-                    title: appStrings.app.spaces.tile,
-                    subtitle: appStrings.app.spaces.createDescription,
+                    title: spacesStrings.tile,
+                    subtitle: spacesStrings.createDescription,
                     onTap: () => context.push(AppRoutes.spaces),
                   ),
                 ],
               ),
             if (showSync)
               AppSettingsSection(
-                title: appStrings.app.sync.section,
+                title: syncStrings.section,
                 children: <Widget>[
                   AppSettingsTile(
                     icon: Icons.sync,
-                    title: appStrings.app.sync.tile,
-                    subtitle: appStrings.app.sync.tileDescription,
+                    title: syncStrings.tile,
+                    subtitle: syncStrings.tileDescription,
                     onTap: () => context.push(AppRoutes.sync),
                   ),
                 ],
               ),
             AppSettingsSection(
-              title: t.dataSection,
+              title: settingsStrings.dataSection,
               children: <Widget>[
                 AppSettingsTile(
                   icon: Icons.import_export,
-                  title: t.exportImport,
-                  subtitle: t.comingSoon,
+                  title: settingsStrings.exportImport,
+                  subtitle: settingsStrings.comingSoon,
                   enabled: false,
                 ),
               ],

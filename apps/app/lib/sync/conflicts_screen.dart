@@ -14,32 +14,34 @@ class ConflictsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$conflicts$es t = appStrings.app.sync.conflicts;
+    final AppTranslations$app$sync$conflicts$es conflictStrings = appStrings.app.sync.conflicts;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppBar(title: Text(conflictStrings.title)),
       body: BlocBuilder<ConflictsCubit, ConflictsState>(
         builder: (BuildContext context, ConflictsState state) {
           if (!state.loaded) {
             return const AppLoadingView();
           }
-          if (state.conflicts.isEmpty) {
-            return AppStatusView(icon: Icons.check_circle_outline, title: t.emptyTitle, message: t.emptyMessage);
+          final List<SyncConflict> conflicts = state.conflicts;
+          if (conflicts.isEmpty) {
+            return AppStatusView(icon: Icons.check_circle_outline, title: conflictStrings.emptyTitle, message: conflictStrings.emptyMessage);
           }
           final ConflictsCubit cubit = context.read<ConflictsCubit>();
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
             children: <Widget>[
-              if (state.conflicts.length > 1) ...<Widget>[
+              if (conflicts.length > 1) ...<Widget>[
                 AppButton(
-                  label: t.resolveAll,
+                  label: conflictStrings.resolveAll,
                   variant: AppButtonVariant.secondary,
                   expand: true,
                   isLoading: state.resolving.isNotEmpty,
                   onPressed: cubit.keepAll,
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.s300),
               ],
-              for (final SyncConflict conflict in state.conflicts)
+              for (final (int index, SyncConflict conflict) in conflicts.indexed) ...<Widget>[
+                if (index > 0) const SizedBox(height: AppSpacing.s300),
                 _ConflictItem(
                   key: ValueKey<String>(conflict.id),
                   conflict: conflict,
@@ -47,6 +49,7 @@ class ConflictsScreen extends StatelessWidget {
                   busy: state.resolving.contains(conflict.id),
                   onResolve: (String optionId) => cubit.resolve(conflict, optionId),
                 ),
+              ],
             ],
           );
         },
@@ -72,7 +75,7 @@ class _ConflictItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ConflictDescription description = ConflictDescription.of(conflict, itemNames);
-    final AppTranslations$app$sync$conflicts$es t = appStrings.app.sync.conflicts;
+    final AppTranslations$app$sync$conflicts$es conflictStrings = appStrings.app.sync.conflicts;
     final bool single = conflict.options.length == 1;
     return AppConflictCard<String>(
       title: description.title,
@@ -84,9 +87,9 @@ class _ConflictItem extends StatelessWidget {
             AppConflictOption<String>(value: option.id, label: description.labelOf(option.id)),
       ],
       applied: conflict.provisionalOptionId,
-      appliedLabel: t.applied,
+      appliedLabel: conflictStrings.applied,
       onSelected: onResolve,
-      keepLabel: single ? description.labelOf(conflict.provisionalOptionId) : t.keepCurrent,
+      keepLabel: single ? description.labelOf(conflict.provisionalOptionId) : conflictStrings.keepCurrent,
       onKeep: () => onResolve(conflict.provisionalOptionId),
       busy: busy,
     );

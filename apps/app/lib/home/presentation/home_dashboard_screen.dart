@@ -17,7 +17,7 @@ class HomeDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$home$es t = appStrings.app.home;
+    final AppTranslations$app$home$es homeStrings = appStrings.app.home;
     final bool grid = context.select<AppSettingsController, bool>(
       (AppSettingsController settings) => settings.state.homeLayout == HomeLayout.grid,
     );
@@ -28,14 +28,14 @@ class HomeDashboardScreen extends StatelessWidget {
         actions: <Widget>[
           AppIconButton(
             icon: grid ? Icons.view_list_outlined : Icons.grid_view_outlined,
-            tooltip: grid ? t.showList : t.showGrid,
+            tooltip: grid ? homeStrings.showList : homeStrings.showGrid,
             onPressed: () => context.read<AppSettingsController>().setHomeLayout(
               grid ? HomeLayout.list : HomeLayout.grid,
             ),
           ),
           AppIconButton(
             icon: Icons.settings_outlined,
-            tooltip: t.openSettings,
+            tooltip: homeStrings.openSettings,
             onPressed: () => context.push(AppRoutes.settings),
           ),
         ],
@@ -60,15 +60,15 @@ class _DashboardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$home$es t = appStrings.app.home;
+    final AppTranslations$app$home$es homeStrings = appStrings.app.home;
+    final ThemeData theme = Theme.of(context);
     if (state.tiles.isEmpty) {
       return AppStatusView(
         icon: Icons.extension_off_outlined,
-        title: t.emptyTitle,
-        message: t.emptyMessage,
+        title: homeStrings.emptyTitle,
+        message: homeStrings.emptyMessage,
         action: AppButton(
-          label: t.openCatalog,
-          icon: Icons.extension_outlined,
+          label: homeStrings.openCatalog,
           onPressed: () => context.push(AppRoutes.catalog),
         ),
       );
@@ -79,8 +79,8 @@ class _DashboardList extends StatelessWidget {
           ? Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Text(
-                t.reorderHint,
-                style: Theme.of(context).textTheme.bodySmall,
+                homeStrings.reorderHint,
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             )
           : null,
@@ -91,7 +91,7 @@ class _DashboardList extends StatelessWidget {
         final PluginState tile = state.tiles[index];
         return Padding(
           key: ValueKey<String>(tile.plugin.id),
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          padding: const EdgeInsets.only(bottom: AppSpacing.s300),
           child: tile.status == PluginStatus.ready
               ? tile.plugin.buildDashboardTile(context)
               : _FailedTile(tile: tile, retrying: state.retrying),
@@ -173,7 +173,7 @@ class _FailedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$home$es t = appStrings.app.home;
+    final AppTranslations$app$home$es homeStrings = appStrings.app.home;
     final String name = context.read<LocalizationCoordinator>().translate(
       tile.plugin.nameKey,
     );
@@ -182,9 +182,9 @@ class _FailedTile extends StatelessWidget {
         children: <Widget>[
           Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
           const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text(t.pluginFailed(name: name))),
+          Expanded(child: Text(homeStrings.pluginFailed(name: name))),
           AppButton(
-            label: t.retry,
+            label: homeStrings.retry,
             variant: AppButtonVariant.text,
             isLoading: retrying,
             onPressed: () =>

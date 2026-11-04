@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.8.2+14 - 2026-11-04
+
+### Cambiado
+
+- El catálogo agrupa los módulos en una sola tarjeta y muestra su estado con una etiqueta.
+- Configuración saca el tema y el idioma de las tarjetas y usa el control segmentado sin iconos.
+- Sincronización marca «Salir del hogar» en rojo. Conflictos muestra una flecha en lugar de la etiqueta con el número, que ya está en su descripción.
+- El código del hogar muestra el aviso en un recuadro, porque el texto largo no cabía en una etiqueta.
+- Unirse a un hogar pone la indicación debajo de la cámara.
+- Conflictos separa las tarjetas entre sí.
+
 ## 1.8.1+13 - 2026-11-01
 
 ### Cambiado
