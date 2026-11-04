@@ -16,12 +16,12 @@ class InvitationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$invitation$es t = appStrings.app.sync.invitation;
+    final AppTranslations$app$sync$invitation$es invitationStrings = appStrings.app.sync.invitation;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppBar(title: Text(invitationStrings.title)),
       body: BlocBuilder<InvitationCubit, String?>(
         builder: (BuildContext context, String? code) => code == null
-            ? AppStatusView(icon: Icons.qr_code_2, title: t.loading)
+            ? AppStatusView(icon: Icons.qr_code_2, title: invitationStrings.loading)
             : _InvitationBody(code: code),
       ),
     );
@@ -43,22 +43,27 @@ class _InvitationBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$invitation$es t = appStrings.app.sync.invitation;
+    final AppTranslations$app$sync$invitation$es invitationStrings = appStrings.app.sync.invitation;
     final InvitationCubit cubit = context.read<InvitationCubit>();
-    final TextTheme textTheme = Theme.of(context).textTheme;
+    final ThemeData theme = Theme.of(context);
+    final TextTheme textTheme = theme.textTheme;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: <Widget>[
         Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 320),
-            child: AppQrCode(data: code, semanticLabel: t.qrLabel),
+            child: AppQrCode(data: code, semanticLabel: invitationStrings.qrLabel),
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        Text(t.message, style: textTheme.bodyLarge, textAlign: TextAlign.center),
+        Text(
+          invitationStrings.message,
+          style: textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: AppSpacing.lg),
-        Text(t.codeLabel, style: textTheme.bodyMedium),
+        Text(invitationStrings.codeLabel, style: textTheme.labelLarge),
         const SizedBox(height: AppSpacing.xs),
         SelectableText(code, style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace')),
         const SizedBox(height: AppSpacing.sm),
@@ -67,23 +72,49 @@ class _InvitationBody extends StatelessWidget {
           runSpacing: AppSpacing.sm,
           children: <Widget>[
             AppButton(
-              label: t.copy,
+              label: invitationStrings.copy,
               icon: Icons.copy,
               variant: AppButtonVariant.secondary,
               onPressed: () => _copy(context),
             ),
             if (cubit.canShare)
               AppButton(
-                label: t.share,
+                label: invitationStrings.share,
                 icon: Icons.share,
-                variant: AppButtonVariant.secondary,
-                onPressed: () => unawaited(cubit.share(subject: t.title)),
+                variant: AppButtonVariant.outline,
+                onPressed: () => unawaited(cubit.share(subject: invitationStrings.title)),
               ),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        AppBadge(label: t.warning, tone: AppBadgeTone.warning, icon: Icons.lock_outline),
+        _WarningNote(invitationStrings.warning),
       ],
+    );
+  }
+}
+
+/// Aviso con fondo de advertencia. Un texto largo no cabe en un `AppBadge`.
+class _WarningNote extends StatelessWidget {
+  const _WarningNote(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppThemeColors colors = AppThemeColors.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(color: colors.bgWarningSubtle, borderRadius: BorderRadius.circular(AppRadii.small)),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.s300),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            ExcludeSemantics(child: Icon(Icons.warning_amber_rounded, size: AppSizes.iconCompact, color: colors.textWarning)),
+            const SizedBox(width: AppSpacing.s300),
+            Expanded(child: Text(message, style: Theme.of(context).textTheme.bodyMedium)),
+          ],
+        ),
+      ),
     );
   }
 }
