@@ -46,16 +46,16 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
       unawaited(_chooseData(context));
       return;
     }
-    final AppTranslations$app$sync$join$es t = appStrings.app.sync.join;
+    final AppTranslations$app$sync$join$es joinStrings = appStrings.app.sync.join;
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
     if (state.phase == JoinPhase.joined) {
-      messenger.showSnackBar(SnackBar(content: Text(t.joined)));
+      messenger.showSnackBar(SnackBar(content: Text(joinStrings.joined)));
       context.pop();
       return;
     }
     final String? message = switch (state.error) {
       null => null,
-      JoinError.invalidCode => t.invalidCode,
+      JoinError.invalidCode => joinStrings.invalidCode,
       JoinError.alreadyInHousehold => appStrings.app.sync.household.errorAlreadyInHousehold,
       JoinError.generic => appStrings.app.sync.household.errorGeneric,
     };
@@ -66,10 +66,10 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$join$es t = appStrings.app.sync.join;
+    final AppTranslations$app$sync$join$es joinStrings = appStrings.app.sync.join;
     final JoinHouseholdCubit cubit = context.read<JoinHouseholdCubit>();
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppBar(title: Text(joinStrings.title)),
       body: BlocConsumer<JoinHouseholdCubit, JoinState>(
         listenWhen: (JoinState previous, JoinState current) =>
             current.attempt != previous.attempt ||
@@ -86,7 +86,7 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
               _CameraArea(state: state, cubit: cubit),
               const SizedBox(height: AppSpacing.lg),
               AppTextField(
-                label: t.manualField,
+                label: joinStrings.manualField,
                 controller: _code,
                 enabled: !joining,
                 textInputAction: TextInputAction.done,
@@ -94,7 +94,7 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               AppButton(
-                label: joining ? t.joining : t.manualSubmit,
+                label: joining ? joinStrings.joining : joinStrings.manualSubmit,
                 isLoading: joining,
                 expand: true,
                 onPressed: () => cubit.submit(_code.text),
@@ -115,18 +115,18 @@ class _CameraArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$join$es t = appStrings.app.sync.join;
+    final AppTranslations$app$sync$join$es joinStrings = appStrings.app.sync.join;
     final ThemeData theme = Theme.of(context);
     switch (state.phase) {
       case JoinPhase.starting:
         return const SizedBox(height: 120, child: AppLoadingView());
       case JoinPhase.cameraUnavailable:
-        return Text(t.cameraUnavailable, style: theme.textTheme.bodyLarge);
+        return Text(joinStrings.cameraUnavailable, style: theme.textTheme.bodyLarge);
       case JoinPhase.cameraDenied:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(t.cameraDenied, style: theme.textTheme.bodyLarge),
+            Text(joinStrings.cameraDenied, style: theme.textTheme.bodyLarge),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
@@ -134,9 +134,9 @@ class _CameraArea extends StatelessWidget {
               children: <Widget>[
                 // Vuelve a pedir el permiso o, si se dio desde Ajustes, lo
                 // comprueba y arranca la cámara.
-                AppButton(label: t.retryPermission, variant: AppButtonVariant.secondary, onPressed: cubit.start),
+                AppButton(label: joinStrings.retryPermission, variant: AppButtonVariant.secondary, onPressed: cubit.start),
                 if (state.canOpenSettings)
-                  AppButton(label: t.openSettings, variant: AppButtonVariant.secondary, onPressed: cubit.openSettings),
+                  AppButton(label: joinStrings.openSettings, variant: AppButtonVariant.outline, onPressed: cubit.openSettings),
               ],
             ),
           ],
@@ -148,14 +148,18 @@ class _CameraArea extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(t.scanPrompt, style: theme.textTheme.bodyLarge),
-            const SizedBox(height: AppSpacing.sm),
             AspectRatio(
               aspectRatio: 1,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
+                borderRadius: BorderRadius.circular(AppRadii.large),
                 child: cubit.camera?.buildPreview(context) ?? const SizedBox.shrink(),
               ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              joinStrings.scanPrompt,
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              textAlign: TextAlign.center,
             ),
           ],
         );

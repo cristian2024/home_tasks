@@ -12,25 +12,33 @@ class CatalogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$catalog$es t = appStrings.app.catalog;
+    final AppTranslations$app$catalog$es catalogStrings = appStrings.app.catalog;
     final LocalizationCoordinator localization = context.read<LocalizationCoordinator>();
+    final ThemeData theme = Theme.of(context);
+    final TextStyle? descriptionStyle = theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppBar(title: Text(catalogStrings.title)),
       body: BlocBuilder<CatalogCubit, CatalogState>(
         builder: (BuildContext context, CatalogState state) => ListView(
           padding: const EdgeInsets.all(AppSpacing.md),
           children: <Widget>[
-            Text(t.description),
+            Text(catalogStrings.description, style: descriptionStyle),
             const SizedBox(height: AppSpacing.md),
-            for (final PluginState plugin in state.plugins)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _CatalogEntry(
-                  state: plugin,
-                  localization: localization,
-                  pending: state.pending.contains(plugin.plugin.id),
-                ),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: <Widget>[
+                  for (final (int index, PluginState plugin) in state.plugins.indexed) ...<Widget>[
+                    if (index > 0) const Divider(height: AppSizes.strokeThin),
+                    _CatalogEntry(
+                      state: plugin,
+                      localization: localization,
+                      pending: state.pending.contains(plugin.plugin.id),
+                    ),
+                  ],
+                ],
               ),
+            ),
           ],
         ),
       ),
@@ -51,32 +59,33 @@ class _CatalogEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$catalog$es t = appStrings.app.catalog;
+    final AppTranslations$app$catalog$es catalogStrings = appStrings.app.catalog;
     final HomePlugin plugin = state.plugin;
     final bool unavailable = state.status == PluginStatus.unavailable;
-    final String status = switch (state.status) {
-      PluginStatus.unavailable => t.unavailable,
-      PluginStatus.failed => t.failed,
-      PluginStatus.ready => t.enabled,
-      PluginStatus.disabled => t.disabled,
+    final (String status, AppBadgeTone tone) = switch (state.status) {
+      PluginStatus.unavailable => (catalogStrings.unavailable, AppBadgeTone.warning),
+      PluginStatus.failed => (catalogStrings.failed, AppBadgeTone.critical),
+      PluginStatus.ready => (catalogStrings.enabled, AppBadgeTone.success),
+      PluginStatus.disabled => (catalogStrings.disabled, AppBadgeTone.neutral),
     };
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: SwitchListTile(
-        secondary: Icon(plugin.icon),
-        title: Text(localization.translate(plugin.nameKey)),
-        subtitle: Text(
-          '${localization.translate(plugin.descriptionKey)}\n$status',
-        ),
-        isThreeLine: true,
-        value: state.preference.isEnabled,
-        onChanged: unavailable || pending
-            ? null
-            : (bool enabled) => context.read<CatalogCubit>().setEnabled(
-                plugin.id,
-                enabled: enabled,
-              ),
+    return SwitchListTile(
+      secondary: Icon(plugin.icon),
+      title: Text(localization.translate(plugin.nameKey)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(localization.translate(plugin.descriptionKey)),
+          const SizedBox(height: AppSpacing.xs),
+          AppBadge(label: status, tone: tone),
+        ],
       ),
+      value: state.preference.isEnabled,
+      onChanged: unavailable || pending
+          ? null
+          : (bool enabled) => context.read<CatalogCubit>().setEnabled(
+              plugin.id,
+              enabled: enabled,
+            ),
     );
   }
 }

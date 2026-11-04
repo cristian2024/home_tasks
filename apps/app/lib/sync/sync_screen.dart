@@ -25,8 +25,8 @@ class SyncScreen extends StatelessWidget {
         builder: (BuildContext context, SyncViewState state) => ListView(
           padding: const EdgeInsets.all(AppSpacing.md),
           children: <Widget>[
-            if (state.spaceName != null) ...<Widget>[
-              Text(appStrings.app.spaces.current(name: state.spaceName!), style: Theme.of(context).textTheme.titleMedium),
+            if (state.spaceName case final String spaceName) ...<Widget>[
+              Text(appStrings.app.spaces.current(name: spaceName), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: AppSpacing.sm),
             ],
             _StatusCard(state: state),
@@ -49,11 +49,11 @@ void showSyncActionError(BuildContext context, SyncActionError? error) {
   if (error == null || !context.mounted) {
     return;
   }
-  final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+  final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
   final String message = switch (error) {
-    SyncActionError.alreadyInHousehold => t.errorAlreadyInHousehold,
-    SyncActionError.notCreator => t.errorNotCreator,
-    SyncActionError.generic => t.errorGeneric,
+    SyncActionError.alreadyInHousehold => householdStrings.errorAlreadyInHousehold,
+    SyncActionError.notCreator => householdStrings.errorNotCreator,
+    SyncActionError.generic => householdStrings.errorGeneric,
   };
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -67,12 +67,12 @@ class _StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$status$es t = appStrings.app.sync.status;
+    final AppTranslations$app$sync$status$es statusStrings = appStrings.app.sync.status;
     final SyncStatus status = state.status;
     final DateTime? lastSyncAt = status.lastSyncAt;
     final int? pending = status.pendingChanges;
     if (state.household == null) {
-      return AppSyncStatusCard(tone: AppSyncTone.off, title: t.noHousehold, message: t.noHouseholdMessage);
+      return AppSyncStatusCard(tone: AppSyncTone.off, title: statusStrings.noHousehold, message: statusStrings.noHouseholdMessage);
     }
     final SyncErrorKind? error = status.lastError;
     final AppSyncTone tone = switch (status.phase) {
@@ -84,22 +84,22 @@ class _StatusCard extends StatelessWidget {
     return AppSyncStatusCard(
       tone: tone,
       title: switch (tone) {
-        AppSyncTone.syncing => t.syncing,
-        AppSyncTone.error => t.failed,
-        _ => lastSyncAt == null ? t.neverSynced : t.syncedAt(time: formatSyncTime(context, lastSyncAt)),
+        AppSyncTone.syncing => statusStrings.syncing,
+        AppSyncTone.error => statusStrings.failed,
+        _ => lastSyncAt == null ? statusStrings.neverSynced : statusStrings.syncedAt(time: formatSyncTime(context, lastSyncAt)),
       },
       details: <String>[
-        if (pending != null && pending > 0) t.pendingChanges(n: pending),
-        t.visibleDevices(n: status.visibleDevices.length),
+        if (pending != null && pending > 0) statusStrings.pendingChanges(n: pending),
+        statusStrings.visibleDevices(n: status.visibleDevices.length),
       ],
       message: switch (error) {
         null => null,
-        SyncErrorKind.transport => t.errorTransport,
-        SyncErrorKind.authentication => t.errorAuthentication,
-        SyncErrorKind.protocol => t.errorProtocol,
-        SyncErrorKind.unknown => t.errorUnknown,
+        SyncErrorKind.transport => statusStrings.errorTransport,
+        SyncErrorKind.authentication => statusStrings.errorAuthentication,
+        SyncErrorKind.protocol => statusStrings.errorProtocol,
+        SyncErrorKind.unknown => statusStrings.errorUnknown,
       },
-      actionLabel: t.syncNow,
+      actionLabel: statusStrings.syncNow,
       onAction: context.read<SyncCubit>().syncNow,
     );
   }
@@ -140,15 +140,15 @@ class _NoHouseholdSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+    final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        AppSectionHeader(t.section),
-        AppButton(label: t.create, icon: Icons.add_home_outlined, isLoading: busy, expand: true, onPressed: () => _create(context)),
+        AppSectionHeader(householdStrings.section),
+        AppButton(label: householdStrings.create, icon: Icons.add_home_outlined, isLoading: busy, expand: true, onPressed: () => _create(context)),
         const SizedBox(height: AppSpacing.sm),
         AppButton(
-          label: t.join,
+          label: householdStrings.join,
           icon: Icons.qr_code_scanner,
           variant: AppButtonVariant.secondary,
           expand: true,
@@ -180,13 +180,13 @@ class _HouseholdSection extends StatelessWidget {
   }
 
   Future<void> _leave(BuildContext context) async {
-    final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+    final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
     final SyncCubit cubit = context.read<SyncCubit>();
     final bool confirmed = await showAppConfirmDialog(
       context,
-      title: t.leaveTitle,
-      message: t.leaveMessage,
-      confirmLabel: t.leaveConfirm,
+      title: householdStrings.leaveTitle,
+      message: householdStrings.leaveMessage,
+      confirmLabel: householdStrings.leaveConfirm,
       destructive: true,
     );
     if (!confirmed) {
@@ -200,26 +200,27 @@ class _HouseholdSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+    final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
     return AppSettingsSection(
-      title: t.section,
+      title: householdStrings.section,
       children: <Widget>[
         AppSettingsTile(
           icon: Icons.qr_code_2,
-          title: t.showCode,
-          subtitle: t.showCodeDescription,
+          title: householdStrings.showCode,
+          subtitle: householdStrings.showCodeDescription,
           onTap: () => context.push(AppRoutes.syncInvitation),
         ),
         AppSettingsTile(
           icon: Icons.smartphone,
-          title: t.thisDevice,
-          subtitle: <String>[state.device?.name ?? '', if (state.isCreator) t.creator].join(' · '),
-          trailing: AppIconButton(icon: Icons.edit_outlined, tooltip: t.rename, onPressed: () => _rename(context)),
+          title: householdStrings.thisDevice,
+          subtitle: <String>[state.device?.name ?? '', if (state.isCreator) householdStrings.creator].join(' · '),
+          trailing: AppIconButton(icon: Icons.edit_outlined, tooltip: householdStrings.rename, onPressed: () => _rename(context)),
         ),
         AppSettingsTile(
           icon: Icons.logout,
-          title: t.leave,
+          title: householdStrings.leave,
           enabled: !state.busy,
+          destructive: true,
           onTap: () => _leave(context),
         ),
       ],
@@ -247,18 +248,18 @@ class _RenameDialogState extends State<_RenameDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+    final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
     return AlertDialog(
-      title: Text(t.renameTitle),
+      title: Text(householdStrings.renameTitle),
       content: AppTextField(
-        label: t.renameField,
+        label: householdStrings.renameField,
         controller: _controller,
         autofocus: true,
         maxLength: 40,
         onSubmitted: (String value) => Navigator.of(context).pop(value),
       ),
       actions: <Widget>[
-        AppButton(label: t.save, onPressed: () => Navigator.of(context).pop(_controller.text)),
+        AppButton(label: householdStrings.save, onPressed: () => Navigator.of(context).pop(_controller.text)),
       ],
     );
   }
@@ -270,13 +271,13 @@ class _DevicesSection extends StatelessWidget {
   final SyncViewState state;
 
   Future<void> _expel(BuildContext context, SyncPeer peer) async {
-    final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+    final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
     final SyncCubit cubit = context.read<SyncCubit>();
     final bool confirmed = await showAppConfirmDialog(
       context,
-      title: t.expelTitle(name: peer.name),
-      message: t.expelMessage(name: peer.name),
-      confirmLabel: t.expelConfirm,
+      title: householdStrings.expelTitle(name: peer.name),
+      message: householdStrings.expelMessage(name: peer.name),
+      confirmLabel: householdStrings.expelConfirm,
       destructive: true,
     );
     if (!confirmed || !context.mounted) {
@@ -292,28 +293,29 @@ class _DevicesSection extends StatelessWidget {
     }
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(t.expelled)));
+      ..showSnackBar(SnackBar(content: Text(householdStrings.expelled)));
     await context.push(AppRoutes.syncInvitation);
   }
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$household$es t = appStrings.app.sync.household;
+    final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
+    final List<SyncPeer> peers = state.peers;
     return AppSettingsSection(
-      title: t.devicesSection,
+      title: householdStrings.devicesSection,
       children: <Widget>[
-        if (state.peers.isEmpty)
-          ListTile(title: Text(t.noDevices))
+        if (peers.isEmpty)
+          ListTile(title: Text(householdStrings.noDevices))
         else
-          for (final SyncPeer peer in state.peers)
+          for (final SyncPeer peer in peers)
             AppSettingsTile(
               icon: Icons.devices_other,
               title: peer.name,
-              subtitle: t.lastSynced(time: formatSyncTime(context, peer.lastSyncedAt)),
+              subtitle: householdStrings.lastSynced(time: formatSyncTime(context, peer.lastSyncedAt)),
               trailing: state.isCreator
                   ? AppIconButton(
                       icon: Icons.person_remove_outlined,
-                      tooltip: t.expel(name: peer.name),
+                      tooltip: householdStrings.expel(name: peer.name),
                       onPressed: state.busy ? null : () => _expel(context, peer),
                     )
                   : null,
@@ -330,15 +332,14 @@ class _ConflictsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppTranslations$app$sync$conflicts$es t = appStrings.app.sync.conflicts;
+    final AppTranslations$app$sync$conflicts$es conflictStrings = appStrings.app.sync.conflicts;
     return AppSettingsSection(
-      title: t.title,
+      title: conflictStrings.title,
       children: <Widget>[
         AppSettingsTile(
           icon: openConflicts == 0 ? Icons.check_circle_outline : Icons.report_problem_outlined,
-          title: t.tile,
-          subtitle: openConflicts == 0 ? t.tileNone : t.tileCount(n: openConflicts),
-          trailing: openConflicts == 0 ? null : AppBadge(label: '$openConflicts', tone: AppBadgeTone.warning),
+          title: conflictStrings.tile,
+          subtitle: openConflicts == 0 ? conflictStrings.tileNone : conflictStrings.tileCount(n: openConflicts),
           onTap: () => context.push(AppRoutes.syncConflicts),
         ),
       ],
