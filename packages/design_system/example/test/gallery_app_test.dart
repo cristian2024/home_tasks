@@ -1,8 +1,21 @@
+import 'dart:convert';
+
+import 'package:design_system/design_system.dart';
 import 'package:design_system_example/src/gallery_app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('quien depende de design_system recibe Inter sin declararla', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+
+    final List<dynamic> manifest = jsonDecode(await rootBundle.loadString('FontManifest.json')) as List<dynamic>;
+    final Iterable<dynamic> families = manifest.map((dynamic font) => (font as Map<String, dynamic>)['family']);
+
+    expect(families, contains(AppTheme.light.textTheme.bodyMedium?.fontFamily));
+  });
+
   testWidgets('la galería cambia de idioma, tema y escala sin errores', (WidgetTester tester) async {
     await tester.pumpWidget(const GalleryApp());
     // La galería contiene otros Scrollable (campos de texto, estados).

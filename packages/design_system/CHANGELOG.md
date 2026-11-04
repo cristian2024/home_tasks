@@ -13,10 +13,12 @@
   - `AppLayout`: márgenes, retículas, puntos de corte y anchos de referencia.
   - `AppTypography`: familia, tamaños, alturas de línea y los estilos `web*` y `mobile*`.
   - `AppElevation`: las sombras de claro y oscuro.
+- La fuente Inter, incluida en el paquete con los pesos 400, 500, 600 y 700. Quien depende del paquete no tiene que declararla.
 
 ### Cambiado
 
 - `AppTheme` usa la paleta morada y los neutros del sistema de diseño de Figma, con un `ColorScheme` explícito en claro y en oscuro. Los avisos son ámbar.
+- El `textTheme` usa Inter y los estilos `mobile*`: el título de la barra superior pasa de 22 a 18, los títulos de 16 con peso 600 y los interlineados los del sistema de diseño.
 - Los botones pasan a radio de 8, las tarjetas a un borde sin elevación, los campos de texto a fondo de superficie y la barra superior al color del fondo de la pantalla.
 
 ### Eliminado
@@ -25,7 +27,7 @@
 
 ### Interno
 
-- Tests de contraste y opacidad de los colores de ambos temas. La galería muestra los colores nuevos y el README los describe.
+- Tests de contraste y opacidad de los colores de ambos temas, y de la carga de la fuente con el texto al 200 %. La galería muestra los colores nuevos y el README los describe.
 
 ## 0.1.4 - 2026-10-31
 

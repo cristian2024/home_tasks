@@ -5,12 +5,34 @@ import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
+import '../tokens/app_typography.dart';
 
 /// Temas claro y oscuro construidos a partir de los tokens.
 ///
-/// Las tipografías son las de Material 3: Flutter las escala con el
-/// `TextScaler` del sistema, así que soportan el 200 % del §14.3.
+/// Las tipografías son los estilos `mobile*` de [AppTypography]: Flutter las
+/// escala con el `TextScaler` del sistema, así que soportan el 200 % del §14.3.
 abstract final class AppTheme {
+  /// Conserva la escala de Material (el cuerpo por defecto sigue siendo 14) para
+  /// que las pantallas no cambien de tamaño. `mobileBodyL` queda fuera: el lienzo
+  /// no usa el cuerpo de 17.
+  static const TextTheme _textTheme = TextTheme(
+    displayLarge: AppTypography.mobileDisplay,
+    displayMedium: AppTypography.mobileH1,
+    displaySmall: AppTypography.mobileH2,
+    headlineLarge: AppTypography.mobileH1,
+    headlineMedium: AppTypography.mobileH2,
+    headlineSmall: AppTypography.mobileH3,
+    titleLarge: AppTypography.mobileH4,
+    titleMedium: AppTypography.mobileLabelL,
+    titleSmall: AppTypography.mobileLabelM,
+    bodyLarge: AppTypography.mobileBodyM,
+    bodyMedium: AppTypography.mobileBodyS,
+    bodySmall: AppTypography.mobileCaption,
+    labelLarge: AppTypography.mobileLabelM,
+    labelMedium: AppTypography.mobileLabelS,
+    labelSmall: AppTypography.mobileLabelS,
+  );
+
   /// Semántica de `Theme Light` en Figma. Los tonos `tertiary` son los de aviso.
   static const ColorScheme _lightScheme = ColorScheme(
     brightness: Brightness.light,
@@ -92,6 +114,8 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      textTheme: _textTheme,
+      primaryTextTheme: _textTheme,
       extensions: <ThemeExtension<dynamic>>[colors],
       scaffoldBackgroundColor: colors.bgCanvas,
       materialTapTargetSize: MaterialTapTargetSize.padded,

@@ -11,8 +11,11 @@ Replican el sistema de diseño de Figma.
 - `AppColors`: colores primitivos.
 - `AppThemeColors`: colores semánticos de cada tema, con lo que `ColorScheme` no cubre (éxito, información, hover, pressed). Se leen con `AppThemeColors.of(context)`.
 - `AppSpacing` (`s0`…`s1600`, y `xs`…`xl` como nombres cortos), `AppRadii`, `AppSizes` (`minTouchTarget` de 48) y `AppLayout`.
-- `AppTypography` (estilos `web*` y `mobile*`; la fuente Inter aún no viene incluida) y `AppElevation`.
-- `AppTheme.light` y `AppTheme.dark`. Los componentes y las pantallas leen los colores del tema, nunca `AppColors`.
+- `AppTypography` (estilos `web*` y `mobile*`) y `AppElevation`.
+- `AppTheme.light` y `AppTheme.dark`. Los componentes y las pantallas leen los colores del tema, nunca `AppColors`, y los textos de `textTheme`, que usa los estilos `mobile*`.
+
+**Fuente**
+El paquete incluye Inter 4.1 (pesos 400, 500, 600 y 700, bajo la licencia de `assets/fonts/OFL.txt`). Quien depende del paquete la recibe sin declarar nada. Un `TextStyle` propio debe indicar `package: AppTypography.fontPackage`; sin eso, Flutter no la encuentra y usa la del sistema.
 
 Algunos nombres no coinciden con Figma y están documentados en cada clase: `radius/sm` es `AppRadii.extraSmall`, y `size/icon-md` es `AppSizes.iconCompact`.
 
