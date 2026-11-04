@@ -105,6 +105,8 @@ void main() {
     });
     addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
     await tester.scrollUntilVisible(find.text('Copiar el código'), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.text('Copiar el código'));
+    await tester.pumpAndSettle();
     expect(find.text(qr.data), findsOneWidget);
     await tester.tap(find.text('Copiar el código'));
     await tester.pump();
