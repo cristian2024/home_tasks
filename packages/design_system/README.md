@@ -32,7 +32,7 @@ Algunos nombres no coinciden con Figma y están documentados en cada clase: `rad
 | `AppSectionHeader` | Título de sección con acción opcional a la derecha. |
 | `AppStatusView`, `AppLoadingView` | Estados vacío, de error y de carga. El icono va en un círculo de marca. |
 | `AppShortcutTile`, `AppShortcutGrid` | Accesos rápidos en una grilla adaptable (`columnsFor`). |
-| `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración (`destructive` para acciones peligrosas) y elección entre pocas opciones con un control segmentado (`AppChoiceSegment`), que las apila si no caben. |
+| `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración (`destructive` para acciones peligrosas) y elección entre pocas opciones con un control segmentado (`AppChoiceSegment`), que quita la marca y luego apila las opciones si no caben. `padding: EdgeInsets.zero` para usarlo suelto en una pantalla. |
 | `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). |
 | `AppBadge` | Etiqueta corta con tono `critical`, `warning`, `neutral`, `brand` o `success`. |
 | `AppCheckTile` | Fila que se marca como hecha con su casilla. |
