@@ -9,6 +9,8 @@ import '../../domain/use_cases/build_shopping_export.dart';
 import '../../i18n/strings.g.dart';
 import '../common/shopping_list_l10n.dart';
 
+const EdgeInsets _selectorPadding = EdgeInsets.only(top: AppSpacing.md);
+
 /// Hoja para exportar la lista (completa o filtrada) por WhatsApp, como
 /// texto o como archivo Markdown. Es parte de la pantalla de la lista.
 class ShoppingExportSheet extends StatefulWidget {
@@ -71,7 +73,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final ShoppingListTranslations$shoppingList$es t = shoppingListStrings.shoppingList;
+    final ShoppingListTranslations$shoppingList$es strings = shoppingListStrings.shoppingList;
     final ShareService share = widget.shareService;
     final bool empty = _document.isEmpty;
     return SafeArea(
@@ -82,23 +84,25 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
           children: <Widget>[
             Semantics(
               header: true,
-              child: Text(t.export.title, style: Theme.of(context).textTheme.titleLarge),
+              child: Text(strings.export.title, style: Theme.of(context).textTheme.titleLarge),
             ),
             if (widget.isFiltered)
               AppChoiceSelector<bool>(
-                label: t.export.scope,
+                label: strings.export.scope,
+                padding: _selectorPadding,
                 options: <AppChoice<bool>>[
-                  AppChoice<bool>(value: false, label: t.export.scopeAll),
-                  AppChoice<bool>(value: true, label: t.export.scopeFiltered),
+                  AppChoice<bool>(value: false, label: strings.export.scopeAll),
+                  AppChoice<bool>(value: true, label: strings.export.scopeFiltered),
                 ],
                 selected: _filtered,
                 onChanged: (bool filtered) => setState(() => _filtered = filtered),
               ),
             AppChoiceSelector<ShoppingGrouping>(
-              label: t.export.grouping,
+              label: strings.export.grouping,
+              padding: _selectorPadding,
               options: <AppChoice<ShoppingGrouping>>[
-                AppChoice<ShoppingGrouping>(value: ShoppingGrouping.category, label: t.list.groupByCategory),
-                AppChoice<ShoppingGrouping>(value: ShoppingGrouping.urgency, label: t.list.groupByUrgency),
+                AppChoice<ShoppingGrouping>(value: ShoppingGrouping.category, label: strings.list.groupByCategory),
+                AppChoice<ShoppingGrouping>(value: ShoppingGrouping.urgency, label: strings.list.groupByUrgency),
               ],
               selected: _grouping,
               onChanged: (ShoppingGrouping grouping) => setState(() => _grouping = grouping),
@@ -106,11 +110,11 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             if (empty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                child: Text(t.export.nothing),
+                child: Text(strings.export.nothing),
               ),
             const SizedBox(height: AppSpacing.sm),
             AppButton(
-              label: t.export.whatsapp,
+              label: strings.export.whatsapp,
               icon: Icons.chat_outlined,
               expand: true,
               onPressed: empty
@@ -118,11 +122,11 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
                   : () => _run((ExportDocument document) async =>
                       await share.openWhatsApp(const WhatsAppFormatter().format(document))
                           ? null
-                          : t.export.whatsappMissing),
+                          : strings.export.whatsappMissing),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppButton(
-              label: t.export.shareText,
+              label: strings.export.shareText,
               icon: Icons.share_outlined,
               variant: AppButtonVariant.secondary,
               expand: true,
@@ -135,9 +139,9 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppButton(
-              label: t.export.shareFile,
+              label: strings.export.shareFile,
               icon: Icons.description_outlined,
-              variant: AppButtonVariant.secondary,
+              variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
                   ? null
@@ -148,14 +152,14 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppButton(
-              label: t.export.saveFile,
+              label: strings.export.saveFile,
               icon: Icons.save_alt,
-              variant: AppButtonVariant.secondary,
+              variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
                   ? null
                   : () => _run((ExportDocument document) async =>
-                      await share.saveFile(_markdownFile(document)) == SaveFileResult.saved ? t.export.saved : null),
+                      await share.saveFile(_markdownFile(document)) == SaveFileResult.saved ? strings.export.saved : null),
             ),
           ],
         ),

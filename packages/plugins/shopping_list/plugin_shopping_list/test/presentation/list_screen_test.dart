@@ -110,12 +110,18 @@ void main() {
     await tester.pumpAndSettle();
     expect((await harness.repository.getItem(bread.id))!.status, ShoppingItemStatus.pending);
 
-    await tester.tap(find.byTooltip('Borrar comprados'));
+    await tester.tap(find.byTooltip('Más opciones'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Borrar comprados'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Borrar comprados'));
     await tester.pumpAndSettle();
     expect(await harness.repository.getItem(milk.id), isNull);
-    expect(find.byTooltip('Borrar comprados'), findsNothing);
+
+    await tester.tap(find.byTooltip('Más opciones'));
+    await tester.pumpAndSettle();
+    expect(find.text('Categorías'), findsOneWidget);
+    expect(find.text('Borrar comprados'), findsNothing);
   });
 
   testWidgets('filtra por categoría, urgencia y estado, y quita los filtros', (WidgetTester tester) async {

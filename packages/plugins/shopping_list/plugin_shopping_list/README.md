@@ -4,7 +4,7 @@ Plugin de lista de compras (ID `shopping_list`, rutas bajo `/shopping-list`). Im
 
 ## Qué hace
 
-- **Items** con nombre, cantidad, notas, urgencia, categorías y recurrencia aproximada. Se crean, editan, marcan como comprados y borran. Al comprar aparece un aviso para deshacer, que se cierra a los 5 s. «Borrar comprados» limpia la lista y conserva los recurrentes.
+- **Items** con nombre, cantidad, notas, urgencia, categorías y recurrencia aproximada. Se crean, editan, marcan como comprados y borran. Al comprar aparece un aviso para deshacer, que se cierra a los 5 s. «Borrar comprados», en el menú de la barra, limpia la lista y conserva los recurrentes.
 - **Lista** filtrable por categorías, urgencia y estado (panel plegable), y agrupada por categoría o por urgencia.
 - **Categorías:** cinco por defecto (Comida, Aseo, Limpieza, Hogar y Farmacia), que se pueden crear, renombrar, reordenar y borrar.
 - **Recurrentes:** al comprarlos vuelven a la lista cuando se abre su ventana.

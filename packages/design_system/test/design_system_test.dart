@@ -523,6 +523,48 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('AppChoiceSelector quita la marca antes de apilar las opciones', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        host(
+          AppChoiceSelector<String>(
+            label: 'Urgencia',
+            padding: EdgeInsets.zero,
+            options: const <AppChoice<String>>[
+              AppChoice<String>(value: 'a', label: 'Aaaa'),
+              AppChoice<String>(value: 'b', label: 'Bbbb'),
+            ],
+            selected: 'a',
+            onChanged: (String _) {},
+          ),
+          textScale: 2.3,
+        ),
+      );
+
+      double top(String label) => tester.getTopLeft(find.widgetWithText(AppChoiceSegment, label)).dy;
+      expect(top('Aaaa'), top('Bbbb'));
+      expect(find.byIcon(Icons.check), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AppChoiceSelector respeta su margen', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        host(
+          AppChoiceSelector<String>(
+            label: 'Idioma',
+            padding: EdgeInsets.zero,
+            options: languages,
+            selected: 'es',
+            onChanged: (String _) {},
+          ),
+        ),
+      );
+
+      expect(tester.getTopLeft(find.text('Idioma')).dx, 0);
+    });
+
     testWidgets('AppChoiceSelector anuncia la opción elegida como seleccionada', (WidgetTester tester) async {
       final SemanticsHandle semantics = tester.ensureSemantics();
       await tester.pumpWidget(
