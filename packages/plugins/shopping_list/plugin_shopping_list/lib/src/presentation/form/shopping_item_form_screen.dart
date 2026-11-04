@@ -94,6 +94,8 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
               _ => null,
             };
 
+        final ThemeData theme = Theme.of(context);
+
         return Scaffold(
           appBar: AppBar(
             title: Text(cubit.isEditing ? t.form.editTitle : t.form.createTitle),
@@ -116,7 +118,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: Text(
                           errorMessage(error.error),
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(color: theme.colorScheme.error),
                         ),
                       ),
                     AppTextField(
@@ -143,9 +145,10 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                       maxLength: ShoppingValidator.maxNotesLength,
                       errorText: fieldError(ShoppingValidationField.notes),
                     ),
+                    const SizedBox(height: AppSpacing.sm),
                     AppChoiceSelector<Urgency>(
                       label: t.form.urgency,
-                      icon: Icons.priority_high,
+                      padding: EdgeInsets.zero,
                       options: <AppChoice<Urgency>>[
                         for (final Urgency urgency in Urgency.values)
                           AppChoice<Urgency>(value: urgency, label: urgencyLabel(urgency)),
@@ -154,7 +157,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                       onChanged: cubit.setUrgency,
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                       child: state.categories.isEmpty
                           ? Text(t.form.noCategories)
                           : AppFilterChips<String>(
@@ -169,7 +172,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                     ),
                     AppChoiceSelector<RecurrenceMode>(
                       label: t.form.recurrence,
-                      icon: Icons.repeat,
+                      padding: EdgeInsets.zero,
                       options: <AppChoice<RecurrenceMode>>[
                         AppChoice<RecurrenceMode>(value: RecurrenceMode.none, label: t.form.recurrenceNone),
                         AppChoice<RecurrenceMode>(value: RecurrenceMode.fixed, label: t.form.recurrenceFixed),
@@ -178,6 +181,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                       selected: state.recurrenceMode,
                       onChanged: cubit.setRecurrenceMode,
                     ),
+                    if (state.recurrenceMode != RecurrenceMode.none) const SizedBox(height: AppSpacing.md),
                     if (state.recurrenceMode == RecurrenceMode.fixed)
                       AppTextField(
                         label: t.form.everyDays,
@@ -186,21 +190,35 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                         helperText: t.form.recurrenceHelp,
                         errorText: daysError(RecurrenceField.every),
                       ),
-                    if (state.recurrenceMode == RecurrenceMode.range) ...<Widget>[
-                      AppTextField(
-                        label: t.form.minDays,
-                        controller: _min,
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.next,
-                        errorText: daysError(RecurrenceField.min),
+                    if (state.recurrenceMode == RecurrenceMode.range)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: AppSpacing.s300,
+                        children: <Widget>[
+                          Expanded(
+                            child: AppTextField(
+                              label: t.form.minDays,
+                              controller: _min,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              errorText: daysError(RecurrenceField.min),
+                            ),
+                          ),
+                          Expanded(
+                            child: AppTextField(
+                              label: t.form.maxDays,
+                              controller: _max,
+                              keyboardType: TextInputType.number,
+                              errorText: daysError(RecurrenceField.max),
+                            ),
+                          ),
+                        ],
                       ),
+                    if (state.recurrenceMode == RecurrenceMode.range) ...<Widget>[
                       const SizedBox(height: AppSpacing.sm),
-                      AppTextField(
-                        label: t.form.maxDays,
-                        controller: _max,
-                        keyboardType: TextInputType.number,
-                        helperText: t.form.recurrenceHelp,
-                        errorText: daysError(RecurrenceField.max),
+                      Text(
+                        t.form.recurrenceHelp,
+                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
                     const SizedBox(height: AppSpacing.lg),

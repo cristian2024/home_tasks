@@ -51,28 +51,46 @@ class _ShoppingCategoriesScreenState extends State<ShoppingCategoriesScreen> {
             : ListView(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 children: <Widget>[
-                  AppTextField(
-                    label: t.newLabel,
-                    controller: _newName,
-                    maxLength: ShoppingValidator.maxCategoryNameLength,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (String _) => _create(cubit),
-                  ),
-                  AppButton(
-                    label: t.add,
-                    icon: Icons.add,
-                    variant: AppButtonVariant.secondary,
-                    onPressed: () => _create(cubit),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: AppSpacing.sm,
+                    children: <Widget>[
+                      Expanded(
+                        child: AppTextField(
+                          label: t.newLabel,
+                          controller: _newName,
+                          maxLength: ShoppingValidator.maxCategoryNameLength,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (String _) => _create(cubit),
+                        ),
+                      ),
+                      AppIconButton(
+                        icon: Icons.add,
+                        tooltip: t.add,
+                        variant: AppIconButtonVariant.filled,
+                        onPressed: () => _create(cubit),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (state.categories.isEmpty) Text(t.empty),
-                  for (int i = 0; i < state.categories.length; i++)
-                    _CategoryRow(
-                      key: ValueKey<String>(state.categories[i].id),
-                      category: state.categories[i],
-                      isFirst: i == 0,
-                      isLast: i == state.categories.length - 1,
-                      onMove: (int offset) => cubit.move(i, offset),
+                  if (state.categories.isNotEmpty)
+                    AppCard(
+                      padding: EdgeInsets.zero,
+                      child: Column(
+                        children: <Widget>[
+                          for (int i = 0; i < state.categories.length; i++) ...<Widget>[
+                            if (i > 0) const Divider(height: AppSizes.strokeThin),
+                            _CategoryRow(
+                              key: ValueKey<String>(state.categories[i].id),
+                              category: state.categories[i],
+                              isFirst: i == 0,
+                              isLast: i == state.categories.length - 1,
+                              onMove: (int offset) => cubit.move(i, offset),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -130,7 +148,7 @@ class _CategoryRow extends StatelessWidget {
     final ShoppingListTranslations$shoppingList$categories$es t = shoppingListStrings.shoppingList.categories;
     final String name = categoryName(category);
     return ListTile(
-      contentPadding: EdgeInsets.zero,
+      contentPadding: const EdgeInsets.only(left: AppSpacing.md),
       title: Text(name),
       trailing: Wrap(
         children: <Widget>[

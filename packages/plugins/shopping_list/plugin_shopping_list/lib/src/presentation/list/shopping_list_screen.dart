@@ -17,6 +17,9 @@ const Duration _undoDuration = Duration(seconds: 5);
 /// Valor del filtro de categorías que representa «Sin categoría».
 const String _uncategorized = '';
 
+/// Acciones de menos uso de la barra superior, que van al menú.
+enum _ListMenuAction { categories, clearPurchased }
+
 /// La lista de compras: filtros, agrupación y marcar como comprado.
 class ShoppingListScreen extends StatelessWidget {
   const ShoppingListScreen({super.key, required this.exportSheet});
@@ -73,12 +76,6 @@ class ShoppingListScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(t.title),
           actions: <Widget>[
-            if (state.hasPurchased)
-              AppIconButton(
-                icon: Icons.delete_sweep_outlined,
-                tooltip: t.list.clearPurchased,
-                onPressed: () => _confirmClearPurchased(context),
-              ),
             if (exportSheet != null)
               AppIconButton(
                 icon: Icons.ios_share,
@@ -98,10 +95,12 @@ class ShoppingListScreen extends StatelessWidget {
                   : AppIconButtonVariant.tonal,
               onPressed: cubit.toggleFilters,
             ),
-            AppIconButton(
-              icon: Icons.label_outline,
-              tooltip: t.list.categories,
-              onPressed: () => context.push(ShoppingListRoutes.categories),
+            _ListMenuButton(
+              hasPurchased: state.hasPurchased,
+              onSelected: (_ListMenuAction action) => switch (action) {
+                _ListMenuAction.categories => context.push(ShoppingListRoutes.categories),
+                _ListMenuAction.clearPurchased => _confirmClearPurchased(context),
+              },
             ),
           ],
         ),
@@ -123,6 +122,52 @@ class ShoppingListScreen extends StatelessWidget {
           _ => _ListBody(state: state),
         },
       ),
+    );
+  }
+}
+
+class _ListMenuButton extends StatelessWidget {
+  const _ListMenuButton({required this.hasPurchased, required this.onSelected});
+
+  final bool hasPurchased;
+  final ValueChanged<_ListMenuAction> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final ShoppingListTranslations$shoppingList$list$es t = shoppingListStrings.shoppingList.list;
+    return PopupMenuButton<_ListMenuAction>(
+      icon: const Icon(Icons.more_vert),
+      tooltip: t.moreActions,
+      onSelected: onSelected,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<_ListMenuAction>>[
+        PopupMenuItem<_ListMenuAction>(
+          value: _ListMenuAction.categories,
+          child: _MenuRow(icon: Icons.label_outline, label: t.categories),
+        ),
+        if (hasPurchased)
+          PopupMenuItem<_ListMenuAction>(
+            value: _ListMenuAction.clearPurchased,
+            child: _MenuRow(icon: Icons.delete_sweep_outlined, label: t.clearPurchased),
+          ),
+      ],
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        ExcludeSemantics(child: Icon(icon)),
+        const SizedBox(width: AppSpacing.s300),
+        Flexible(child: Text(label)),
+      ],
     );
   }
 }
@@ -235,8 +280,10 @@ class _Filters extends StatelessWidget {
             selected: filter.states,
             onChanged: (Set<ShoppingItemState> states) => cubit.setFilter(filter.copyWith(states: states)),
           ),
+          const SizedBox(height: AppSpacing.md),
           AppChoiceSelector<ShoppingGrouping>(
             label: t.groupBy,
+            padding: EdgeInsets.zero,
             options: <AppChoice<ShoppingGrouping>>[
               AppChoice<ShoppingGrouping>(value: ShoppingGrouping.category, label: t.groupByCategory),
               AppChoice<ShoppingGrouping>(value: ShoppingGrouping.urgency, label: t.groupByUrgency),

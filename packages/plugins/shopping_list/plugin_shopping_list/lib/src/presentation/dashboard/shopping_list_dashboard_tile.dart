@@ -17,48 +17,22 @@ class ShoppingListDashboardTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ShoppingListTranslations$shoppingList$es t = shoppingListStrings.shoppingList;
-    final TextTheme textTheme = Theme.of(context).textTheme;
-    return AppCard(
-      semanticLabel: t.title,
-      onTap: () => context.push<void>(ShoppingListRoutes.base),
-      child: Row(
-        children: <Widget>[
-          const ExcludeSemantics(child: Icon(Icons.shopping_cart_outlined, size: AppSizes.iconLarge)),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(t.title, style: textTheme.titleMedium),
-                StreamBuilder<ShoppingListSnapshot>(
-                  stream: watchList(),
-                  builder: (BuildContext context, AsyncSnapshot<ShoppingListSnapshot> snapshot) {
-                    final List<ShoppingListEntry>? toBuy = snapshot.data?.toBuy;
-                    if (toBuy == null) {
-                      return Text(t.description, style: textTheme.bodyMedium);
-                    }
-                    final int urgent = toBuy.where((ShoppingListEntry entry) => entry.item.urgency.isUrgent).length;
-                    return Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xs,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: <Widget>[
-                        Text(t.dashboard.toBuyCount(n: toBuy.length), style: textTheme.bodyMedium),
-                        if (urgent > 0)
-                          AppBadge(
-                            label: t.dashboard.urgentCount(n: urgent),
-                            tone: AppBadgeTone.critical,
-                            icon: Icons.priority_high,
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return StreamBuilder<ShoppingListSnapshot>(
+      stream: watchList(),
+      builder: (BuildContext context, AsyncSnapshot<ShoppingListSnapshot> snapshot) {
+        final List<ShoppingListEntry>? toBuy = snapshot.data?.toBuy;
+        final int urgent = toBuy?.where((ShoppingListEntry entry) => entry.item.urgency.isUrgent).length ?? 0;
+        return AppModuleCard(
+          icon: Icons.shopping_cart_outlined,
+          title: t.title,
+          summary: toBuy == null ? t.description : t.dashboard.toBuyCount(n: toBuy.length),
+          badges: <Widget>[
+            if (urgent > 0)
+              AppBadge(label: t.dashboard.urgentCount(n: urgent), tone: AppBadgeTone.critical, icon: Icons.priority_high),
+          ],
+          onTap: () => context.push<void>(ShoppingListRoutes.base),
+        );
+      },
     );
   }
 }

@@ -15,12 +15,14 @@ void main() {
 
   testWidgets('se abre desde la lista y añade una categoría al final', (WidgetTester tester) async {
     await harness.pump(tester);
-    await tester.tap(find.byTooltip('Categorías'));
+    await tester.tap(find.byTooltip('Más opciones'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Categorías'));
     await tester.pumpAndSettle();
 
     expect(find.text('Comida'), findsOneWidget);
     await tester.enterText(find.widgetWithText(TextField, 'Nueva categoría'), 'Mascotas');
-    await tester.tap(find.text('Añadir categoría'));
+    await tester.tap(find.byTooltip('Añadir categoría'));
     await tester.pumpAndSettle();
 
     expect(names(await harness.repository.getCategories()).last, 'Mascotas');

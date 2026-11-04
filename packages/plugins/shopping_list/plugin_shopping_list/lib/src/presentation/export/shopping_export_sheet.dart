@@ -9,6 +9,8 @@ import '../../domain/use_cases/build_shopping_export.dart';
 import '../../i18n/strings.g.dart';
 import '../common/shopping_list_l10n.dart';
 
+const EdgeInsets _selectorPadding = EdgeInsets.only(top: AppSpacing.md);
+
 /// Hoja para exportar la lista (completa o filtrada) por WhatsApp, como
 /// texto o como archivo Markdown. Es parte de la pantalla de la lista.
 class ShoppingExportSheet extends StatefulWidget {
@@ -87,6 +89,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             if (widget.isFiltered)
               AppChoiceSelector<bool>(
                 label: t.export.scope,
+                padding: _selectorPadding,
                 options: <AppChoice<bool>>[
                   AppChoice<bool>(value: false, label: t.export.scopeAll),
                   AppChoice<bool>(value: true, label: t.export.scopeFiltered),
@@ -96,6 +99,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
               ),
             AppChoiceSelector<ShoppingGrouping>(
               label: t.export.grouping,
+              padding: _selectorPadding,
               options: <AppChoice<ShoppingGrouping>>[
                 AppChoice<ShoppingGrouping>(value: ShoppingGrouping.category, label: t.list.groupByCategory),
                 AppChoice<ShoppingGrouping>(value: ShoppingGrouping.urgency, label: t.list.groupByUrgency),
@@ -137,7 +141,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             AppButton(
               label: t.export.shareFile,
               icon: Icons.description_outlined,
-              variant: AppButtonVariant.secondary,
+              variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
                   ? null
@@ -150,7 +154,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             AppButton(
               label: t.export.saveFile,
               icon: Icons.save_alt,
-              variant: AppButtonVariant.secondary,
+              variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
                   ? null

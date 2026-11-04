@@ -32,8 +32,8 @@ void main() {
     await tester.enterText(field('Cantidad'), '2 docenas');
     await tester.tap(find.widgetWithText(AppChoiceSegment, 'Alta'));
     await tester.tap(find.widgetWithText(FilterChip, 'Comida'));
-    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
-    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
+    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Entre X e Y'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Entre X e Y'));
     await tester.pumpAndSettle();
     await scrollTo(tester, field('Máximo de días'));
     await tester.enterText(field('Mínimo de días'), '8');
@@ -70,8 +70,8 @@ void main() {
     await scrollTo(tester, field('Nombre'), up: true);
     expect(find.text('Este campo es obligatorio.'), findsOneWidget);
 
-    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
-    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Entre X e Y días'));
+    await scrollTo(tester, find.widgetWithText(AppChoiceSegment, 'Entre X e Y'));
+    await tester.tap(find.widgetWithText(AppChoiceSegment, 'Entre X e Y'));
     await tester.pumpAndSettle();
     await scrollTo(tester, field('Máximo de días'));
     await tester.enterText(field('Mínimo de días'), '9');
