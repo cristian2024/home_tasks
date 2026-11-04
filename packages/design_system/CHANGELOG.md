@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0 - 2026-11-03
+
+### Añadido
+
+- `AppColors` con la paleta completa del sistema de diseño de Figma.
+- `AppRadii.extraLarge` (24), usado en las hojas inferiores.
+
+### Cambiado
+
+- `AppTheme` usa la paleta morada y los neutros del sistema de diseño de Figma, con un `ColorScheme` explícito en claro y en oscuro. Los avisos son ámbar.
+- Los botones pasan a radio de 8, las tarjetas a un borde sin elevación, los campos de texto a fondo de superficie y la barra superior al color del fondo de la pantalla.
+
+### Eliminado
+
+- **Incompatible:** `AppColors.primary`, `primaryDark`, `secondary`, `backgroundLight`, `backgroundDark`, `surfaceLight`, `surfaceDark` y `error`. Ahora `AppColors` tiene los primitivos de Figma (`violet700`, `neutral50`…). Usa los colores de `Theme.of(context).colorScheme`.
+
+### Interno
+
+- Tests de contraste y opacidad de los colores de ambos temas. La galería muestra los colores nuevos y el README los describe.
+
 ## 0.1.4 - 2026-10-31
 
 ### Añadido

@@ -7,8 +7,8 @@ Los componentes no conocen la app: reciben todo por parámetros y devuelven resu
 ## Contenido
 
 **Tokens y tema**
-- `AppColors`, `AppSpacing` (`xs`…`xl`), `AppRadii` y `AppSizes` (`minTouchTarget` de 48).
-- `AppTheme.light` y `AppTheme.dark`.
+- `AppColors`, con los colores primitivos del sistema de diseño de Figma; `AppSpacing` (`xs`…`xl`), `AppRadii` y `AppSizes` (`minTouchTarget` de 48).
+- `AppTheme.light` y `AppTheme.dark`, que asignan esos colores a un `ColorScheme`. Los componentes y las pantallas leen `Theme.of(context).colorScheme`, nunca `AppColors`.
 
 **Componentes**
 

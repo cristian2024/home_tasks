@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,9 +104,36 @@ Widget gallery() => ListView(
     );
 
 void main() {
-  test('AppColors.error es opaco', () {
-    expect(AppColors.error.a, 1.0);
+  test('los temas usan el morado del sistema de diseño', () {
+    expect(AppTheme.light.colorScheme.primary, AppColors.violet700);
+    expect(AppTheme.dark.colorScheme.primary, AppColors.violet400);
   });
+
+  for (final (String name, ColorScheme scheme) in <(String, ColorScheme)>[
+    ('claro', AppTheme.light.colorScheme),
+    ('oscuro', AppTheme.dark.colorScheme),
+  ]) {
+    test('tema $name: los colores son opacos y los textos tienen contraste de 4,5:1', () {
+      final List<(Color, Color)> pairs = <(Color, Color)>[
+        (scheme.onPrimary, scheme.primary),
+        (scheme.onPrimaryContainer, scheme.primaryContainer),
+        (scheme.onSecondaryContainer, scheme.secondaryContainer),
+        (scheme.onTertiaryContainer, scheme.tertiaryContainer),
+        (scheme.onError, scheme.error),
+        (scheme.onErrorContainer, scheme.errorContainer),
+        (scheme.onSurface, scheme.surface),
+        (scheme.onSurfaceVariant, scheme.surface),
+        (scheme.onSurfaceVariant, scheme.surfaceContainerHighest),
+      ];
+      for (final (Color foreground, Color background) in pairs) {
+        expect(foreground.a, 1.0);
+        expect(background.a, 1.0);
+        final double lighter = max(foreground.computeLuminance(), background.computeLuminance());
+        final double darker = min(foreground.computeLuminance(), background.computeLuminance());
+        expect((lighter + 0.05) / (darker + 0.05), greaterThanOrEqualTo(4.5));
+      }
+    });
+  }
 
   for (final (String name, ThemeData theme) in <(String, ThemeData)>[('claro', AppTheme.light), ('oscuro', AppTheme.dark)]) {
     testWidgets('tema $name: cumple las guías de accesibilidad', (WidgetTester tester) async {

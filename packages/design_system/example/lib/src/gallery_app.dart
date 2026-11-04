@@ -97,12 +97,12 @@ class _GalleryPage extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: <Widget>[
-              _Swatch('primary', AppColors.primary),
-              _Swatch('primaryDark', AppColors.primaryDark),
-              _Swatch('secondary', AppColors.secondary),
-              _Swatch('error', AppColors.error),
-              _Swatch('surfaceDark', AppColors.surfaceDark),
-              _Swatch('backgroundDark', AppColors.backgroundDark),
+              _Swatch('violet700', AppColors.violet700),
+              _Swatch('violet400', AppColors.violet400),
+              _Swatch('neutral50', AppColors.neutral50),
+              _Swatch('neutral950', AppColors.neutral950),
+              _Swatch('red700', AppColors.red700),
+              _Swatch('amber700', AppColors.amber700),
             ],
           ),
           const AppSectionHeader('Espaciados'),
@@ -118,7 +118,7 @@ class _GalleryPage extends StatelessWidget {
               child: Row(
                 children: <Widget>[
                   SizedBox(width: 48, child: Text(name)),
-                  Container(width: value * 4, height: AppSpacing.sm, color: AppColors.primary),
+                  Container(width: value * 4, height: AppSpacing.sm, color: AppColors.violet700),
                 ],
               ),
             ),
