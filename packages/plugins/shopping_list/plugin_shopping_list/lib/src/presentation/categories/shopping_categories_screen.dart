@@ -67,7 +67,7 @@ class _ShoppingCategoriesScreenState extends State<ShoppingCategoriesScreen> {
                           ),
                         ),
                         AppIconButton(
-                          icon: Icons.add,
+                          icon: AppIcons.plus,
                           tooltip: categoryStrings.add,
                           variant: AppIconButtonVariant.primary,
                           onPressed: () => _create(cubit),
@@ -156,25 +156,25 @@ class _CategoryRow extends StatelessWidget {
       trailing: Wrap(
         children: <Widget>[
           AppIconButton(
-            icon: Icons.arrow_upward,
+            icon: AppIcons.arrowUp,
             tooltip: categoryStrings.moveUp(name: name),
             variant: AppIconButtonVariant.subtle,
             onPressed: isFirst ? null : () => onMove(-1),
           ),
           AppIconButton(
-            icon: Icons.arrow_downward,
+            icon: AppIcons.arrowDown,
             tooltip: categoryStrings.moveDown(name: name),
             variant: AppIconButtonVariant.subtle,
             onPressed: isLast ? null : () => onMove(1),
           ),
           AppIconButton(
-            icon: Icons.edit_outlined,
+            icon: AppIcons.pencil,
             tooltip: categoryStrings.rename(name: name),
             variant: AppIconButtonVariant.subtle,
             onPressed: () => _rename(context),
           ),
           AppIconButton(
-            icon: Icons.delete_outline,
+            icon: AppIcons.trash2,
             tooltip: categoryStrings.delete(name: name),
             variant: AppIconButtonVariant.subtle,
             onPressed: () => _delete(context),

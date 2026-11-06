@@ -78,7 +78,7 @@ class ShoppingListScreen extends StatelessWidget {
           actions: <Widget>[
             if (exportSheet != null && state.groups.isNotEmpty)
               AppIconButton(
-                icon: Icons.ios_share,
+                icon: AppIcons.share,
                 tooltip: strings.list.export,
                 onPressed: () => showAppBottomSheet<void>(
                   context,
@@ -87,7 +87,7 @@ class ShoppingListScreen extends StatelessWidget {
               ),
             if (state.snapshot.entries.isNotEmpty)
               AppIconButton(
-                icon: Icons.tune,
+                icon: AppIcons.slidersVertical,
                 tooltip: strings.list.filters,
                 variant: state.filter.isEmpty && state.grouping == ShoppingGrouping.category
                     ? AppIconButtonVariant.standard
@@ -107,7 +107,7 @@ class ShoppingListScreen extends StatelessWidget {
           children: <Widget>[
             AppButton(
               label: strings.list.add,
-              icon: Icons.add,
+              icon: AppIcons.plus,
               expand: true,
               onPressed: () => context.push<String>(ShoppingListRoutes.create),
             ),
@@ -116,7 +116,7 @@ class ShoppingListScreen extends StatelessWidget {
         body: switch (state) {
           ShoppingListState(status: ShoppingListStatus.loading) => const AppLoadingView(),
           ShoppingListState(snapshot: ShoppingListSnapshot(entries: <ShoppingListEntry>[])) =>
-            AppStatusView(icon: Icons.shopping_cart_outlined, title: strings.list.emptyTitle, message: strings.list.emptyMessage),
+            AppStatusView(icon: AppIcons.shoppingCart, title: strings.list.emptyTitle, message: strings.list.emptyMessage),
           ShoppingListState(showFilters: false, groups: <ShoppingGroup>[]) => _NoMatches(onClear: _clearFilters(cubit)),
           _ => _ListBody(state: state),
         },
@@ -135,7 +135,7 @@ class _NoMatches extends StatelessWidget {
   Widget build(BuildContext context) {
     final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     return AppStatusView(
-      icon: Icons.tune,
+      icon: AppIcons.slidersVertical,
       title: listStrings.noMatchesTitle,
       action: AppButton(
         label: listStrings.clearFilters,
@@ -157,18 +157,18 @@ class _ListMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
     return PopupMenuButton<_ListMenuAction>(
-      icon: const Icon(Icons.more_vert),
+      icon: const Icon(AppIcons.ellipsisVertical),
       tooltip: listStrings.moreActions,
       onSelected: onSelected,
       itemBuilder: (BuildContext context) => <PopupMenuEntry<_ListMenuAction>>[
         PopupMenuItem<_ListMenuAction>(
           value: _ListMenuAction.categories,
-          child: _MenuRow(icon: Icons.label_outline, label: listStrings.categories),
+          child: _MenuRow(icon: AppIcons.tag, label: listStrings.categories),
         ),
         if (hasPurchased)
           PopupMenuItem<_ListMenuAction>(
             value: _ListMenuAction.clearPurchased,
-            child: _MenuRow(icon: Icons.delete_sweep_outlined, label: listStrings.clearPurchased),
+            child: _MenuRow(icon: AppIcons.trash, label: listStrings.clearPurchased),
           ),
       ],
     );
@@ -337,11 +337,11 @@ class _EntryTile extends StatelessWidget {
       onTap: () => context.push<String>(ShoppingListRoutes.edit(item.id)),
       badges: <Widget>[
         if (urgency != null && !purchased)
-          AppBadge(label: urgencyLabel(item.urgency), tone: urgency, icon: Icons.priority_high),
+          AppBadge(label: urgencyLabel(item.urgency), tone: urgency, icon: AppIcons.exclamation),
         if (entry.state == ShoppingItemState.overdue)
-          AppBadge(label: stateLabel(entry.state), tone: AppBadgeTone.warning, icon: Icons.schedule)
+          AppBadge(label: stateLabel(entry.state), tone: AppBadgeTone.warning, icon: AppIcons.clock)
         else if (entry.state == ShoppingItemState.waiting)
-          AppBadge(label: stateLabel(entry.state), icon: Icons.hourglass_empty),
+          AppBadge(label: stateLabel(entry.state), icon: AppIcons.hourglass),
         for (final ShoppingCategory category in categories) AppBadge(label: categoryName(category)),
       ],
     );

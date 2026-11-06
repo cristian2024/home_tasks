@@ -4,6 +4,7 @@
 
 ### Cambiado
 
+- Los iconos pasan a la familia lineal de `AppIcons`.
 - La urgencia alta se muestra en rojo, como la inmediata.
 - Con la lista vacía no se muestran compartir ni filtros. Si nada coincide con los filtros, el aviso va centrado y sin la franja de filtros activos.
 - «Guardar» queda fijo al pie del formulario. El botón de añadir categoría es rectangular y las acciones de cada fila, más discretas.

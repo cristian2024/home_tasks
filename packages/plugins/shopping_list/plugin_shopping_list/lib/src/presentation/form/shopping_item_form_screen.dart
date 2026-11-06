@@ -104,7 +104,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
             actions: <Widget>[
               if (cubit.isEditing)
                 AppIconButton(
-                  icon: Icons.delete_outline,
+                  icon: AppIcons.trash2,
                   tooltip: strings.form.delete,
                   onPressed: () => _confirmDelete(cubit),
                 ),

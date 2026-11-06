@@ -113,7 +113,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.whatsapp,
-              icon: Icons.chat_outlined,
+              icon: AppIcons.messageCircle,
               expand: true,
               onPressed: empty
                   ? null
@@ -125,7 +125,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.shareText,
-              icon: Icons.share_outlined,
+              icon: AppIcons.textAlignStart,
               variant: AppButtonVariant.secondary,
               expand: true,
               onPressed: empty
@@ -138,7 +138,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.shareFile,
-              icon: Icons.description_outlined,
+              icon: AppIcons.file,
               variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
@@ -151,7 +151,7 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
             const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.saveFile,
-              icon: Icons.save_alt,
+              icon: AppIcons.download,
               variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
