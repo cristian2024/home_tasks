@@ -73,28 +73,27 @@ class ShoppingListScreen extends StatelessWidget {
         );
       },
       builder: (BuildContext context, ShoppingListState state) => Scaffold(
-        appBar: AppBar(
+        appBar: AppTopBar(
           title: Text(strings.title),
           actions: <Widget>[
-            if (exportSheet != null)
+            if (exportSheet != null && state.groups.isNotEmpty)
               AppIconButton(
                 icon: Icons.ios_share,
                 tooltip: strings.list.export,
-                onPressed: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  showDragHandle: true,
+                onPressed: () => showAppBottomSheet<void>(
+                  context,
                   builder: (BuildContext context) => exportSheet(state),
                 ),
               ),
-            AppIconButton(
-              icon: Icons.tune,
-              tooltip: strings.list.filters,
-              variant: state.filter.isEmpty && state.grouping == ShoppingGrouping.category
-                  ? AppIconButtonVariant.standard
-                  : AppIconButtonVariant.tonal,
-              onPressed: cubit.toggleFilters,
-            ),
+            if (state.snapshot.entries.isNotEmpty)
+              AppIconButton(
+                icon: Icons.tune,
+                tooltip: strings.list.filters,
+                variant: state.filter.isEmpty && state.grouping == ShoppingGrouping.category
+                    ? AppIconButtonVariant.standard
+                    : AppIconButtonVariant.tonal,
+                onPressed: cubit.toggleFilters,
+              ),
             _ListMenuButton(
               hasPurchased: state.hasPurchased,
               onSelected: (_ListMenuAction action) => switch (action) {
@@ -104,23 +103,45 @@ class ShoppingListScreen extends StatelessWidget {
             ),
           ],
         ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: AppButton(
+        bottomNavigationBar: AppFooterActions(
+          children: <Widget>[
+            AppButton(
               label: strings.list.add,
               icon: Icons.add,
               expand: true,
               onPressed: () => context.push<String>(ShoppingListRoutes.create),
             ),
-          ),
+          ],
         ),
         body: switch (state) {
           ShoppingListState(status: ShoppingListStatus.loading) => const AppLoadingView(),
           ShoppingListState(snapshot: ShoppingListSnapshot(entries: <ShoppingListEntry>[])) =>
             AppStatusView(icon: Icons.shopping_cart_outlined, title: strings.list.emptyTitle, message: strings.list.emptyMessage),
+          ShoppingListState(showFilters: false, groups: <ShoppingGroup>[]) => _NoMatches(onClear: _clearFilters(cubit)),
           _ => _ListBody(state: state),
         },
+      ),
+    );
+  }
+}
+
+/// Nada coincide con los filtros.
+class _NoMatches extends StatelessWidget {
+  const _NoMatches({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final ShoppingListTranslations$shoppingList$list$es listStrings = shoppingListStrings.shoppingList.list;
+    return AppStatusView(
+      icon: Icons.tune,
+      title: listStrings.noMatchesTitle,
+      action: AppButton(
+        label: listStrings.clearFilters,
+        variant: AppButtonVariant.secondary,
+        size: AppButtonSize.medium,
+        onPressed: onClear,
       ),
     );
   }
@@ -187,7 +208,7 @@ class _ListBody extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       children: <Widget>[
         if (showFilters) _Filters(state: state),
-        if (!showFilters && !state.filter.isEmpty)
+        if (!showFilters && !state.filter.isEmpty && groups.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
@@ -196,28 +217,16 @@ class _ListBody extends StatelessWidget {
                 AppButton(
                   label: listStrings.clearFilters,
                   variant: AppButtonVariant.text,
-                  onPressed: () => cubit.setFilter(const ShoppingListFilter()),
+                  onPressed: _clearFilters(cubit),
                 ),
               ],
             ),
           ),
-        if (groups.isEmpty)
-          SizedBox(
-            height: 320,
-            child: AppStatusView(
-              icon: Icons.filter_alt_off_outlined,
-              title: listStrings.noMatchesTitle,
-              action: AppButton(
-                label: listStrings.clearFilters,
-                variant: AppButtonVariant.secondary,
-                onPressed: () => cubit.setFilter(const ShoppingListFilter()),
-              ),
-            ),
-          ),
+        if (groups.isEmpty) SizedBox(height: 320, child: _NoMatches(onClear: _clearFilters(cubit))),
         for (final ShoppingGroup group in groups) ...<Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: AppSectionHeader(_groupTitle(group)),
+            child: AppSectionHeader(_groupTitle(group), compact: true),
           ),
           for (final ShoppingListEntry entry in group.entries)
             _EntryTile(key: ValueKey<String>(entry.item.id), entry: entry, grouping: state.grouping),
@@ -232,6 +241,8 @@ class _ListBody extends StatelessWidget {
         _ => shoppingListStrings.shoppingList.list.uncategorized,
       };
 }
+
+VoidCallback _clearFilters(ShoppingListCubit cubit) => () => cubit.setFilter(const ShoppingListFilter());
 
 class _Filters extends StatelessWidget {
   const _Filters({required this.state});

@@ -99,7 +99,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
         final List<ShoppingCategory> categories = state.categories;
 
         return Scaffold(
-          appBar: AppBar(
+          appBar: AppTopBar(
             title: Text(cubit.isEditing ? strings.form.editTitle : strings.form.createTitle),
             actions: <Widget>[
               if (cubit.isEditing)
@@ -112,8 +112,12 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
           ),
           body: state.status == ShoppingItemFormStatus.loading
               ? const AppLoadingView()
-              : ListView(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Expanded(
+                      child: ListView(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                   children: <Widget>[
                     if (error is ShoppingItemFormGeneralError)
                       Padding(
@@ -130,7 +134,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                       textInputAction: TextInputAction.next,
                       errorText: fieldError(ShoppingValidationField.name),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.md),
                     AppTextField(
                       label: strings.form.quantity,
                       hint: strings.form.quantityHint,
@@ -139,15 +143,15 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                       textInputAction: TextInputAction.next,
                       errorText: fieldError(ShoppingValidationField.quantity),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.md),
                     AppTextField(
                       label: strings.form.notes,
                       controller: _notes,
-                      maxLines: 3,
+                      maxLines: 4,
                       maxLength: ShoppingValidator.maxNotesLength,
                       errorText: fieldError(ShoppingValidationField.notes),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.md),
                     AppChoiceSelector<Urgency>(
                       label: strings.form.urgency,
                       padding: EdgeInsets.zero,
@@ -223,20 +227,25 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
                         style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
-                    const SizedBox(height: AppSpacing.lg),
-                    AppButton(
-                      label: commonStrings.common.save,
-                      icon: Icons.check,
-                      expand: true,
-                      isLoading: state.status == ShoppingItemFormStatus.submitting,
-                      onPressed: () => cubit.submit(
-                        name: _name.text,
-                        quantity: _quantity.text,
-                        notes: _notes.text,
-                        everyDays: _every.text,
-                        minDays: _min.text,
-                        maxDays: _max.text,
+                  ],
                       ),
+                    ),
+                    AppFooterActions(
+                      children: <Widget>[
+                        AppButton(
+                          label: commonStrings.common.save,
+                          expand: true,
+                          isLoading: state.status == ShoppingItemFormStatus.submitting,
+                          onPressed: () => cubit.submit(
+                            name: _name.text,
+                            quantity: _quantity.text,
+                            notes: _notes.text,
+                            everyDays: _every.text,
+                            minDays: _min.text,
+                            maxDays: _max.text,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

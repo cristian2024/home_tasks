@@ -62,6 +62,7 @@ void main() {
     await scrollTo(tester, find.text('Guardar'));
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
+    await scrollTo(tester, find.text('Escribe un número de días entre 1 y 365.'));
     expect(find.text('Escribe un número de días entre 1 y 365.'), findsOneWidget);
 
     await tester.enterText(field('Cada cuántos días'), '7');
@@ -99,7 +100,7 @@ void main() {
     expect(find.text('Editar item'), findsOneWidget);
     expect(find.text('2'), findsWidgets);
     await tester.enterText(field('Nombre'), 'Huevos camperos');
-    await scrollTo(tester, find.text('Guardar'));
+    await scrollTo(tester, find.text('7'));
     expect(find.text('7'), findsOneWidget);
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
