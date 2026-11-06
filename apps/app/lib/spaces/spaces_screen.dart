@@ -29,7 +29,7 @@ class SpacesScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: t.create,
-              icon: Icons.add,
+              icon: AppIcons.plus,
               variant: AppButtonVariant.secondary,
               size: AppButtonSize.medium,
               expand: true,
@@ -130,7 +130,7 @@ class _SpaceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppTranslations$app$spaces$es t = appStrings.app.spaces;
     return AppSettingsTile(
-      icon: space.isShared ? Icons.home_outlined : Icons.smartphone,
+      icon: space.isShared ? AppIcons.house : AppIcons.smartphone,
       title: space.name,
       subtitle: <String>[space.isShared ? t.shared : t.local, if (active) t.active].join(' · '),
       enabled: !busy,
@@ -139,14 +139,14 @@ class _SpaceTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           AppIconButton(
-            icon: Icons.edit_outlined,
+            icon: AppIcons.pencil,
             tooltip: t.rename(name: space.name),
             variant: AppIconButtonVariant.subtle,
             onPressed: busy ? null : () => _rename(context),
           ),
           if (!active)
             AppIconButton(
-              icon: Icons.delete_outline,
+              icon: AppIcons.trash2,
               tooltip: t.delete(name: space.name),
               variant: AppIconButtonVariant.subtle,
               onPressed: busy ? null : () => _delete(context),

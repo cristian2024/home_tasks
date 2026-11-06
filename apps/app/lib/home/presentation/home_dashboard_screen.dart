@@ -30,14 +30,14 @@ class HomeDashboardScreen extends StatelessWidget {
           // En cuadrícula sigue visible: es la forma de volver a la lista.
           if (grid || hasModules)
             AppIconButton(
-              icon: grid ? Icons.view_list_outlined : Icons.grid_view_outlined,
+              icon: grid ? AppIcons.list : AppIcons.layoutGrid,
               tooltip: grid ? homeStrings.showList : homeStrings.showGrid,
               onPressed: () => context.read<AppSettingsController>().setHomeLayout(
                 grid ? HomeLayout.list : HomeLayout.grid,
               ),
             ),
           AppIconButton(
-            icon: Icons.settings_outlined,
+            icon: AppIcons.settings,
             tooltip: homeStrings.openSettings,
             onPressed: () => context.push(AppRoutes.settings),
           ),
@@ -67,7 +67,7 @@ class _DashboardList extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     if (state.tiles.isEmpty) {
       return AppStatusView(
-        icon: Icons.extension_off_outlined,
+        icon: AppIcons.layoutGrid,
         title: homeStrings.emptyTitle,
         message: homeStrings.emptyMessage,
         action: AppButton(
@@ -117,7 +117,7 @@ class _ShortcutGrid extends StatelessWidget {
           for (final PluginState tile in state.tiles)
             _PluginShortcut(key: ValueKey<String>(tile.plugin.id), tile: tile, retrying: state.retrying),
           AppShortcutTile(
-            icon: Icons.add,
+            icon: AppIcons.plus,
             label: appStrings.app.home.addShortcut,
             onTap: () => context.push(AppRoutes.catalog),
           ),
@@ -175,7 +175,7 @@ class _FailedTile extends StatelessWidget {
     return AppCard(
       child: Row(
         children: <Widget>[
-          Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
+          Icon(AppIcons.circleAlert, color: Theme.of(context).colorScheme.error),
           const SizedBox(width: AppSpacing.s300),
           Expanded(child: Text(homeStrings.pluginFailed(name: name), style: Theme.of(context).textTheme.bodyLarge)),
           AppButton(

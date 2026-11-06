@@ -145,11 +145,11 @@ class _NoHouseholdSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         AppSectionHeader(householdStrings.section),
-        AppButton(label: householdStrings.create, icon: Icons.home_outlined, isLoading: busy, expand: true, onPressed: () => _create(context)),
+        AppButton(label: householdStrings.create, icon: AppIcons.house, isLoading: busy, expand: true, onPressed: () => _create(context)),
         const SizedBox(height: AppSpacing.s300),
         AppButton(
           label: householdStrings.join,
-          icon: Icons.qr_code_scanner,
+          icon: AppIcons.scanLine,
           variant: AppButtonVariant.secondary,
           expand: true,
           onPressed: busy ? null : () => context.push(AppRoutes.syncJoin),
@@ -205,24 +205,24 @@ class _HouseholdSection extends StatelessWidget {
       title: householdStrings.section,
       children: <Widget>[
         AppSettingsTile(
-          icon: Icons.qr_code_2,
+          icon: AppIcons.qrCode,
           title: householdStrings.showCode,
           subtitle: householdStrings.showCodeDescription,
           onTap: () => context.push(AppRoutes.syncInvitation),
         ),
         AppSettingsTile(
-          icon: Icons.smartphone,
+          icon: AppIcons.smartphone,
           title: householdStrings.thisDevice,
           subtitle: <String>[state.device?.name ?? '', if (state.isCreator) householdStrings.creator].join(' · '),
           trailing: AppIconButton(
-            icon: Icons.edit_outlined,
+            icon: AppIcons.pencil,
             tooltip: householdStrings.rename,
             variant: AppIconButtonVariant.subtle,
             onPressed: () => _rename(context),
           ),
         ),
         AppSettingsTile(
-          icon: Icons.logout,
+          icon: AppIcons.logOut,
           title: householdStrings.leave,
           enabled: !state.busy,
           destructive: true,
@@ -322,12 +322,12 @@ class _DevicesSection extends StatelessWidget {
         else
           for (final SyncPeer peer in peers)
             AppSettingsTile(
-              icon: Icons.smartphone,
+              icon: AppIcons.smartphone,
               title: peer.name,
               subtitle: householdStrings.lastSynced(time: formatSyncTime(context, peer.lastSyncedAt)),
               trailing: state.isCreator
                   ? AppIconButton(
-                      icon: Icons.person_remove_outlined,
+                      icon: AppIcons.userMinus,
                       variant: AppIconButtonVariant.subtle,
                       tooltip: householdStrings.expel(name: peer.name),
                       onPressed: state.busy ? null : () => _expel(context, peer),
@@ -351,7 +351,7 @@ class _ConflictsSection extends StatelessWidget {
       title: conflictStrings.title,
       children: <Widget>[
         AppSettingsTile(
-          icon: openConflicts == 0 ? Icons.check_circle_outline : Icons.report_problem_outlined,
+          icon: openConflicts == 0 ? AppIcons.circleCheck : AppIcons.triangleAlert,
           title: conflictStrings.tile,
           subtitle: openConflicts == 0 ? conflictStrings.tileNone : conflictStrings.tileCount(n: openConflicts),
           onTap: () => context.push(AppRoutes.syncConflicts),

@@ -4,6 +4,7 @@
 
 ### Cambiado
 
+- Los iconos pasan a la familia lineal de `AppIcons`, y la lista de licencias incluye Inter y Lucide.
 - Las pantallas siguen el diseño de Penpot: barra, espaciados, tamaños de botón y campos.
 - La grilla de accesos tiene tantas columnas como quepan.
 - En Espacios se quita el título de sección, que repetía el de la pantalla.

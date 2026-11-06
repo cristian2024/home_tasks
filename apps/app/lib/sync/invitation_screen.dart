@@ -21,7 +21,7 @@ class InvitationScreen extends StatelessWidget {
       appBar: AppTopBar(title: Text(invitationStrings.title)),
       body: BlocBuilder<InvitationCubit, String?>(
         builder: (BuildContext context, String? code) => code == null
-            ? AppStatusView(icon: Icons.qr_code_2, title: invitationStrings.loading)
+            ? AppStatusView(icon: AppIcons.qrCode, title: invitationStrings.loading)
             : _InvitationBody(code: code),
       ),
     );
@@ -75,7 +75,7 @@ class _InvitationBody extends StatelessWidget {
           children: <Widget>[
             AppButton(
               label: invitationStrings.copy,
-              icon: Icons.copy,
+              icon: AppIcons.copy,
               variant: AppButtonVariant.secondary,
               size: AppButtonSize.medium,
               onPressed: () => _copy(context),
@@ -83,7 +83,7 @@ class _InvitationBody extends StatelessWidget {
             if (cubit.canShare)
               AppButton(
                 label: invitationStrings.share,
-                icon: Icons.share,
+                icon: AppIcons.share2,
                 variant: AppButtonVariant.outline,
                 size: AppButtonSize.medium,
                 onPressed: () => unawaited(cubit.share(subject: invitationStrings.title)),
@@ -113,7 +113,7 @@ class _WarningNote extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            ExcludeSemantics(child: Icon(Icons.warning_amber_rounded, size: AppSizes.iconCompact, color: colors.textWarning)),
+            ExcludeSemantics(child: Icon(AppIcons.triangleAlert, size: AppSizes.iconCompact, color: colors.textWarning)),
             const SizedBox(width: AppSpacing.s300),
             Expanded(child: Text(message, style: Theme.of(context).textTheme.bodyMedium)),
           ],

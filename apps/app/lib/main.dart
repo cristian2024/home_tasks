@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:core_spaces/core_spaces.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/widgets.dart';
 
 import 'app_module_registrar.dart';
@@ -16,6 +17,7 @@ import 'spaces/space_switcher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerDesignSystemLicenses();
   final String systemLanguageCode = LocalizationCoordinator.resolveLanguage(PlatformDispatcher.instance.locales);
   final DeviceEnvironment device =
       await bootstrapDevice(adapters: deviceAdapters, spaceStorage: await appSpaceStorage());

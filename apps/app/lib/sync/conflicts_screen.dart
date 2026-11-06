@@ -24,7 +24,7 @@ class ConflictsScreen extends StatelessWidget {
           }
           final List<SyncConflict> conflicts = state.conflicts;
           if (conflicts.isEmpty) {
-            return AppStatusView(icon: Icons.check_circle_outline, title: conflictStrings.emptyTitle, message: conflictStrings.emptyMessage);
+            return AppStatusView(icon: AppIcons.circleCheck, title: conflictStrings.emptyTitle, message: conflictStrings.emptyMessage);
           }
           final ConflictsCubit cubit = context.read<ConflictsCubit>();
           return ListView(

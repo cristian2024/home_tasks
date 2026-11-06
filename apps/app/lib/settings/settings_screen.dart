@@ -63,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
               title: settingsStrings.modulesSection,
               children: <Widget>[
                 AppSettingsTile(
-                  icon: Icons.extension_outlined,
+                  icon: AppIcons.layoutGrid,
                   title: settingsStrings.modules,
                   subtitle: settingsStrings.modulesDescription,
                   onTap: () => context.push(AppRoutes.catalog),
@@ -75,7 +75,7 @@ class SettingsScreen extends StatelessWidget {
                 title: spacesStrings.section,
                 children: <Widget>[
                   AppSettingsTile(
-                    icon: Icons.workspaces_outlined,
+                    icon: AppIcons.layers,
                     title: spacesStrings.tile,
                     subtitle: spacesStrings.createDescription,
                     onTap: () => context.push(AppRoutes.spaces),
@@ -87,7 +87,7 @@ class SettingsScreen extends StatelessWidget {
                 title: syncStrings.section,
                 children: <Widget>[
                   AppSettingsTile(
-                    icon: Icons.sync,
+                    icon: AppIcons.refreshCw,
                     title: syncStrings.tile,
                     subtitle: syncStrings.tileDescription,
                     onTap: () => context.push(AppRoutes.sync),
@@ -98,7 +98,7 @@ class SettingsScreen extends StatelessWidget {
               title: settingsStrings.dataSection,
               children: <Widget>[
                 AppSettingsTile(
-                  icon: Icons.import_export,
+                  icon: AppIcons.arrowUpDown,
                   title: settingsStrings.exportImport,
                   subtitle: settingsStrings.comingSoon,
                   enabled: false,
