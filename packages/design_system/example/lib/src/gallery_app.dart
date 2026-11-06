@@ -130,13 +130,13 @@ class _GalleryPage extends StatelessWidget {
               AppButton(label: commonStrings.common.save, onPressed: () {}),
               AppButton(
                 label: commonStrings.common.retry,
-                icon: Icons.refresh,
+                icon: AppIcons.refreshCw,
                 variant: AppButtonVariant.secondary,
                 onPressed: () {},
               ),
               AppButton(
                 label: commonStrings.common.confirm,
-                icon: Icons.save_alt,
+                icon: AppIcons.download,
                 variant: AppButtonVariant.outline,
                 onPressed: () {},
               ),
@@ -149,15 +149,15 @@ class _GalleryPage extends StatelessWidget {
           Wrap(
             spacing: AppSpacing.sm,
             children: <Widget>[
-              AppIconButton(icon: Icons.edit, tooltip: 'Editar', onPressed: () {}),
+              AppIconButton(icon: AppIcons.pencil, tooltip: 'Editar', onPressed: () {}),
               AppIconButton(
-                icon: Icons.add,
+                icon: AppIcons.plus,
                 tooltip: 'Añadir',
                 variant: AppIconButtonVariant.filled,
                 onPressed: () {},
               ),
               AppIconButton(
-                icon: Icons.qr_code_scanner,
+                icon: AppIcons.scanLine,
                 tooltip: 'Escanear',
                 variant: AppIconButtonVariant.tonal,
                 onPressed: () {},
@@ -174,31 +174,31 @@ class _GalleryPage extends StatelessWidget {
             onTap: () {},
             child: const ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.inventory_2),
+              leading: Icon(AppIcons.box),
               title: Text('Caja de Almacenamiento Ropa Invierno'),
               subtitle: Text('Estante superior del armario principal'),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           AppModuleCard(
-            icon: Icons.shopping_cart_outlined,
+            icon: AppIcons.shoppingCart,
             title: 'Lista de compras',
             summary: '5 cosas por comprar',
             badges: const <Widget>[
-              AppBadge(label: '2 urgentes', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+              AppBadge(label: '2 urgentes', tone: AppBadgeTone.critical, icon: AppIcons.exclamation),
             ],
             onTap: () {},
           ),
           const SizedBox(height: AppSpacing.sm),
           AppModuleCard(
-            icon: Icons.qr_code_scanner,
+            icon: AppIcons.scanLine,
             title: 'Seguimiento de Objetos',
             summary: '12 objetos registrados',
             actions: <Widget>[
-              AppButton(label: 'Escanear', icon: Icons.qr_code_scanner, onPressed: () {}),
+              AppButton(label: 'Escanear', icon: AppIcons.scanLine, onPressed: () {}),
               AppButton(
                 label: 'Ver objetos',
-                icon: Icons.inventory_2_outlined,
+                icon: AppIcons.box,
                 variant: AppButtonVariant.secondary,
                 onPressed: () {},
               ),
@@ -209,7 +209,7 @@ class _GalleryPage extends StatelessWidget {
             children: <Widget>[
               AppChoiceSelector<bool>(
                 label: 'Tema',
-                icon: Icons.palette_outlined,
+                icon: AppIcons.palette,
                 options: const <AppChoice<bool>>[
                   AppChoice<bool>(value: false, label: 'Claro'),
                   AppChoice<bool>(value: true, label: 'Oscuro'),
@@ -217,10 +217,10 @@ class _GalleryPage extends StatelessWidget {
                 selected: isDark,
                 onChanged: onDarkChanged,
               ),
-              AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
-              AppSettingsTile(icon: Icons.logout, title: 'Salir del hogar', destructive: true, onTap: () {}),
+              AppSettingsTile(icon: AppIcons.layoutGrid, title: 'Módulos', onTap: () {}),
+              AppSettingsTile(icon: AppIcons.logOut, title: 'Salir del hogar', destructive: true, onTap: () {}),
               const AppSettingsTile(
-                icon: Icons.import_export,
+                icon: AppIcons.arrowUpDown,
                 title: 'Exportar / importar datos',
                 subtitle: 'Próximamente',
                 enabled: false,
@@ -277,7 +277,7 @@ class _GalleryPage extends StatelessWidget {
             height: 320,
             child: AppCard(
               child: AppStatusView(
-                icon: Icons.search_off,
+                icon: AppIcons.search,
                 title: 'Identificador no registrado',
                 message: 'Este código no está asociado a ningún objeto.',
                 action: AppButton(label: commonStrings.common.retry, onPressed: () {}),
@@ -341,7 +341,7 @@ class _ListsDemoState extends State<_ListsDemo> {
             options: const <AppChoice<String>>[
               AppChoice<String>(value: 'food', label: 'Comida'),
               AppChoice<String>(value: 'cleaning', label: 'Limpieza'),
-              AppChoice<String>(value: 'home', label: 'Hogar', icon: Icons.home_outlined),
+              AppChoice<String>(value: 'home', label: 'Hogar', icon: AppIcons.house),
             ],
             selected: _categories,
             onChanged: (Set<String> categories) => setState(() => _categories = categories),
@@ -353,7 +353,7 @@ class _ListsDemoState extends State<_ListsDemo> {
             checkboxLabel: 'Marcar como comprado',
             onChanged: (bool bought) => setState(() => _eggsBought = bought),
             badges: const <Widget>[
-              AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+              AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: AppIcons.exclamation),
               AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
               AppBadge(label: 'Comida'),
               AppBadge(label: 'Activo', tone: AppBadgeTone.success),

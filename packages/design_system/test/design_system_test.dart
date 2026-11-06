@@ -86,7 +86,7 @@ void main() {
       await tester.pumpWidget(
         host(
           AppModuleCard(
-            icon: Icons.shopping_cart_outlined,
+            icon: AppIcons.shoppingCart,
             title: 'Lista de compras',
             summary: '5 cosas por comprar',
             badges: const <Widget>[AppBadge(label: '2 urgentes')],
@@ -107,7 +107,7 @@ void main() {
       await tester.pumpWidget(
         host(
           AppModuleCard(
-            icon: Icons.qr_code_scanner,
+            icon: AppIcons.scanLine,
             title: 'Objetos',
             actions: <Widget>[
               AppButton(label: 'A', onPressed: () {}),
@@ -125,7 +125,7 @@ void main() {
     });
 
     testWidgets('sin resumen ni acciones muestra solo el título', (WidgetTester tester) async {
-      await tester.pumpWidget(host(const AppModuleCard(icon: Icons.extension_outlined, title: 'Módulo')));
+      await tester.pumpWidget(host(const AppModuleCard(icon: AppIcons.layoutGrid, title: 'Módulo')));
 
       expect(find.byType(Wrap), findsNothing);
       expect(find.byType(AppButton), findsNothing);
@@ -165,11 +165,11 @@ void main() {
 
     testWidgets('un componente funciona en un tema sin esos colores', (WidgetTester tester) async {
       await tester.pumpWidget(
-        host(AppSettingsTile(icon: Icons.tune, title: 'Módulos', onTap: () {}), theme: ThemeData.dark()),
+        host(AppSettingsTile(icon: AppIcons.slidersVertical, title: 'Módulos', onTap: () {}), theme: ThemeData.dark()),
       );
 
       expect(tester.takeException(), isNull);
-      expect(tester.widget<Icon>(find.byIcon(Icons.chevron_right)).color, AppThemeColors.dark.textTertiary);
+      expect(tester.widget<Icon>(find.byIcon(AppIcons.chevronRight)).color, AppThemeColors.dark.textTertiary);
     });
 
     test('copyWith cambia solo lo indicado', () {
@@ -363,7 +363,7 @@ void main() {
             checkboxLabel: 'Marcar como comprado',
             onChanged: (bool _) {},
             badges: const <Widget>[
-              AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+              AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: AppIcons.exclamation),
               AppBadge(label: 'Atrasado', tone: AppBadgeTone.warning),
               AppBadge(label: 'Limpieza'),
               AppBadge(label: 'Hogar'),
@@ -390,7 +390,7 @@ void main() {
     testWidgets('AppShortcutTile es un botón con su título para los lectores de pantalla', (WidgetTester tester) async {
       final SemanticsHandle semantics = tester.ensureSemantics();
       int taps = 0;
-      await tester.pumpWidget(host(AppShortcutTile(icon: Icons.inventory_2_outlined, label: 'Objetos', onTap: () => taps++)));
+      await tester.pumpWidget(host(AppShortcutTile(icon: AppIcons.box, label: 'Objetos', onTap: () => taps++)));
 
       expect(
         tester.getSemantics(find.byType(AppShortcutTile)),
@@ -547,7 +547,7 @@ void main() {
 
       double top(String label) => tester.getTopLeft(find.widgetWithText(AppChoiceSegment, label)).dy;
       expect(top('Aaaa'), top('Bbbb'));
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(AppIcons.check), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -596,9 +596,9 @@ void main() {
         host(
           Column(
             children: <Widget>[
-              AppSettingsTile(icon: Icons.logout, title: 'Salir', destructive: true, onTap: () {}),
-              const AppSettingsTile(icon: Icons.import_export, title: 'Exportar', subtitle: 'Pronto', enabled: false),
-              AppSettingsTile(icon: Icons.tune, title: 'Módulos', onTap: () {}),
+              AppSettingsTile(icon: AppIcons.logOut, title: 'Salir', destructive: true, onTap: () {}),
+              const AppSettingsTile(icon: AppIcons.arrowUpDown, title: 'Exportar', subtitle: 'Pronto', enabled: false),
+              AppSettingsTile(icon: AppIcons.slidersVertical, title: 'Módulos', onTap: () {}),
             ],
           ),
         ),
@@ -608,9 +608,9 @@ void main() {
       expect(textColor('Salir'), AppThemeColors.light.textDanger);
       expect(textColor('Exportar'), AppThemeColors.light.textDisabled);
       expect(textColor('Pronto'), AppThemeColors.light.textSecondary, reason: 'la explicación sigue legible');
-      expect(tester.widget<Icon>(find.byIcon(Icons.import_export)).color ?? IconTheme.of(tester.element(find.byIcon(Icons.import_export))).color,
+      expect(tester.widget<Icon>(find.byIcon(AppIcons.arrowUpDown)).color ?? IconTheme.of(tester.element(find.byIcon(AppIcons.arrowUpDown))).color,
           AppThemeColors.light.textDisabled);
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget, reason: 'solo la fila normal lleva flecha');
+      expect(find.byIcon(AppIcons.chevronRight), findsOneWidget, reason: 'solo la fila normal lleva flecha');
     });
 
     testWidgets('AppChoiceSelector no desborda con el texto al 200 %', (WidgetTester tester) async {
@@ -641,9 +641,9 @@ void main() {
           AppSettingsSection(
             title: 'Ajustes',
             children: <Widget>[
-              AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () => taps++),
+              AppSettingsTile(icon: AppIcons.layoutGrid, title: 'Módulos', onTap: () => taps++),
               AppSettingsTile(
-                icon: Icons.import_export,
+                icon: AppIcons.arrowUpDown,
                 title: 'Exportar',
                 subtitle: 'Próximamente',
                 enabled: false,
@@ -658,7 +658,7 @@ void main() {
       await tester.tap(find.text('Exportar'));
 
       expect(taps, 1);
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(AppIcons.chevronRight), findsOneWidget);
       expect(find.byType(Divider), findsOneWidget);
     });
   });
@@ -754,7 +754,7 @@ void main() {
       expect(find.text('3 cambios pendientes'), findsOneWidget);
       expect(find.text('Ningún dispositivo a la vista'), findsOneWidget);
       expect(find.text('Revisa la WiFi.'), findsOneWidget);
-      expect(find.byIcon(Icons.sync_problem), findsOneWidget);
+      expect(find.byIcon(AppIcons.refreshCwOff), findsOneWidget);
 
       await tester.tap(find.text('Sincronizar ahora'));
       expect(taps, 1);
@@ -764,7 +764,7 @@ void main() {
       final SemanticsHandle semantics = tester.ensureSemantics();
       await tester.pumpWidget(host(const AppSyncStatusCard(tone: AppSyncTone.off, title: 'Sin hogar')));
 
-      expect(find.byIcon(Icons.home_outlined), findsOneWidget);
+      expect(find.byIcon(AppIcons.house), findsOneWidget);
       expect(tester.getSemantics(find.text('Sin hogar')), isSemantics(label: 'Sin hogar', isLiveRegion: true));
       expect(find.byType(AppButton), findsNothing);
       semantics.dispose();
@@ -912,7 +912,7 @@ void main() {
       testWidgets('AppButton $variant de tamaño $size mide $height y cumple las guías', (WidgetTester tester) async {
         final SemanticsHandle handle = tester.ensureSemantics();
         await tester.pumpWidget(
-          host(Center(child: AppButton(label: 'Acción', size: size, variant: variant, icon: Icons.add, onPressed: () {}))),
+          host(Center(child: AppButton(label: 'Acción', size: size, variant: variant, icon: AppIcons.plus, onPressed: () {}))),
         );
 
         expect(tester.getSize(find.byType(AppTouchTarget)).height, height);
@@ -990,14 +990,14 @@ void main() {
   group('AppTextField', () {
     testWidgets('muestra la etiqueta fuera del campo y la lee como su nombre', (WidgetTester tester) async {
       final SemanticsHandle handle = tester.ensureSemantics();
-      await tester.pumpWidget(host(const AppTextField(label: 'Nombre', hint: 'Ej.: Leche', prefixIcon: Icons.search)));
+      await tester.pumpWidget(host(const AppTextField(label: 'Nombre', hint: 'Ej.: Leche', prefixIcon: AppIcons.search)));
 
       expect(
         tester.getBottomLeft(find.text('Nombre')).dy,
         lessThanOrEqualTo(tester.getTopLeft(find.byType(TextField)).dy),
       );
       expect(tester.getSize(find.byType(TextField)).height, AppSizes.controlLarge);
-      expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.byIcon(AppIcons.search), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp('Nombre')), findsOneWidget);
       handle.dispose();
     });
@@ -1075,7 +1075,7 @@ void main() {
       host(
         Column(
           children: <Widget>[
-            const AppNote(icon: Icons.link, text: 'Se asociará el QR'),
+            const AppNote(icon: AppIcons.link, text: 'Se asociará el QR'),
             const SizedBox(height: 100, child: AppCameraFrame(child: Text('Vista previa'))),
             AppFooterActions(children: <Widget>[AppButton(label: 'Guardar', onPressed: () {})]),
           ],
@@ -1086,5 +1086,16 @@ void main() {
     expect(find.text('Se asociará el QR'), findsOneWidget);
     expect(find.text('Vista previa'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
+  });
+
+  test('AppIcons apunta a la fuente incluida en el paquete', () {
+    expect(AppIcons.plus.fontFamily, 'Lucide');
+    expect(AppIcons.plus.fontPackage, 'design_system');
+  });
+
+  testWidgets('la flecha atrás del tema es la de AppIcons', (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, home: const Scaffold(body: BackButton())));
+
+    expect(find.byIcon(AppIcons.arrowLeft), findsOneWidget);
   });
 }

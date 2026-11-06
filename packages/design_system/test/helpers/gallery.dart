@@ -14,20 +14,20 @@ Widget gallery() => ListView(
       children: <Widget>[
         const AppSectionHeader('Sección'),
         AppButton(label: 'Guardar', onPressed: () {}),
-        AppButton(label: 'Secundario', icon: Icons.add, variant: AppButtonVariant.secondary, onPressed: () {}),
-        AppButton(label: 'Borde', icon: Icons.save_alt, variant: AppButtonVariant.outline, onPressed: () {}),
+        AppButton(label: 'Secundario', icon: AppIcons.plus, variant: AppButtonVariant.secondary, onPressed: () {}),
+        AppButton(label: 'Borde', icon: AppIcons.download, variant: AppButtonVariant.outline, onPressed: () {}),
         AppButton(label: 'Texto', variant: AppButtonVariant.text, onPressed: () {}),
         AppIconButton(icon: Icons.delete, tooltip: 'Eliminar', onPressed: () {}),
-        AppIconButton(icon: Icons.add, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
+        AppIconButton(icon: AppIcons.plus, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
         const AppTextField(label: 'Nombre'),
         AppCard(semanticLabel: 'Caja A', onTap: () {}, child: const Text('Caja A')),
         SizedBox(
           height: 240,
           child: AppShortcutGrid(
             children: <Widget>[
-              AppShortcutTile(icon: Icons.qr_code_scanner, label: 'Objetos', onTap: () {}),
+              AppShortcutTile(icon: AppIcons.scanLine, label: 'Objetos', onTap: () {}),
               AppShortcutTile(label: 'Falló', error: true, tooltip: 'No se pudo iniciar', onTap: () {}),
-              AppShortcutTile(icon: Icons.add, label: 'Añadir', onTap: () {}),
+              AppShortcutTile(icon: AppIcons.plus, label: 'Añadir', onTap: () {}),
             ],
           ),
         ),
@@ -36,7 +36,7 @@ Widget gallery() => ListView(
           children: <Widget>[
             AppChoiceSelector<String>(
               label: 'Tema',
-              icon: Icons.palette_outlined,
+              icon: AppIcons.palette,
               options: const <AppChoice<String>>[
                 AppChoice<String>(value: 'system', label: 'Sistema'),
                 AppChoice<String>(value: 'light', label: 'Claro'),
@@ -45,10 +45,10 @@ Widget gallery() => ListView(
               selected: 'system',
               onChanged: (String _) {},
             ),
-            AppSettingsTile(icon: Icons.extension_outlined, title: 'Módulos', onTap: () {}),
-            AppSettingsTile(icon: Icons.logout, title: 'Salir del hogar', destructive: true, onTap: () {}),
+            AppSettingsTile(icon: AppIcons.layoutGrid, title: 'Módulos', onTap: () {}),
+            AppSettingsTile(icon: AppIcons.logOut, title: 'Salir del hogar', destructive: true, onTap: () {}),
             const AppSettingsTile(
-              icon: Icons.import_export,
+              icon: AppIcons.arrowUpDown,
               title: 'Exportar / importar datos',
               subtitle: 'Próximamente',
               enabled: false,
@@ -59,7 +59,7 @@ Widget gallery() => ListView(
           label: 'Categorías',
           options: const <AppChoice<String>>[
             AppChoice<String>(value: 'food', label: 'Comida'),
-            AppChoice<String>(value: 'home', label: 'Hogar', icon: Icons.home_outlined),
+            AppChoice<String>(value: 'home', label: 'Hogar', icon: AppIcons.house),
           ],
           selected: const <String>{'food'},
           onChanged: (Set<String> _) {},
@@ -72,7 +72,7 @@ Widget gallery() => ListView(
           onChanged: (bool _) {},
           onTap: () {},
           badges: const <Widget>[
-            AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: Icons.priority_high),
+            AppBadge(label: 'Inmediata', tone: AppBadgeTone.critical, icon: AppIcons.exclamation),
             AppBadge(label: 'Toca pronto', tone: AppBadgeTone.warning),
             AppBadge(label: 'Comida'),
             AppBadge(label: 'Nuevo', tone: AppBadgeTone.brand),
@@ -81,18 +81,18 @@ Widget gallery() => ListView(
         ),
         AppCheckTile(title: 'Pan', value: true, checkboxLabel: 'Marcar como comprado', onChanged: (bool _) {}),
         AppModuleCard(
-          icon: Icons.shopping_cart_outlined,
+          icon: AppIcons.shoppingCart,
           title: 'Lista de compras',
           summary: '5 cosas por comprar',
           badges: const <Widget>[AppBadge(label: '2 urgentes', tone: AppBadgeTone.critical)],
           onTap: () {},
         ),
         AppModuleCard(
-          icon: Icons.qr_code_scanner,
+          icon: AppIcons.scanLine,
           title: 'Seguimiento de Objetos',
           summary: '12 objetos registrados',
           actions: <Widget>[
-            AppButton(label: 'Escanear', icon: Icons.qr_code_scanner, onPressed: () {}),
+            AppButton(label: 'Escanear', icon: AppIcons.scanLine, onPressed: () {}),
             AppButton(label: 'Ver objetos', variant: AppButtonVariant.secondary, onPressed: () {}),
           ],
         ),
