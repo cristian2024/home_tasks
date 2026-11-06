@@ -99,7 +99,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Se asociará el QR: NEW-1'), findsOneWidget);
 
-    await tester.enterText(find.widgetWithText(TextField, 'Nombre'), 'Caja nueva');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Nombre'), 'Caja nueva');
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
 
@@ -159,7 +159,7 @@ void main() {
 
     await tester.tap(find.text('Escribir el código'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextField, 'Código'), findsOneWidget);
+    expect(find.widgetWithText(AppTextField, 'Código'), findsOneWidget);
   });
 
   testWidgets('el selector Código oculta la cámara y Cámara oculta el campo', (WidgetTester tester) async {
@@ -171,12 +171,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(FakeCameraScanner.previewKey), findsNothing);
     expect(harness.hardware.cameras.single.isDisposed, isTrue);
-    expect(find.widgetWithText(TextField, 'Código'), findsOneWidget);
+    expect(find.widgetWithText(AppTextField, 'Código'), findsOneWidget);
 
     await tester.tap(find.text('Cámara'));
     await tester.pumpAndSettle();
     expect(find.byKey(FakeCameraScanner.previewKey), findsOneWidget);
-    expect(find.widgetWithText(TextField, 'Código'), findsNothing);
+    expect(find.widgetWithText(AppTextField, 'Código'), findsNothing);
 
     await tester.tap(find.text('Código'));
     await tester.pumpAndSettle();
@@ -184,7 +184,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Este campo es obligatorio.'), findsOneWidget);
 
-    await tester.enterText(find.widgetWithText(TextField, 'Código'), 'QR-123');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Código'), 'QR-123');
     await tester.tap(find.text('Buscar'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Caja A'), findsOneWidget);
@@ -209,11 +209,11 @@ void main() {
 
     await tester.tap(find.byTooltip('Editar objeto'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Nombre'), 'Caja grande');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Nombre'), 'Caja grande');
     await tester.tap(find.byTooltip('Añadir dato'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Clave'), 'color_etiqueta');
-    await tester.enterText(find.widgetWithText(TextField, 'Valor'), 'Azul');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Clave'), 'color_etiqueta');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Valor'), 'Azul');
     // El viewport del test es bajo: el botón queda fuera de la lista visible.
     await tester.scrollUntilVisible(find.text('Guardar'), 200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Guardar'));
@@ -230,7 +230,7 @@ void main() {
 
     await tester.tap(find.text('Añadir nota'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Título'), 'Cambio de Ubicación');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Título'), 'Cambio de Ubicación');
     await tester.tap(find.text('Guardar nota'));
     await tester.pumpAndSettle();
 
@@ -269,7 +269,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Código'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.widgetWithText(TextField, 'Código'), 'TAG-1');
+      await tester.enterText(find.widgetWithText(AppTextField, 'Código'), 'TAG-1');
       await tester.tap(find.text('NFC').last); // El primero es el selector de modo.
       await tester.tap(find.text('Asociar'));
       await tester.pumpAndSettle();
@@ -400,7 +400,7 @@ void main() {
       await tester.tap(find.text('Añadir objeto aquí'));
       await tester.pumpAndSettle();
       expect(find.text('Se creará dentro de: Mueble'), findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextField, 'Nombre'), 'Organizador');
+      await tester.enterText(find.widgetWithText(AppTextField, 'Nombre'), 'Organizador');
       await tester.scrollUntilVisible(find.text('Guardar'), 200, scrollable: scrollable());
       await tester.tap(find.text('Guardar'));
       await tester.pumpAndSettle();
@@ -436,7 +436,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, 'Mover «Organizador»'), findsOneWidget);
 
-      await tester.enterText(find.widgetWithText(TextField, 'Buscar contenedor por nombre'), 'caj');
+      await tester.enterText(find.widgetWithText(AppTextField, 'Buscar contenedor por nombre'), 'caj');
       await tester.pumpAndSettle();
       expect(find.text('Mueble'), findsNothing);
       await tester.tap(find.text('Caja'));
@@ -499,7 +499,7 @@ void main() {
 
       expect(find.text('Mueble › Organizador'), findsOneWidget);
       expect(find.text('Mueble'), findsWidgets);
-      await tester.enterText(find.widgetWithText(TextField, 'Buscar por nombre'), 'caj');
+      await tester.enterText(find.widgetWithText(AppTextField, 'Buscar por nombre'), 'caj');
       await tester.pumpAndSettle();
       expect(find.text('Cajón'), findsOneWidget);
       expect(find.text('Mueble › Organizador'), findsOneWidget);

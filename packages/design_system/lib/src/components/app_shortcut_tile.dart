@@ -40,7 +40,7 @@ class AppShortcutTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadii.medium),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xs),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.sm),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[

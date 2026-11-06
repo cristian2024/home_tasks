@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.0 - 2026-11-05
+
+### Añadido
+
+- `AppButtonSize`: tamaños de 36, 40 y 48 de alto; el texto y los márgenes cambian con ellos.
+- `AppButtonVariant.danger` y `dangerOutline`.
+- `AppTouchTarget`: da 48 de área táctil y semántica a un control más pequeño, sin ocupar más sitio.
+- `AppTopBar`: barra superior de 64 de alto, con el título pegado a la flecha.
+- `AppFooterActions`, `AppNote`, `AppCameraFrame` y `showAppBottomSheet`.
+- `AppIconButtonVariant.subtle` y `primary`.
+- `AppTextField.prefixIcon`.
+- `AppChoiceSelector.showLabel` y `wrapLabels`, y `AppChoiceSegment.borderRadius`.
+- `AppDialogOption.primary`.
+- `AppSettingsTile.compact` y `AppSectionHeader.compact`.
+- `AppSizes.controlCompact` y `topBarHeight`.
+
+### Cambiado
+
+- **Incompatible:** `AppShortcutGrid` calcula las columnas según el ancho, a razón de 114 por casilla y con un mínimo de 2. `compactBreakpoint`, `compactColumns` y `maxTileWidth` pasan a ser `minColumns` y `minTileWidth`, y `columnsFor` recibe el ancho sin márgenes.
+- **Incompatible:** `AppTextField` muestra la etiqueta encima del campo, mide 48 de alto y solo enseña el contador a partir del 80 % de `maxLength`. Con varias líneas empieza con dos y crece. Quien busque en tests un campo por su etiqueta debe usar `find.widgetWithText(AppTextField, …)`.
+- **Incompatible:** `showAppChoiceDialog` apila las opciones a todo el ancho, con cancelar al final, y la destructiva lleva borde.
+- `AppButton` mide 48 con `label-l`, y 36 si es solo texto; ya no ocupa 48 de alto en todos los tamaños.
+- `AppChoiceSelector` mide 44 de alto, con 48 de área táctil. `AppFilterChips` mide 36, con borde de marca en la opción activa.
+- `AppCheckTile` lleva la casilla de 24 alineada con el margen.
+- Temas: filas de lista, diálogos (ancho 342, radio 24, velo `bgScrim`), hojas (fondo `bgSurfaceRaised`), barra superior y campos con los valores del diseño.
+- `AppIconButton` estándar usa `textPrimary`.
+- `AppSettingsTile` desactivada mantiene legible el subtítulo.
+- `AppSyncStatusCard` sin hogar muestra el icono de casa.
+- `AppConflictCard` deja la etiqueta en una línea si cabe junto al badge.
+
 ## 0.2.1 - 2026-11-04
 
 ### Añadido

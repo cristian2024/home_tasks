@@ -56,7 +56,7 @@ class AppSyncStatusCard extends StatelessWidget {
     final String? message = this.message;
     final String? actionLabel = this.actionLabel;
     final (IconData icon, Color color) = switch (tone) {
-      AppSyncTone.off => (Icons.sync_disabled, colors.textSecondary),
+      AppSyncTone.off => (Icons.home_outlined, colors.textSecondary),
       AppSyncTone.idle => (Icons.sync, colors.textBrand),
       AppSyncTone.syncing => (Icons.sync, colors.textBrand),
       AppSyncTone.error => (Icons.sync_problem, colors.textDanger),
@@ -88,6 +88,7 @@ class AppSyncStatusCard extends StatelessWidget {
             AppButton(
               label: actionLabel,
               variant: AppButtonVariant.secondary,
+              size: AppButtonSize.medium,
               expand: true,
               isLoading: tone == AppSyncTone.syncing,
               onPressed: onAction,

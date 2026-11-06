@@ -1,49 +1,66 @@
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
+import '../tokens/app_spacing.dart';
+import 'app_button.dart';
+
 /// Opción de [showAppChoiceDialog].
 class AppDialogOption<T> {
-  const AppDialogOption({required this.value, required this.label, this.destructive = false});
+  const AppDialogOption({required this.value, required this.label, this.destructive = false, this.primary = false});
 
   final T value;
   final String label;
 
-  /// Se pinta con el color de error (p. ej. «Borrar todo»).
+  /// Se pinta con borde de peligro (p. ej. «Borrar todo»).
   final bool destructive;
+
+  /// Es la opción recomendada.
+  final bool primary;
 }
 
 /// Diálogo que pregunta entre varias acciones, además de cancelar. Devuelve
 /// el `value` de la opción elegida, o `null` si el usuario cancela o lo
-/// cierra. Si los botones no caben en una fila, se apilan.
+/// cierra. Las opciones van apiladas, a todo el ancho, y cancelar al final.
 Future<T?> showAppChoiceDialog<T>(
   BuildContext context, {
   required String title,
   required String message,
   required List<AppDialogOption<T>> options,
   String? cancelLabel,
-}) {
-  return showDialog<T>(
-    context: context,
-    builder: (BuildContext context) {
-      final ColorScheme colors = Theme.of(context).colorScheme;
-      return AlertDialog(
+}) =>
+    showDialog<T>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
         title: Text(title),
-        content: SingleChildScrollView(child: Text(message)),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(cancelLabel ?? commonStrings.common.cancel),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.sm,
+            children: <Widget>[
+              Text(message),
+              const SizedBox(height: AppSpacing.sm),
+              for (final AppDialogOption<T> option in options)
+                AppButton(
+                  label: option.label,
+                  variant: switch (option) {
+                    AppDialogOption<T>(destructive: true) => AppButtonVariant.dangerOutline,
+                    AppDialogOption<T>(primary: true) => AppButtonVariant.primary,
+                    _ => AppButtonVariant.secondary,
+                  },
+                  size: AppButtonSize.medium,
+                  expand: true,
+                  onPressed: () => Navigator.of(context).pop(option.value),
+                ),
+              Center(
+                child: AppButton(
+                  label: cancelLabel ?? commonStrings.common.cancel,
+                  variant: AppButtonVariant.text,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
           ),
-          for (final AppDialogOption<T> option in options)
-            FilledButton(
-              style: option.destructive
-                  ? FilledButton.styleFrom(backgroundColor: colors.error, foregroundColor: colors.onError)
-                  : null,
-              onPressed: () => Navigator.of(context).pop(option.value),
-              child: Text(option.label),
-            ),
-        ],
-      );
-    },
-  );
-}
+        ),
+      ),
+    );

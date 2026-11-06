@@ -7,9 +7,10 @@ import 'app_section_header.dart';
 /// [AppSettingsTile] o [AppChoiceSelector]) van dentro de una tarjeta,
 /// separados por líneas.
 class AppSettingsSection extends StatelessWidget {
-  const AppSettingsSection({super.key, required this.title, required this.children});
+  const AppSettingsSection({super.key, this.title, required this.children});
 
-  final String title;
+  /// Sin título, solo la tarjeta.
+  final String? title;
   final List<Widget> children;
 
   @override
@@ -18,7 +19,7 @@ class AppSettingsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        AppSectionHeader(title),
+        if (title case final String title?) AppSectionHeader(title),
         Card(
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(

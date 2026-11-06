@@ -1,3 +1,4 @@
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
@@ -21,18 +22,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Comida'), findsOneWidget);
-    await tester.enterText(find.widgetWithText(TextField, 'Nueva categoría'), 'Mascotas');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Nueva categoría'), 'Mascotas');
     await tester.tap(find.byTooltip('Añadir categoría'));
     await tester.pumpAndSettle();
 
     expect(names(await harness.repository.getCategories()).last, 'Mascotas');
-    expect(find.widgetWithText(TextField, 'Mascotas'), findsNothing);
+    expect(find.widgetWithText(AppTextField, 'Mascotas'), findsNothing);
   });
 
   testWidgets('un nombre repetido se avisa', (WidgetTester tester) async {
     await harness.pump(tester, initialLocation: ShoppingListRoutes.categories);
 
-    await tester.enterText(find.widgetWithText(TextField, 'Nueva categoría'), 'comida');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Nueva categoría'), 'comida');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
 
@@ -49,7 +50,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Renombrar «Comida»'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Comida'), 'Comestibles');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Comida'), 'Comestibles');
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
     expect(find.text('Comestibles'), findsOneWidget);

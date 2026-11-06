@@ -11,7 +11,7 @@ void main() {
   setUp(() => harness = PluginHarness());
   tearDown(() => harness.dispose());
 
-  Finder field(String label) => find.widgetWithText(TextField, label);
+  Finder field(String label) => find.widgetWithText(AppTextField, label);
 
   Future<void> scrollTo(WidgetTester tester, Finder finder, {bool up = false}) async {
     await tester.scrollUntilVisible(finder, up ? -200 : 200, scrollable: find.byType(Scrollable).first);

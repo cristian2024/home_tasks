@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
+import '../tokens/app_theme_colors.dart';
+import 'app_touch_target.dart';
 
 /// Fila de una lista que se marca como hecha (p. ej. comprado) con su
 /// casilla. Un toque en el resto de la fila llama a [onTap] (p. ej. editar).
@@ -39,37 +42,71 @@ class AppCheckTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppThemeColors colors = AppThemeColors.of(context);
     final ValueChanged<bool>? onChanged = this.onChanged;
     final String? subtitle = this.subtitle;
-    return ListTile(
-      leading: Checkbox(
-        value: value,
-        semanticLabel: checkboxLabel,
-        onChanged: onChanged == null ? null : (bool? checked) => onChanged(checked ?? false),
-      ),
-      title: Text(
-        title,
-        style: value
-            ? theme.textTheme.bodyLarge?.copyWith(
-                decoration: TextDecoration.lineThrough,
-                color: theme.colorScheme.onSurfaceVariant,
-              )
-            : null,
-      ),
-      subtitle: subtitle == null && badges.isEmpty
-          ? null
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (subtitle != null) Text(subtitle),
-                if (badges.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: AppSpacing.xs),
-                  Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: badges),
-                ],
-              ],
-            ),
-      trailing: trailing,
+    final Widget? trailing = this.trailing;
+    return InkWell(
       onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.s300),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: AppSpacing.s300,
+          children: <Widget>[
+            _SizedCheckbox(
+              child: Checkbox(
+                value: value,
+                semanticLabel: checkboxLabel,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onChanged: onChanged == null ? null : (bool? checked) => onChanged(checked ?? false),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppSpacing.xs,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: value ? colors.textTertiary : colors.textPrimary,
+                      decoration: value ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
+                  if (badges.isNotEmpty) Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: badges),
+                ],
+              ),
+            ),
+            ?trailing,
+          ],
+        ),
+      ),
     );
   }
+}
+
+/// Dibuja una casilla de Material a [AppSizes.iconMedium], con el área táctil
+/// completa.
+class _SizedCheckbox extends StatelessWidget {
+  const _SizedCheckbox({required this.child});
+
+  /// Tamaño con el que Material dibuja la casilla.
+  static const double _materialSize = 18.0;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AppTouchTarget(
+        child: SizedBox.square(
+          dimension: AppSizes.iconMedium,
+          child: OverflowBox(
+            maxWidth: AppSizes.minTouchTarget,
+            maxHeight: AppSizes.minTouchTarget,
+            child: Transform.scale(scale: AppSizes.iconMedium / _materialSize, child: child),
+          ),
+        ),
+      );
 }

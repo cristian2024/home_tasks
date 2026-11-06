@@ -6,6 +6,7 @@ import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
+import 'app_touch_target.dart';
 
 /// Opción de un [AppChoiceSelector].
 class AppChoice<T> {
@@ -30,6 +31,8 @@ class AppChoiceSelector<T> extends StatelessWidget {
     required this.onChanged,
     this.icon,
     this.padding = const EdgeInsets.all(AppSpacing.md),
+    this.showLabel = true,
+    this.wrapLabels = false,
   });
 
   final String label;
@@ -44,6 +47,13 @@ class AppChoiceSelector<T> extends StatelessWidget {
   /// Margen alrededor del selector. Dentro de una tarjeta o de una fila de
   /// ajustes conviene el de por defecto; suelto en una pantalla, `EdgeInsets.zero`.
   final EdgeInsetsGeometry padding;
+
+  /// Con `false`, [label] solo lo anuncian los lectores de pantalla.
+  final bool showLabel;
+
+  /// Con `true`, las etiquetas que no caben se parten en dos líneas en lugar
+  /// de apilar las opciones.
+  final bool wrapLabels;
 
   double _widestLabel(BuildContext context) {
     final TextScaler scaler = MediaQuery.textScalerOf(context);
@@ -73,34 +83,43 @@ class AppChoiceSelector<T> extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              if (icon != null) ...<Widget>[
-                Icon(icon, color: theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: AppSpacing.md),
+          if (showLabel) ...<Widget>[
+            Row(
+              children: <Widget>[
+                if (icon != null) ...<Widget>[
+                  Icon(icon, color: theme.colorScheme.onSurfaceVariant),
+                  const SizedBox(width: AppSpacing.md),
+                ],
+                Expanded(child: Text(label, style: theme.textTheme.labelLarge)),
               ],
-              Expanded(child: Text(label, style: theme.textTheme.labelLarge)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
           Semantics(
             label: label,
             container: true,
-            child: Material(
-              type: MaterialType.transparency,
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
+            child: DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadii.small),
-                side: BorderSide(color: theme.colorScheme.outlineVariant),
+                border: Border.all(color: theme.colorScheme.outlineVariant),
               ),
               child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   final double cellWidth = constraints.maxWidth / options.length;
                   final double widestLabel = _widestLabel(context);
+                  final bool fitsInRow = wrapLabels || widestLabel + AppChoiceSegment.textPadding <= cellWidth;
+                  const Radius corner = Radius.circular(AppRadii.small);
                   final List<AppChoiceSegment> segments = <AppChoiceSegment>[
-                    for (final AppChoice<T> option in options)
+                    for (final (int index, AppChoice<T> option) in options.indexed)
                       AppChoiceSegment(
                         label: option.label,
+                        borderRadius: BorderRadius.only(
+                          topLeft: index == 0 ? corner : Radius.zero,
+                          topRight: (fitsInRow ? index == options.length - 1 : index == 0) ? corner : Radius.zero,
+                          bottomLeft: (fitsInRow ? index == 0 : index == options.length - 1) ? corner : Radius.zero,
+                          bottomRight: index == options.length - 1 ? corner : Radius.zero,
+                        ),
                         icon: option.icon,
                         selected: option.value == selected,
                         showIcon: widestLabel + AppChoiceSegment.textPadding + AppChoiceSegment.iconWidth <= cellWidth,
@@ -113,7 +132,7 @@ class AppChoiceSelector<T> extends StatelessWidget {
                               },
                       ),
                   ];
-                  if (widestLabel + AppChoiceSegment.textPadding <= cellWidth) {
+                  if (fitsInRow) {
                     return IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -156,6 +175,7 @@ class AppChoiceSegment extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.showIcon = true,
+    this.borderRadius = BorderRadius.zero,
   });
 
   /// Lo que ocupa una opción, además de su texto: márgenes y separador.
@@ -170,6 +190,9 @@ class AppChoiceSegment extends StatelessWidget {
   final IconData? icon;
   final bool showIcon;
 
+  /// Esquinas de la opción: las de los extremos siguen el borde del selector.
+  final BorderRadius borderRadius;
+
   @override
   Widget build(BuildContext context) {
     final AppThemeColors colors = AppThemeColors.of(context);
@@ -179,17 +202,20 @@ class AppChoiceSegment extends StatelessWidget {
       (true, true) => colors.textBrand,
       (true, false) => colors.textSecondary,
     };
-    return Semantics(
+    return AppTouchTarget(
+      child: Semantics(
       button: true,
       enabled: onTap != null,
       selected: selected,
       inMutuallyExclusiveGroup: true,
       child: Material(
         color: selected ? colors.bgBrandSubtle : Colors.transparent,
+        borderRadius: borderRadius,
         child: InkWell(
           onTap: onTap,
+          borderRadius: borderRadius,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppSizes.minTouchTarget),
+            constraints: const BoxConstraints(minHeight: AppSizes.touchTarget),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
               child: Row(
@@ -211,6 +237,7 @@ class AppChoiceSegment extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }
