@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.8.3+15 - 2026-11-05
+
+### Cambiado
+
+- Las pantallas siguen el diseño de Penpot: barra, espaciados, tamaños de botón y campos.
+- La grilla de accesos tiene tantas columnas como quepan.
+- En Espacios se quita el título de sección, que repetía el de la pantalla.
+- El código del hogar va a la izquierda y el QR, con esquinas redondeadas.
+- Sin módulos activos, en vista de lista, no se muestra el botón de cambiar de vista.
+- «Llevar datos al hogar» usa `showAppChoiceDialog`.
+
+### Corregido
+
+- La hoja de un módulo mide lo que su contenido; antes ocupaba media pantalla y estiraba la tarjeta.
+
+### Interno
+
+- Usa `design_system` 0.3.0.
+
 ## 1.8.2+14 - 2026-11-04
 
 ### Cambiado

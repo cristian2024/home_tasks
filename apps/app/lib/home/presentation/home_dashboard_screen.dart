@@ -22,17 +22,20 @@ class HomeDashboardScreen extends StatelessWidget {
       (AppSettingsController settings) => settings.state.homeLayout == HomeLayout.grid,
     );
     final String title = context.watch<SpaceTitleCubit>().state ?? appStrings.app.title;
+    final bool hasModules = context.select<HomeBloc, bool>((HomeBloc bloc) => bloc.state.loading || bloc.state.tiles.isNotEmpty);
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppTopBar(
         title: Text(title),
         actions: <Widget>[
-          AppIconButton(
-            icon: grid ? Icons.view_list_outlined : Icons.grid_view_outlined,
-            tooltip: grid ? homeStrings.showList : homeStrings.showGrid,
-            onPressed: () => context.read<AppSettingsController>().setHomeLayout(
-              grid ? HomeLayout.list : HomeLayout.grid,
+          // En cuadrícula sigue visible: es la forma de volver a la lista.
+          if (grid || hasModules)
+            AppIconButton(
+              icon: grid ? Icons.view_list_outlined : Icons.grid_view_outlined,
+              tooltip: grid ? homeStrings.showList : homeStrings.showGrid,
+              onPressed: () => context.read<AppSettingsController>().setHomeLayout(
+                grid ? HomeLayout.list : HomeLayout.grid,
+              ),
             ),
-          ),
           AppIconButton(
             icon: Icons.settings_outlined,
             tooltip: homeStrings.openSettings,
@@ -74,7 +77,7 @@ class _DashboardList extends StatelessWidget {
       );
     }
     return ReorderableListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
       header: state.tiles.length > 1
           ? Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -151,15 +154,7 @@ class _PluginShortcut extends StatelessWidget {
     return AppShortcutTile(
       icon: plugin.icon,
       label: name,
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        useSafeArea: true,
-        builder: (BuildContext context) => Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
-          child: plugin.buildDashboardTile(context),
-        ),
-      ),
+      onTap: () => showAppBottomSheet<void>(context, builder: plugin.buildDashboardTile),
     );
   }
 }
@@ -181,8 +176,8 @@ class _FailedTile extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text(homeStrings.pluginFailed(name: name))),
+          const SizedBox(width: AppSpacing.s300),
+          Expanded(child: Text(homeStrings.pluginFailed(name: name), style: Theme.of(context).textTheme.bodyLarge)),
           AppButton(
             label: homeStrings.retry,
             variant: AppButtonVariant.text,

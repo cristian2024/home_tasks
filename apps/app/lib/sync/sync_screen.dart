@@ -20,10 +20,10 @@ class SyncScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(appStrings.app.sync.title)),
+      appBar: AppTopBar(title: Text(appStrings.app.sync.title)),
       body: BlocBuilder<SyncCubit, SyncViewState>(
         builder: (BuildContext context, SyncViewState state) => ListView(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
           children: <Widget>[
             if (state.spaceName case final String spaceName) ...<Widget>[
               Text(appStrings.app.spaces.current(name: spaceName), style: Theme.of(context).textTheme.titleMedium),
@@ -145,8 +145,8 @@ class _NoHouseholdSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         AppSectionHeader(householdStrings.section),
-        AppButton(label: householdStrings.create, icon: Icons.add_home_outlined, isLoading: busy, expand: true, onPressed: () => _create(context)),
-        const SizedBox(height: AppSpacing.sm),
+        AppButton(label: householdStrings.create, icon: Icons.home_outlined, isLoading: busy, expand: true, onPressed: () => _create(context)),
+        const SizedBox(height: AppSpacing.s300),
         AppButton(
           label: householdStrings.join,
           icon: Icons.qr_code_scanner,
@@ -214,7 +214,12 @@ class _HouseholdSection extends StatelessWidget {
           icon: Icons.smartphone,
           title: householdStrings.thisDevice,
           subtitle: <String>[state.device?.name ?? '', if (state.isCreator) householdStrings.creator].join(' · '),
-          trailing: AppIconButton(icon: Icons.edit_outlined, tooltip: householdStrings.rename, onPressed: () => _rename(context)),
+          trailing: AppIconButton(
+            icon: Icons.edit_outlined,
+            tooltip: householdStrings.rename,
+            variant: AppIconButtonVariant.subtle,
+            onPressed: () => _rename(context),
+          ),
         ),
         AppSettingsTile(
           icon: Icons.logout,
@@ -251,15 +256,23 @@ class _RenameDialogState extends State<_RenameDialog> {
     final AppTranslations$app$sync$household$es householdStrings = appStrings.app.sync.household;
     return AlertDialog(
       title: Text(householdStrings.renameTitle),
-      content: AppTextField(
-        label: householdStrings.renameField,
-        controller: _controller,
-        autofocus: true,
-        maxLength: 40,
-        onSubmitted: (String value) => Navigator.of(context).pop(value),
+      content: SizedBox(
+        // Sin esto, el diálogo se encoge al ancho mínimo del campo.
+        width: double.maxFinite,
+        child: AppTextField(
+          label: householdStrings.renameField,
+          controller: _controller,
+          autofocus: true,
+          maxLength: 40,
+          onSubmitted: (String value) => Navigator.of(context).pop(value),
+        ),
       ),
       actions: <Widget>[
-        AppButton(label: householdStrings.save, onPressed: () => Navigator.of(context).pop(_controller.text)),
+        AppButton(
+          label: householdStrings.save,
+          size: AppButtonSize.medium,
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+        ),
       ],
     );
   }
@@ -309,12 +322,13 @@ class _DevicesSection extends StatelessWidget {
         else
           for (final SyncPeer peer in peers)
             AppSettingsTile(
-              icon: Icons.devices_other,
+              icon: Icons.smartphone,
               title: peer.name,
               subtitle: householdStrings.lastSynced(time: formatSyncTime(context, peer.lastSyncedAt)),
               trailing: state.isCreator
                   ? AppIconButton(
                       icon: Icons.person_remove_outlined,
+                      variant: AppIconButtonVariant.subtle,
                       tooltip: householdStrings.expel(name: peer.name),
                       onPressed: state.busy ? null : () => _expel(context, peer),
                     )

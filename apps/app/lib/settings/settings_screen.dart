@@ -28,10 +28,10 @@ class SettingsScreen extends StatelessWidget {
     final AppTranslations$app$spaces$es spacesStrings = appStrings.app.spaces;
     final AppTranslations$app$sync$es syncStrings = appStrings.app.sync;
     return Scaffold(
-      appBar: AppBar(title: Text(settingsStrings.title)),
+      appBar: AppTopBar(title: Text(settingsStrings.title)),
       body: BlocBuilder<AppSettingsController, AppSettings>(
         builder: (BuildContext context, AppSettings settings) => ListView(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
           children: <Widget>[
             AppSectionHeader(settingsStrings.appearance),
             AppChoiceSelector<AppThemePreference>(
