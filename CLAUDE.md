@@ -89,7 +89,9 @@
 
 ## Fase 3 (UI base y plugin item_tracker)
 - **i18n:** cada paquete tiene `slang.yaml` y `lib/src/i18n/{es,en}.i18n.json`. Se regenera con `dart run slang` en el paquete (no con build_runner). Con `lazy: false` y `enum_name`/`class_name`/`translate_var` propios del paquete. Registrar el paquete en `LocalizationCoordinator.instance` y usar `commonStrings.common.*` para textos comunes.
-- **UI:** usar los componentes de `design_system` (`AppButton`, `AppIconButton` con tooltip, `AppTextField`, `AppStatusView`…) en lugar de los widgets Material sueltos.
+- **UI:** usar los componentes de `design_system` (`AppButton`, `AppIconButton` con tooltip, `AppTextField`, `AppStatusView`, `AppTopBar`, `AppFooterActions`, `showAppBottomSheet`…) en lugar de los widgets Material sueltos.
+- **Tamaños y área táctil:** `AppButton` tiene tres tamaños (`AppButtonSize`): los de 36 y 40 se dibujan así, pero responden en 48 con `AppTouchTarget`. Un control propio de menos de 48 hace lo mismo. Las pantallas siguen `Body`: margen `fromLTRB(16, 8, 16, 16)` bajo la barra.
+- **Tests de campos:** `AppTextField` lleva la etiqueta fuera del `TextField`: buscarlo con `find.widgetWithText(AppTextField, …)`.
 - **Plugin item_tracker:** las reglas de negocio están en el §9.4 de la spec (validación, rechazo de identificadores ya asociados, eventos técnicos automáticos). Los errores de dominio son el `sealed` `ItemTrackerException`.
 - **Isar nativo:** una violación de índice único llega como `IsarError` con "Unique index violated", no como `IsarUniqueViolationError` (ese es solo para web).
 - **mocktail:** `captureAny` captura los argumentos con nombre en orden alfabético.
