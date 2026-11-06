@@ -17,6 +17,8 @@ Replican el sistema de diseño de Figma.
 **Fuente**
 El paquete incluye Inter 4.1 (pesos 400, 500, 600 y 700, bajo la licencia de `assets/fonts/OFL.txt`). Quien depende del paquete la recibe sin declarar nada. Un `TextStyle` propio debe indicar `package: AppTypography.fontPackage`; sin eso, Flutter no la encuentra y usa la del sistema.
 
+También incluye los iconos de Lucide 1.69.0 (`assets/fonts/Lucide.ttf`, bajo la licencia ISC y MIT de `assets/fonts/LICENSE-Lucide.txt`). Se usan con `AppIcons`, nunca con `Icons`. Quien publica una app llama a `registerDesignSystemLicenses()` al arrancar para incluir ambas licencias.
+
 Algunos nombres no coinciden con Figma y están documentados en cada clase: `radius/sm` es `AppRadii.extraSmall`, y `size/icon-md` es `AppSizes.iconCompact`.
 
 **Componentes**

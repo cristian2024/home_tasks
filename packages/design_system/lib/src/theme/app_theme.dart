@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/app_colors.dart';
+import '../tokens/app_icons.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
@@ -125,6 +126,9 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: colors.bgCanvas,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (BuildContext context) => const Icon(AppIcons.arrowLeft),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.bgCanvas,
         foregroundColor: colors.textPrimary,
