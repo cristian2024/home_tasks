@@ -4,6 +4,8 @@
 
 ### Añadido
 
+- `AppIcons`: iconos lineales de Lucide 1.69.0, incluidos en el paquete con su licencia.
+- `registerDesignSystemLicenses`: añade las licencias de Inter y Lucide a la lista de la app.
 - `AppButtonSize`: tamaños de 36, 40 y 48 de alto; el texto y los márgenes cambian con ellos.
 - `AppButtonVariant.danger` y `dangerOutline`.
 - `AppTouchTarget`: da 48 de área táctil y semántica a un control más pequeño, sin ocupar más sitio.
