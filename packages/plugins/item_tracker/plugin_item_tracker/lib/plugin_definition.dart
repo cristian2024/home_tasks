@@ -4,6 +4,7 @@ import 'package:core_events/core_events.dart';
 import 'package:core_hardware/core_hardware.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:core_utils/core_utils.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -96,7 +97,7 @@ class ItemTrackerPlugin implements HomePlugin {
   String get descriptionKey => 'itemTracker.description';
 
   @override
-  IconData get icon => Icons.qr_code_scanner;
+  IconData get icon => AppIcons.scanLine;
 
   @override
   String get version => '3.0.2';

@@ -28,7 +28,7 @@ class NotFoundScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppTopBar(title: Text(t.title)),
       body: AppStatusView(
-        icon: Icons.qr_code,
+        icon: AppIcons.qrCode,
         title: t.title,
         message: t.message(type: type),
         action: AppBadge(label: identifier.rawValue),
@@ -37,13 +37,13 @@ class NotFoundScreen extends StatelessWidget {
         children: <Widget>[
           AppButton(
             label: t.create,
-            icon: Icons.add,
+            icon: AppIcons.plus,
             expand: true,
             onPressed: () => _open(context, ItemTrackerRoutes.create),
           ),
           AppButton(
             label: t.associate,
-            icon: Icons.link,
+            icon: AppIcons.link,
             variant: AppButtonVariant.secondary,
             expand: true,
             onPressed: () => _open(context, ItemTrackerRoutes.associate),

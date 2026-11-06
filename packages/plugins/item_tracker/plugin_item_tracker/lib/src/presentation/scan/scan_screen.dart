@@ -135,9 +135,9 @@ class _ModeSelector extends StatelessWidget {
       showLabel: false,
       padding: EdgeInsets.zero,
       options: <AppChoice<ScanMode>>[
-        AppChoice<ScanMode>(value: ScanMode.camera, icon: Icons.qr_code_scanner, label: t.modeCamera),
-        AppChoice<ScanMode>(value: ScanMode.nfc, icon: Icons.nfc, label: t.modeNfc),
-        AppChoice<ScanMode>(value: ScanMode.manual, icon: Icons.keyboard, label: t.modeManual),
+        AppChoice<ScanMode>(value: ScanMode.camera, icon: AppIcons.scanLine, label: t.modeCamera),
+        AppChoice<ScanMode>(value: ScanMode.nfc, icon: AppIcons.nfc, label: t.modeNfc),
+        AppChoice<ScanMode>(value: ScanMode.manual, icon: AppIcons.keyboard, label: t.modeManual),
       ],
       selected: mode,
       onChanged: (ScanMode mode) => context.read<ScanBloc>().add(ScanModeChanged(mode)),
@@ -197,7 +197,7 @@ class _CameraViewState extends State<_CameraView> {
           ),
         ),
       HardwarePermissionStatus.denied => AppStatusView(
-          icon: Icons.no_photography,
+          icon: AppIcons.cameraOff,
           title: t.cameraPermissionTitle,
           message: t.cameraPermissionMessage,
           action: Wrap(
@@ -215,7 +215,7 @@ class _CameraViewState extends State<_CameraView> {
           ),
         ),
       HardwarePermissionStatus.permanentlyDenied => AppStatusView(
-          icon: Icons.no_photography,
+          icon: AppIcons.cameraOff,
           title: t.cameraPermissionTitle,
           message: t.cameraPermanentlyDeniedMessage,
           action: Wrap(
@@ -233,7 +233,7 @@ class _CameraViewState extends State<_CameraView> {
           ),
         ),
       HardwarePermissionStatus.restricted => AppStatusView(
-          icon: Icons.block,
+          icon: AppIcons.ban,
           title: t.cameraPermissionTitle,
           message: t.cameraRestrictedMessage,
           action: useManual,
@@ -258,7 +258,7 @@ class _CameraPreview extends StatelessWidget {
           context,
           errorBuilder: (BuildContext context, ScanException error) {
             onFailed();
-            return AppStatusView(icon: Icons.videocam_off, title: t.cameraError, action: useManual);
+            return AppStatusView(icon: AppIcons.videoOff, title: t.cameraError, action: useManual);
           },
         ) ??
         const AppLoadingView();
@@ -282,14 +282,14 @@ class _NfcView extends StatelessWidget {
       children: <Widget>[
         AppButton(
           label: t.modeCamera,
-          icon: Icons.qr_code_scanner,
+          icon: AppIcons.scanLine,
           variant: AppButtonVariant.secondary,
           size: AppButtonSize.medium,
           onPressed: () => bloc.add(const ScanModeChanged(ScanMode.camera)),
         ),
         AppButton(
           label: t.useManual,
-          icon: Icons.keyboard,
+          icon: AppIcons.keyboard,
           variant: AppButtonVariant.secondary,
           size: AppButtonSize.medium,
           onPressed: () => bloc.add(const ScanModeChanged(ScanMode.manual)),
@@ -301,13 +301,13 @@ class _NfcView extends StatelessWidget {
       null => const AppLoadingView(),
       // AC-06: sin NFC la opción se desactiva con un mensaje accesible.
       HardwareStatus.unsupported => AppStatusView(
-          icon: Icons.nfc,
+          icon: AppIcons.nfc,
           title: t.nfcUnsupportedTitle,
           message: t.nfcUnsupportedMessage,
           action: alternatives,
         ),
       HardwareStatus.disabled => AppStatusView(
-          icon: Icons.nfc,
+          icon: AppIcons.nfc,
           title: t.nfcDisabledTitle,
           message: t.nfcDisabledMessage,
           action: AppButton(
@@ -317,7 +317,7 @@ class _NfcView extends StatelessWidget {
           ),
         ),
       HardwareStatus.available => AppStatusView(
-          icon: Icons.nfc,
+          icon: AppIcons.nfc,
           title: state.nfcReading ? t.nfcWaiting : t.promptNfc,
           action: state.nfcReading
               ? AppButton(

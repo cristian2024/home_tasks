@@ -69,7 +69,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: AppNote(
-                          icon: Icons.link,
+                          icon: AppIcons.link,
                           text: t.initialIdentifier(
                             type: identifierTypeLabel(identifier.type),
                             value: identifier.rawValue,
@@ -79,7 +79,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                     if (state.parentPath.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: AppNote(icon: Icons.inventory_2_outlined, text: t.parent(path: formatItemPath(state.parentPath))),
+                        child: AppNote(icon: AppIcons.box, text: t.parent(path: formatItemPath(state.parentPath))),
                       ),
                     if (error is ItemFormGeneralError)
                       Padding(
@@ -109,7 +109,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                         t.identifiers,
                         trailing: AppButton(
                           label: t.addIdentifier,
-                          icon: Icons.add_link,
+                          icon: AppIcons.link,
                           variant: AppButtonVariant.text,
                           onPressed: () => context.push<String>(ItemTrackerRoutes.addIdentifier(itemId)),
                         ),
@@ -120,7 +120,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                       t.metadata,
                       trailing: AppButton(
                         label: t.addField,
-                        icon: Icons.add,
+                        icon: AppIcons.plus,
                         variant: AppButtonVariant.text,
                         onPressed: cubit.addEntry,
                       ),
@@ -233,7 +233,7 @@ class _MetadataRowState extends State<_MetadataRow> {
                   ),
                 ),
                 AppIconButton(
-                  icon: Icons.delete_outline,
+                  icon: AppIcons.trash2,
                   tooltip: t.removeField(key: entry.key.isEmpty ? '' : entry.key),
                   onPressed: () => cubit.removeEntry(entry.id),
                 ),
@@ -276,6 +276,8 @@ class _TypeField extends StatelessWidget {
           child: DropdownMenu<MetadataValueType>(
             initialSelection: entry.type,
             expandedInsets: EdgeInsets.zero,
+            trailingIcon: const Icon(AppIcons.chevronDown),
+            selectedTrailingIcon: const Icon(AppIcons.chevronDown),
             inputDecorationTheme: theme.inputDecorationTheme.copyWith(
               contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s300),
               constraints: const BoxConstraints.tightFor(height: AppSizes.controlLarge),

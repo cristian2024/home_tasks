@@ -73,7 +73,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
                 children: <Widget>[
                   AppButton(
                     label: t.save,
-                    icon: Icons.check,
+                    icon: AppIcons.check,
                     expand: true,
                     isLoading: state.status == AddEventStatus.submitting,
                     onPressed: () =>

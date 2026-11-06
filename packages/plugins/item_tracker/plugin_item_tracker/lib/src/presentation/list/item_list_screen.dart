@@ -30,7 +30,7 @@ class ItemListScreen extends StatelessWidget {
             selector: (ItemListState state) => state.loading || state.all.isEmpty,
             builder: (BuildContext context, bool empty) => empty
                 ? const SizedBox.shrink()
-                : AppIconButton(icon: Icons.add, tooltip: listStrings.create, onPressed: () => _create(context)),
+                : AppIconButton(icon: AppIcons.plus, tooltip: listStrings.create, onPressed: () => _create(context)),
           ),
         ],
       ),
@@ -41,12 +41,12 @@ class ItemListScreen extends StatelessWidget {
           }
           if (state.all.isEmpty) {
             return AppStatusView(
-              icon: Icons.inventory_2_outlined,
+              icon: AppIcons.box,
               title: listStrings.emptyTitle,
               message: listStrings.emptyMessage,
               action: AppButton(
                 label: listStrings.create,
-                icon: Icons.add,
+                icon: AppIcons.plus,
                 size: AppButtonSize.medium,
                 onPressed: () => _create(context),
               ),
@@ -59,14 +59,14 @@ class ItemListScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                 child: AppTextField(
                   label: listStrings.search,
-                  prefixIcon: Icons.search,
+                  prefixIcon: AppIcons.search,
                   textInputAction: TextInputAction.search,
                   onChanged: context.read<ItemListCubit>().search,
                 ),
               ),
               Expanded(
                 child: visible.isEmpty
-                    ? AppStatusView(icon: Icons.search_off, title: listStrings.noResults)
+                    ? AppStatusView(icon: AppIcons.search, title: listStrings.noResults)
                     : ItemCardList(
                         items: visible,
                         subtitleBuilder: (HouseholdItem item) => formatItemPath(state.tree.pathOf(item.id)),
@@ -125,10 +125,10 @@ class ItemCardList extends StatelessWidget {
               minVerticalPadding: AppSpacing.s0,
               minTileHeight: AppSizes.iconMedium,
               enabled: onSelected == null || selectable,
-              leading: const Icon(Icons.inventory_2_outlined),
+              leading: const Icon(AppIcons.box),
               title: Text(item.name),
               subtitle: subtitle.isEmpty ? null : Text(subtitle, maxLines: 3, overflow: TextOverflow.ellipsis),
-              trailing: selectable ? Icon(Icons.chevron_right, size: AppSizes.iconCompact, color: colors.textTertiary) : null,
+              trailing: selectable ? Icon(AppIcons.chevronRight, size: AppSizes.iconCompact, color: colors.textTertiary) : null,
             ),
           ),
         );

@@ -42,7 +42,7 @@ class MoveItemScreen extends StatelessWidget {
           body: switch (state.status) {
             MoveItemStatus.loading => const AppLoadingView(),
             MoveItemStatus.missing => AppStatusView(
-                icon: Icons.search_off,
+                icon: AppIcons.search,
                 title: itemTrackerStrings.itemTracker.detail.missingTitle,
                 message: itemTrackerStrings.itemTracker.detail.missingMessage,
               ),
@@ -58,7 +58,7 @@ class MoveItemScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                     child: AppTextField(
                       label: t.search,
-                      prefixIcon: Icons.search,
+                      prefixIcon: AppIcons.search,
                       textInputAction: TextInputAction.search,
                       onChanged: cubit.search,
                     ),
@@ -66,7 +66,7 @@ class MoveItemScreen extends StatelessWidget {
                   if (state.status == MoveItemStatus.moving) const LinearProgressIndicator(),
                   Expanded(
                     child: candidates.isEmpty
-                        ? AppStatusView(icon: Icons.search_off, title: t.empty)
+                        ? AppStatusView(icon: AppIcons.search, title: t.empty)
                         : ItemCardList(
                             items: <HouseholdItem>[
                               for (final MoveCandidate candidate in candidates.values) candidate.item,

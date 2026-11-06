@@ -4,6 +4,7 @@
 
 ### Cambiado
 
+- Los iconos pasan a la familia lineal de `AppIcons`.
 - El selector de modo al escanear y el tipo de identificador usan `AppChoiceSelector`.
 - La cámara se muestra en un panel con esquinas redondeadas y una guía.
 - En «no registrado» el código es un badge y las acciones van fijas al pie. En los formularios, «Guardar» también.

@@ -37,7 +37,7 @@ class AssociateScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.s0),
                 child: AppNote(
-                  icon: Icons.link,
+                  icon: AppIcons.link,
                   text: t.identifier(type: identifierTypeLabel(identifier.type), value: identifier.rawValue),
                 ),
               ),
@@ -62,7 +62,7 @@ class AssociateScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.s300, AppSpacing.md, AppSpacing.s300),
                 child: AppTextField(
                   label: t.search,
-                  prefixIcon: Icons.search,
+                  prefixIcon: AppIcons.search,
                   textInputAction: TextInputAction.search,
                   onChanged: cubit.search,
                 ),
@@ -71,7 +71,7 @@ class AssociateScreen extends StatelessWidget {
                 const LinearProgressIndicator(),
               Expanded(
                 child: state.status != AssociateStatus.searching && state.results.isEmpty
-                    ? AppStatusView(icon: Icons.search_off, title: t.empty)
+                    ? AppStatusView(icon: AppIcons.search, title: t.empty)
                     : ItemCardList(
                         items: state.results,
                         semanticLabelBuilder: (HouseholdItem item) => t.select(name: item.name),
