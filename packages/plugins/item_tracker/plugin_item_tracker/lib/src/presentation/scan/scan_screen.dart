@@ -19,7 +19,7 @@ class ScanScreen extends StatelessWidget {
     final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
     final bool binding = context.read<ScanBloc>().bindToItemId != null;
     return Scaffold(
-      appBar: AppBar(title: Text(binding ? t.bindTitle : t.title)),
+      appBar: AppTopBar(title: Text(binding ? t.bindTitle : t.title)),
       body: BlocConsumer<ScanBloc, ScanState>(
         listenWhen: (ScanState previous, ScanState current) =>
             previous.outcome != current.outcome || previous.notice != current.notice,
@@ -28,7 +28,7 @@ class ScanScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.s300),
               child: _ModeSelector(mode: state.mode),
             ),
             if (state.lookingUp)
@@ -130,67 +130,71 @@ class _ModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
-    return Semantics(
+    return AppChoiceSelector<ScanMode>(
       label: t.modeLabel,
-      container: true,
-      child: SegmentedButton<ScanMode>(
-        segments: <ButtonSegment<ScanMode>>[
-          ButtonSegment<ScanMode>(
-            value: ScanMode.camera,
-            icon: const Icon(Icons.qr_code_scanner),
-            label: Text(t.modeCamera),
-          ),
-          ButtonSegment<ScanMode>(value: ScanMode.nfc, icon: const Icon(Icons.nfc), label: Text(t.modeNfc)),
-          ButtonSegment<ScanMode>(value: ScanMode.manual, icon: const Icon(Icons.keyboard), label: Text(t.modeManual)),
-        ],
-        selected: <ScanMode>{mode},
-        showSelectedIcon: false,
-        onSelectionChanged: (Set<ScanMode> selection) =>
-            context.read<ScanBloc>().add(ScanModeChanged(selection.single)),
-      ),
+      showLabel: false,
+      padding: EdgeInsets.zero,
+      options: <AppChoice<ScanMode>>[
+        AppChoice<ScanMode>(value: ScanMode.camera, icon: Icons.qr_code_scanner, label: t.modeCamera),
+        AppChoice<ScanMode>(value: ScanMode.nfc, icon: Icons.nfc, label: t.modeNfc),
+        AppChoice<ScanMode>(value: ScanMode.manual, icon: Icons.keyboard, label: t.modeManual),
+      ],
+      selected: mode,
+      onChanged: (ScanMode mode) => context.read<ScanBloc>().add(ScanModeChanged(mode)),
     );
   }
 }
 
-class _CameraView extends StatelessWidget {
+class _CameraView extends StatefulWidget {
   const _CameraView({required this.state});
 
   final ScanState state;
 
   @override
+  State<_CameraView> createState() => _CameraViewState();
+}
+
+class _CameraViewState extends State<_CameraView> {
+  /// La vista previa falló: su error ocupa el sitio del marco y del aviso.
+  bool _previewFailed = false;
+
+  void _markPreviewFailed() {
+    if (!_previewFailed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _previewFailed = true);
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
     final ScanBloc bloc = context.read<ScanBloc>();
+    final ScanState state = widget.state;
     final AppButton useManual = AppButton(
       label: t.useManual,
-      icon: Icons.keyboard,
       variant: AppButtonVariant.secondary,
+      size: AppButtonSize.medium,
       onPressed: () => bloc.add(const ScanModeChanged(ScanMode.manual)),
     );
-
     return switch (state.cameraPermission) {
       null => const AppLoadingView(),
-      HardwarePermissionStatus.granted => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Expanded(
-              child: ClipRect(
-                child: bloc.cameraScanner?.buildPreview(
-                      context,
-                      errorBuilder: (BuildContext context, ScanException error) => AppStatusView(
-                        icon: Icons.videocam_off,
-                        title: t.cameraError,
-                        action: useManual,
-                      ),
-                    ) ??
-                    const AppLoadingView(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Text(t.promptCamera, textAlign: TextAlign.center),
-            ),
-          ],
+      HardwarePermissionStatus.granted => Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.s0, AppSpacing.md, AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppSpacing.s300,
+            children: <Widget>[
+              Expanded(child: _CameraPreview(failed: _previewFailed, onFailed: _markPreviewFailed, useManual: useManual)),
+              if (!_previewFailed)
+                Text(
+                  t.promptCamera,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppThemeColors.of(context).textSecondary),
+                ),
+            ],
+          ),
         ),
       HardwarePermissionStatus.denied => AppStatusView(
           icon: Icons.no_photography,
@@ -203,6 +207,7 @@ class _CameraView extends StatelessWidget {
             children: <Widget>[
               AppButton(
                 label: t.grantPermission,
+                size: AppButtonSize.medium,
                 onPressed: () => bloc.add(const ScanCameraPermissionRequested()),
               ),
               useManual,
@@ -218,7 +223,11 @@ class _CameraView extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
             children: <Widget>[
-              AppButton(label: t.openSettings, onPressed: () => bloc.add(const ScanSettingsRequested())),
+              AppButton(
+                label: t.openSettings,
+                size: AppButtonSize.medium,
+                onPressed: () => bloc.add(const ScanSettingsRequested()),
+              ),
               useManual,
             ],
           ),
@@ -230,6 +239,30 @@ class _CameraView extends StatelessWidget {
           action: useManual,
         ),
     };
+  }
+}
+
+/// La vista previa de la cámara en su marco. Si falla, muestra el error en su
+/// lugar y avisa con [onFailed].
+class _CameraPreview extends StatelessWidget {
+  const _CameraPreview({required this.failed, required this.onFailed, required this.useManual});
+
+  final bool failed;
+  final VoidCallback onFailed;
+  final Widget useManual;
+
+  @override
+  Widget build(BuildContext context) {
+    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final Widget view = context.read<ScanBloc>().cameraScanner?.buildPreview(
+          context,
+          errorBuilder: (BuildContext context, ScanException error) {
+            onFailed();
+            return AppStatusView(icon: Icons.videocam_off, title: t.cameraError, action: useManual);
+          },
+        ) ??
+        const AppLoadingView();
+    return failed ? view : AppCameraFrame(child: view);
   }
 }
 
@@ -251,12 +284,14 @@ class _NfcView extends StatelessWidget {
           label: t.modeCamera,
           icon: Icons.qr_code_scanner,
           variant: AppButtonVariant.secondary,
+          size: AppButtonSize.medium,
           onPressed: () => bloc.add(const ScanModeChanged(ScanMode.camera)),
         ),
         AppButton(
           label: t.useManual,
           icon: Icons.keyboard,
           variant: AppButtonVariant.secondary,
+          size: AppButtonSize.medium,
           onPressed: () => bloc.add(const ScanModeChanged(ScanMode.manual)),
         ),
       ],
@@ -275,7 +310,11 @@ class _NfcView extends StatelessWidget {
           icon: Icons.nfc,
           title: t.nfcDisabledTitle,
           message: t.nfcDisabledMessage,
-          action: AppButton(label: t.checkAgain, onPressed: () => bloc.add(const ScanNfcStatusRefreshed())),
+          action: AppButton(
+            label: t.checkAgain,
+            size: AppButtonSize.medium,
+            onPressed: () => bloc.add(const ScanNfcStatusRefreshed()),
+          ),
         ),
       HardwareStatus.available => AppStatusView(
           icon: Icons.nfc,
@@ -284,11 +323,12 @@ class _NfcView extends StatelessWidget {
               ? AppButton(
                   label: t.nfcCancel,
                   variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.medium,
                   onPressed: () => bloc.add(const ScanNfcReadCancelled()),
                 )
               : AppButton(
                   label: t.nfcStart,
-                  icon: Icons.nfc,
+                  size: AppButtonSize.medium,
                   onPressed: state.lookingUp ? null : () => bloc.add(const ScanNfcReadRequested()),
                 ),
         ),
@@ -328,7 +368,7 @@ class _ManualViewState extends State<_ManualView> {
     final bool lookingUp = context.select<ScanBloc, bool>((ScanBloc bloc) => bloc.state.lookingUp);
     final bool binding = context.read<ScanBloc>().bindToItemId != null;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.s0, AppSpacing.md, AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -342,20 +382,23 @@ class _ManualViewState extends State<_ManualView> {
             errorText: _showEmptyError ? itemTrackerStrings.itemTracker.errors.required : null,
             onSubmitted: (_) => _submit(),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.s300),
           AppSectionHeader(t.typeLabel),
-          SegmentedButton<IdentifierType>(
-            segments: <ButtonSegment<IdentifierType>>[
+          AppChoiceSelector<IdentifierType>(
+            label: t.typeLabel,
+            showLabel: false,
+            wrapLabels: true,
+            padding: EdgeInsets.zero,
+            options: <AppChoice<IdentifierType>>[
               for (final IdentifierType type in IdentifierType.values)
-                ButtonSegment<IdentifierType>(value: type, label: Text(identifierTypeLabel(type))),
+                AppChoice<IdentifierType>(value: type, label: identifierTypeLabel(type)),
             ],
-            selected: <IdentifierType>{_type},
-            onSelectionChanged: (Set<IdentifierType> selection) => setState(() => _type = selection.single),
+            selected: _type,
+            onChanged: (IdentifierType type) => setState(() => _type = type),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.s300),
           AppButton(
             label: binding ? t.bindSubmit : t.manualSubmit,
-            icon: binding ? Icons.link : Icons.search,
             isLoading: lookingUp,
             expand: true,
             onPressed: _submit,

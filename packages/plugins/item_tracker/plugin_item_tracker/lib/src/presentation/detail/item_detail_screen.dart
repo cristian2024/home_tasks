@@ -20,7 +20,7 @@ class ItemDetailScreen extends StatelessWidget {
       builder: (BuildContext context, ItemDetailState state) {
         final HouseholdItem? item = state.item;
         return Scaffold(
-          appBar: AppBar(
+          appBar: AppTopBar(
             title: Text(item?.name ?? detailStrings.title),
             actions: <Widget>[
               if (item != null)
@@ -109,7 +109,7 @@ class _DetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
       children: <Widget>[
         if (item.description.isNotEmpty)
           Text(item.description, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
@@ -207,6 +207,7 @@ class _LocationSection extends StatelessWidget {
           label: detailStrings.move,
           icon: Icons.drive_file_move_outline,
           variant: AppButtonVariant.secondary,
+          size: AppButtonSize.medium,
           expand: true,
           onPressed: () => context.push<String>(ItemTrackerRoutes.move(item.id)),
         ),
@@ -216,6 +217,7 @@ class _LocationSection extends StatelessWidget {
             label: detailStrings.moveOut,
             icon: Icons.outbox_outlined,
             variant: AppButtonVariant.outline,
+            size: AppButtonSize.medium,
             expand: true,
             onPressed: () => _moveOut(context, path.last.name),
           ),
@@ -391,6 +393,7 @@ class _IdentifierTile extends StatelessWidget {
       trailing: AppIconButton(
         icon: Icons.link_off,
         tooltip: itemTrackerStrings.itemTracker.detail.removeIdentifier(type: type, value: value),
+        variant: AppIconButtonVariant.subtle,
         onPressed: onRemove,
       ),
     );
@@ -449,6 +452,7 @@ class _EventTile extends StatelessWidget {
       icon: event.isTechnical ? Icons.history : Icons.sticky_note_2_outlined,
       title: text.title,
       subtitle: <String>[?text.subtitle, formatTimestamp(context, event.timestamp)].join('\n'),
+      compact: true,
     );
   }
 }

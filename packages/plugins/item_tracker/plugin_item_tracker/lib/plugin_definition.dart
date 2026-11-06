@@ -99,7 +99,7 @@ class ItemTrackerPlugin implements HomePlugin {
   IconData get icon => Icons.qr_code_scanner;
 
   @override
-  String get version => '3.0.1';
+  String get version => '3.0.2';
 
   /// Siempre disponible: sin cámara ni NFC queda la entrada manual. Cada modo
   /// de escaneo comprueba su propio hardware.

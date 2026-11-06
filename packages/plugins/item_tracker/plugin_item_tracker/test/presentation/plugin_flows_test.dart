@@ -8,6 +8,8 @@ import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import '../helpers/presentation_fixtures.dart';
 
 void main() {
+  cameraErrorTests();
+
   late PluginHarness harness;
 
   setUp(() => harness = PluginHarness());
@@ -210,12 +212,10 @@ void main() {
     await tester.tap(find.byTooltip('Editar objeto'));
     await tester.pumpAndSettle();
     await tester.enterText(find.widgetWithText(AppTextField, 'Nombre'), 'Caja grande');
-    await tester.tap(find.byTooltip('Añadir dato'));
+    await tester.tap(find.text('Añadir dato'));
     await tester.pumpAndSettle();
     await tester.enterText(find.widgetWithText(AppTextField, 'Clave'), 'color_etiqueta');
     await tester.enterText(find.widgetWithText(AppTextField, 'Valor'), 'Azul');
-    // El viewport del test es bajo: el botón queda fuera de la lista visible.
-    await tester.scrollUntilVisible(find.text('Guardar'), 200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
 
@@ -539,5 +539,34 @@ void main() {
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     await expectLater(tester, meetsGuideline(textContrastGuideline));
     semantics.dispose();
+  });
+}
+
+/// Cámara cuya vista previa siempre falla.
+class _FailingCamera extends FakeCameraScanner {
+  @override
+  Widget buildPreview(
+    BuildContext context, {
+    Widget Function(BuildContext context, ScanException error)? errorBuilder,
+    WidgetBuilder? placeholderBuilder,
+  }) =>
+      errorBuilder!(context, const ScanException(ScanErrorCode.hardwareUnsupported));
+}
+
+class _FailingHardware extends FakeHardware {
+  @override
+  CameraIdentifierScanner createCamera() => _FailingCamera();
+}
+
+void cameraErrorTests() {
+  testWidgets('si la cámara falla, no pide apuntar al código', (WidgetTester tester) async {
+    final PluginHarness harness = PluginHarness(hardware: _FailingHardware());
+    addTearDown(harness.dispose);
+    await harness.pump(tester, initialLocation: ItemTrackerRoutes.scan);
+    await tester.pumpAndSettle();
+
+    expect(find.text('No se pudo usar la cámara. Escribe el código a mano.'), findsOneWidget);
+    expect(find.text('Apunta al código QR o de barras.'), findsNothing);
+    expect(find.byType(AppCameraFrame), findsNothing);
   });
 }

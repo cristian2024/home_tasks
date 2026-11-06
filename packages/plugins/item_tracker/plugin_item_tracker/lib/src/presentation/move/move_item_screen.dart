@@ -38,7 +38,7 @@ class MoveItemScreen extends StatelessWidget {
           for (final MoveCandidate candidate in state.visible) candidate.item.id: candidate,
         };
         return Scaffold(
-          appBar: AppBar(title: Text(item == null ? itemTrackerStrings.itemTracker.detail.move : t.title(name: item.name))),
+          appBar: AppTopBar(title: Text(item == null ? itemTrackerStrings.itemTracker.detail.move : t.title(name: item.name))),
           body: switch (state.status) {
             MoveItemStatus.loading => const AppLoadingView(),
             MoveItemStatus.missing => AppStatusView(
@@ -55,9 +55,10 @@ class MoveItemScreen extends StatelessWidget {
                       child: Text(errorMessage(error), style: TextStyle(color: Theme.of(context).colorScheme.error)),
                     ),
                   Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                     child: AppTextField(
                       label: t.search,
+                      prefixIcon: Icons.search,
                       textInputAction: TextInputAction.search,
                       onChanged: cubit.search,
                     ),

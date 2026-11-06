@@ -29,12 +29,14 @@ class ItemTrackerDashboardTile extends StatelessWidget {
             AppButton(
               label: dashboardStrings.scan,
               icon: Icons.qr_code_scanner,
+              size: AppButtonSize.medium,
               onPressed: () => context.push<void>(ItemTrackerRoutes.scan),
             ),
             AppButton(
               label: dashboardStrings.items,
               icon: Icons.inventory_2_outlined,
               variant: AppButtonVariant.secondary,
+              size: AppButtonSize.medium,
               onPressed: () => context.push<void>(ItemTrackerRoutes.items),
             ),
           ],

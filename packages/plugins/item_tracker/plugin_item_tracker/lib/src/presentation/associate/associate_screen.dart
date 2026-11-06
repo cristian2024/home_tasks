@@ -20,7 +20,7 @@ class AssociateScreen extends StatelessWidget {
     final AssociateCubit cubit = context.read<AssociateCubit>();
     final ({String rawValue, IdentifierType type}) identifier = cubit.identifier;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(t.title)),
       body: BlocConsumer<AssociateCubit, AssociateState>(
         listener: (BuildContext context, AssociateState state) {
           final HouseholdItem? boundItem = state.boundItem;
@@ -35,9 +35,10 @@ class AssociateScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: AppCard(
-                  child: Text(t.identifier(type: identifierTypeLabel(identifier.type), value: identifier.rawValue)),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.s0),
+                child: AppNote(
+                  icon: Icons.link,
+                  text: t.identifier(type: identifierTypeLabel(identifier.type), value: identifier.rawValue),
                 ),
               ),
               if (error != null)
@@ -58,9 +59,10 @@ class AssociateScreen extends StatelessWidget {
                   ),
                 ),
               Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.s300, AppSpacing.md, AppSpacing.s300),
                 child: AppTextField(
                   label: t.search,
+                  prefixIcon: Icons.search,
                   textInputAction: TextInputAction.search,
                   onChanged: cubit.search,
                 ),
@@ -73,6 +75,7 @@ class AssociateScreen extends StatelessWidget {
                     : ItemCardList(
                         items: state.results,
                         semanticLabelBuilder: (HouseholdItem item) => t.select(name: item.name),
+                        subtitleBuilder: (_) => '',
                         onSelected: state.status == AssociateStatus.binding ? null : cubit.bind,
                       ),
               ),
