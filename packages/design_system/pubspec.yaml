@@ -20,7 +20,13 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  assets:
+    - assets/fonts/LICENSE-Lucide.txt
+    - assets/fonts/OFL.txt
   fonts:
+    - family: Lucide
+      fonts:
+        - asset: assets/fonts/Lucide.ttf
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf

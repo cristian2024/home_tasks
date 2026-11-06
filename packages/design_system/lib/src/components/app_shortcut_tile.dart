@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_spacing.dart';
 import 'app_icon_box.dart';
@@ -20,7 +21,7 @@ class AppShortcutTile extends StatelessWidget {
     this.error = false,
   });
 
-  static const IconData fallbackIcon = Icons.extension_outlined;
+  static const IconData fallbackIcon = AppIcons.layoutGrid;
 
   final String label;
   final IconData? icon;

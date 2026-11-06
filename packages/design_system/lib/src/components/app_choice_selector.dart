@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
@@ -196,7 +197,7 @@ class AppChoiceSegment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppThemeColors colors = AppThemeColors.of(context);
-    final IconData? leading = showIcon ? icon ?? (selected ? Icons.check : null) : null;
+    final IconData? leading = showIcon ? icon ?? (selected ? AppIcons.check : null) : null;
     final Color foreground = switch ((onTap != null, selected)) {
       (false, _) => colors.textDisabled,
       (true, true) => colors.textBrand,

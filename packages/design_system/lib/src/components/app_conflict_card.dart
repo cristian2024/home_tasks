@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
@@ -119,7 +120,7 @@ class _AppliedOption extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.s300),
               child: Row(
                 children: <Widget>[
-                  ExcludeSemantics(child: Icon(Icons.check, size: AppSizes.iconCompact, color: colors.textBrand)),
+                  ExcludeSemantics(child: Icon(AppIcons.check, size: AppSizes.iconCompact, color: colors.textBrand)),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Wrap(

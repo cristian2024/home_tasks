@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_theme_colors.dart';
 
@@ -61,7 +62,7 @@ class AppSettingsTile extends StatelessWidget {
       subtitle: subtitle == null ? null : Text(subtitle, style: subtitleStyle),
       trailing: trailing ??
           (interactive && !destructive
-              ? Icon(Icons.chevron_right, size: AppSizes.iconCompact, color: colors.textTertiary)
+              ? Icon(AppIcons.chevronRight, size: AppSizes.iconCompact, color: colors.textTertiary)
               : null),
       onTap: interactive ? onTap : null,
     );
