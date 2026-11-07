@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
@@ -79,7 +80,7 @@ class AppConflictCard<T> extends StatelessWidget {
           ],
           if (keepLabel != null) ...<Widget>[
             const SizedBox(height: AppSpacing.s300),
-            AppButton(label: keepLabel, isLoading: busy, onPressed: onKeep, expand: true),
+            AppButton(label: keepLabel, size: AppButtonSize.medium, isLoading: busy, onPressed: onKeep, expand: true),
           ],
         ],
       ),
@@ -119,20 +120,28 @@ class _AppliedOption extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.s300),
               child: Row(
                 children: <Widget>[
-                  ExcludeSemantics(child: Icon(Icons.check, size: AppSizes.iconCompact, color: colors.textBrand)),
+                  ExcludeSemantics(child: Icon(AppIcons.check, size: AppSizes.iconCompact, color: colors.textBrand)),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
                       children: <Widget>[
-                        Text(label, style: textTheme.labelLarge?.copyWith(color: colors.textPrimary)),
-                        if (description != null)
-                          Text(description, style: textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(label, style: textTheme.labelLarge?.copyWith(color: colors.textPrimary)),
+                            if (description != null)
+                              Text(description, style: textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
+                          ],
+                        ),
+                        AppBadge(label: appliedLabel, tone: AppBadgeTone.brand),
                       ],
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Flexible(child: AppBadge(label: appliedLabel, tone: AppBadgeTone.brand)),
                 ],
               ),
             ),
@@ -157,7 +166,7 @@ class _OtherOption extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        AppButton(label: label, variant: AppButtonVariant.outline, expand: true, onPressed: onTap),
+        AppButton(label: label, variant: AppButtonVariant.outline, size: AppButtonSize.medium, expand: true, onPressed: onTap),
         if (description != null) ...<Widget>[
           const SizedBox(height: AppSpacing.xs),
           Text(description, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),

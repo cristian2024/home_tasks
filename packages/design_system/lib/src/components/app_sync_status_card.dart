@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
 import 'app_button.dart';
@@ -56,10 +57,10 @@ class AppSyncStatusCard extends StatelessWidget {
     final String? message = this.message;
     final String? actionLabel = this.actionLabel;
     final (IconData icon, Color color) = switch (tone) {
-      AppSyncTone.off => (Icons.sync_disabled, colors.textSecondary),
-      AppSyncTone.idle => (Icons.sync, colors.textBrand),
-      AppSyncTone.syncing => (Icons.sync, colors.textBrand),
-      AppSyncTone.error => (Icons.sync_problem, colors.textDanger),
+      AppSyncTone.off => (AppIcons.house, colors.textSecondary),
+      AppSyncTone.idle => (AppIcons.refreshCw, colors.textBrand),
+      AppSyncTone.syncing => (AppIcons.refreshCw, colors.textBrand),
+      AppSyncTone.error => (AppIcons.refreshCwOff, colors.textDanger),
     };
     return AppCard(
       child: Column(
@@ -88,6 +89,7 @@ class AppSyncStatusCard extends StatelessWidget {
             AppButton(
               label: actionLabel,
               variant: AppButtonVariant.secondary,
+              size: AppButtonSize.medium,
               expand: true,
               isLoading: tone == AppSyncTone.syncing,
               onPressed: onAction,

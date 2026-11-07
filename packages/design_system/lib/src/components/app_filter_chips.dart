@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/app_spacing.dart';
+import '../tokens/app_theme_colors.dart';
+import 'app_touch_target.dart';
 import 'app_choice_selector.dart';
 
 /// Elegir varias opciones a la vez (p. ej. filtrar por categorías). Las
@@ -41,7 +43,7 @@ class AppFilterChips<T> extends StatelessWidget {
         children: <Widget>[
           if (showLabel) ...<Widget>[
             ExcludeSemantics(
-              child: Text(label, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+              child: Text(label, style: theme.textTheme.labelLarge?.copyWith(color: AppThemeColors.of(context).textPrimary)),
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
@@ -50,18 +52,22 @@ class AppFilterChips<T> extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             children: <Widget>[
               for (final AppChoice<T> option in options)
-                FilterChip(
-                  label: Text(option.label),
-                  avatar: option.icon == null ? null : Icon(option.icon),
-                  showCheckmark: option.icon == null,
-                  selected: selected.contains(option.value),
-                  onSelected: onChanged == null
-                      ? null
-                      : (bool isSelected) => onChanged(
-                            isSelected
-                                ? <T>{...selected, option.value}
-                                : <T>{for (final T value in selected) if (value != option.value) value},
-                          ),
+                AppTouchTarget(
+                  child: FilterChip(
+                    label: Text(option.label),
+                    avatar: option.icon == null ? null : Icon(option.icon),
+                    labelPadding: selected.contains(option.value) ? const EdgeInsets.only(left: AppSpacing.xs) : EdgeInsets.zero,
+                    showCheckmark: option.icon == null,
+                    selected: selected.contains(option.value),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onSelected: onChanged == null
+                        ? null
+                        : (bool isSelected) => onChanged(
+                              isSelected
+                                  ? <T>{...selected, option.value}
+                                  : <T>{for (final T value in selected) if (value != option.value) value},
+                            ),
+                  ),
                 ),
             ],
           ),

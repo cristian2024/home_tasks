@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/app_colors.dart';
+import '../tokens/app_icons.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
@@ -110,6 +111,11 @@ abstract final class AppTheme {
     const Size minimumButtonSize = Size(AppSizes.minTouchTarget, AppSizes.minTouchTarget);
     final RoundedRectangleBorder buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.small));
     const EdgeInsets buttonPadding = EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm);
+    OutlineInputBorder fieldBorder(Color color, {double width = AppSizes.strokeThin}) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.small),
+          borderSide: BorderSide(color: color, width: width),
+          gapPadding: AppSpacing.s0,
+        );
 
     return ThemeData(
       useMaterial3: true,
@@ -120,10 +126,19 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: colors.bgCanvas,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (BuildContext context) => const Icon(AppIcons.arrowLeft),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.bgCanvas,
+        foregroundColor: colors.textPrimary,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
+        toolbarHeight: AppSizes.topBarHeight,
+        leadingWidth: AppSizes.minTouchTarget,
+        iconTheme: IconThemeData(color: colors.textPrimary),
+        actionsIconTheme: IconThemeData(color: colors.textPrimary),
+        actionsPadding: const EdgeInsets.only(right: AppSpacing.xs),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -164,8 +179,51 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: scheme.surface,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadii.small)),
+        fillColor: colors.bgSurface,
+        hintStyle: AppTypography.mobileBodyM.copyWith(color: colors.textTertiary),
+        border: fieldBorder(colors.borderStrong),
+        enabledBorder: fieldBorder(colors.borderStrong),
+        focusedBorder: fieldBorder(colors.borderFocus, width: AppSizes.strokeThick),
+        errorBorder: fieldBorder(colors.borderDanger),
+        focusedErrorBorder: fieldBorder(colors.borderDanger, width: AppSizes.strokeThick),
+        disabledBorder: fieldBorder(colors.borderDisabled),
+      ),
+      // `AppCheckTile` dibuja la casilla más grande: el borde y el radio se
+      // compensan para que queden como en el diseño.
+      checkboxTheme: CheckboxThemeData(
+        side: WidgetStateBorderSide.resolveWith(
+          (Set<WidgetState> states) =>
+              states.contains(WidgetState.selected) ? BorderSide.none : BorderSide(color: colors.borderStrong, width: 0.75),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.extraSmall * 0.75)),
+      ),
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.only(left: AppSpacing.md, right: AppSpacing.s300),
+        horizontalTitleGap: AppSpacing.s300,
+        minLeadingWidth: AppSizes.iconMedium,
+        minTileHeight: AppSizes.minTouchTarget,
+        minVerticalPadding: AppSpacing.s300,
+        iconColor: colors.textSecondary,
+        titleTextStyle: AppTypography.mobileBodyM.copyWith(color: colors.textPrimary),
+        subtitleTextStyle: AppTypography.mobileBodyS.copyWith(color: colors.textSecondary),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: Colors.transparent,
+        selectedColor: colors.bgBrandSubtle,
+        disabledColor: Colors.transparent,
+        checkmarkColor: colors.textBrand,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s300, vertical: AppSpacing.s150),
+        labelStyle: AppTypography.mobileLabelM.copyWith(
+          color: WidgetStateColor.resolveWith(
+            (Set<WidgetState> states) => states.contains(WidgetState.selected) ? colors.textBrand : colors.textPrimary,
+          ),
+        ),
+        side: WidgetStateBorderSide.resolveWith(
+          (Set<WidgetState> states) => BorderSide(
+            color: states.contains(WidgetState.selected) ? colors.borderBrand : colors.borderDefault,
+          ),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.small)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -178,10 +236,22 @@ abstract final class AppTheme {
         ),
       ),
       dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+        backgroundColor: colors.bgSurfaceRaised,
+        surfaceTintColor: Colors.transparent,
+        barrierColor: colors.bgScrim,
+        elevation: AppSpacing.md,
+        shadowColor: colors.shadowStrong,
+        insetPadding: const EdgeInsets.all(AppSpacing.lg),
+        titleTextStyle: AppTypography.mobileH4.copyWith(color: colors.textPrimary),
+        contentTextStyle: AppTypography.mobileBodyS.copyWith(color: colors.textSecondary),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.extraLarge)),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        shape: RoundedRectangleBorder(
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.bgSurfaceRaised,
+        modalBackgroundColor: colors.bgSurfaceRaised,
+        modalBarrierColor: colors.bgScrim,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.extraLarge)),
         ),
       ),

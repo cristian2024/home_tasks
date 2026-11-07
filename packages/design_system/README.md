@@ -17,21 +17,29 @@ Replican el sistema de diseño de Figma.
 **Fuente**
 El paquete incluye Inter 4.1 (pesos 400, 500, 600 y 700, bajo la licencia de `assets/fonts/OFL.txt`). Quien depende del paquete la recibe sin declarar nada. Un `TextStyle` propio debe indicar `package: AppTypography.fontPackage`; sin eso, Flutter no la encuentra y usa la del sistema.
 
+También incluye los iconos de Lucide 1.69.0 (`assets/fonts/Lucide.ttf`, bajo la licencia ISC y MIT de `assets/fonts/LICENSE-Lucide.txt`). Se usan con `AppIcons`, nunca con `Icons`. Quien publica una app llama a `registerDesignSystemLicenses()` al arrancar para incluir ambas licencias.
+
 Algunos nombres no coinciden con Figma y están documentados en cada clase: `radius/sm` es `AppRadii.extraSmall`, y `size/icon-md` es `AppSizes.iconCompact`.
 
 **Componentes**
 
 | Componente | Para qué |
 | :--- | :--- |
-| `AppButton` | Botón `primary`, `secondary` (relleno suave), `outline` o `text` (`AppButtonVariant`), con icono opcional. |
+| `AppButton` | Botón `primary`, `secondary` (relleno suave), `outline`, `text`, `danger` o `dangerOutline` (`AppButtonVariant`), de 36, 40 o 48 de alto (`AppButtonSize`), con icono opcional. |
+| `AppTouchTarget` | Da 48 de área táctil y semántica a un control más pequeño, sin ocupar más sitio. |
+| `AppTopBar` | Barra superior de las pantallas. Usarla en lugar de `AppBar`. |
+| `AppFooterActions` | Acciones fijas al pie de una pantalla. |
+| `AppNote` | Nota destacada con icono. |
+| `AppCameraFrame` | Panel oscuro con guía para la vista previa de una cámara. |
+| `showAppBottomSheet` | Hoja inferior que mide lo que su contenido. |
 | `AppIconButton` | Botón de icono con `tooltip` obligatorio. |
-| `AppTextField` | Campo de texto con etiqueta y error. |
+| `AppTextField` | Campo de texto con la etiqueta encima, error e icono opcional. El contador aparece cerca del límite. |
 | `AppCard` | Tarjeta, pulsable si recibe `onTap` (con `semanticLabel`). |
 | `AppIconBox` | Icono en un recuadro de 56, de marca o de error. |
 | `AppModuleCard` | Tarjeta de un módulo en el inicio: icono, título, resumen, etiquetas y acciones. Pulsable con `onTap`, o con acciones, pero no ambas. |
 | `AppSectionHeader` | Título de sección con acción opcional a la derecha. |
 | `AppStatusView`, `AppLoadingView` | Estados vacío, de error y de carga. El icono va en un círculo de marca. |
-| `AppShortcutTile`, `AppShortcutGrid` | Accesos rápidos en una grilla adaptable (`columnsFor`). |
+| `AppShortcutTile`, `AppShortcutGrid` | Accesos rápidos en una grilla con tantas columnas como quepan (`columnsFor`). |
 | `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración (`destructive` para acciones peligrosas) y elección entre pocas opciones con un control segmentado (`AppChoiceSegment`), que quita la marca y luego apila las opciones si no caben. `padding: EdgeInsets.zero` para usarlo suelto en una pantalla. |
 | `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). |
 | `AppBadge` | Etiqueta corta con tono `critical`, `warning`, `neutral`, `brand` o `success`. |

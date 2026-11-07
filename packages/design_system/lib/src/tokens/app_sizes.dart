@@ -9,6 +9,7 @@ abstract final class AppSizes {
   static const double touchTarget = 44.0;
 
   static const double controlSmall = 32.0;
+  static const double controlCompact = 36.0;
   static const double controlMedium = 40.0;
   static const double controlLarge = 48.0;
 
@@ -16,6 +17,9 @@ abstract final class AppSizes {
   static const double iconCompact = 20.0;
   static const double iconMedium = 24.0;
   static const double iconLarge = 48.0;
+
+  /// Alto de la barra superior de una pantalla.
+  static const double topBarHeight = 64.0;
 
   static const double strokeThin = 1.0;
   static const double strokeThick = 2.0;

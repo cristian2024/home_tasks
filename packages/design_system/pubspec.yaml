@@ -1,6 +1,6 @@
 name: design_system
 description: Sistema de diseño centralizado - tokens, temas claro/oscuro y componentes accesibles.
-version: 0.2.1
+version: 0.3.0
 publish_to: none
 
 environment:
@@ -20,7 +20,13 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  assets:
+    - assets/fonts/LICENSE-Lucide.txt
+    - assets/fonts/OFL.txt
   fonts:
+    - family: Lucide
+      fonts:
+        - asset: assets/fonts/Lucide.ttf
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf

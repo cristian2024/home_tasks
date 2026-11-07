@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_icons.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_theme_colors.dart';
 
@@ -19,6 +20,7 @@ class AppSettingsTile extends StatelessWidget {
     this.trailing,
     this.enabled = true,
     this.destructive = false,
+    this.compact = false,
   });
 
   final IconData icon;
@@ -29,11 +31,20 @@ class AppSettingsTile extends StatelessWidget {
   final bool enabled;
   final bool destructive;
 
+  /// Texto más pequeño, para filas de consulta (p. ej. un historial).
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     final String? subtitle = this.subtitle;
     final bool interactive = enabled && onTap != null;
     final AppThemeColors colors = AppThemeColors.of(context);
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final TextStyle? subtitleStyle = switch ((compact, enabled)) {
+      (true, _) => textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+      (false, false) => textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+      (false, true) => null,
+    };
     // ListTile solo respeta un color propio en una fila desactivada si es un
     // `WidgetStateColor`.
     final Color? foreground = switch ((enabled, destructive)) {
@@ -46,11 +57,12 @@ class AppSettingsTile extends StatelessWidget {
       iconColor: foreground,
       textColor: foreground,
       leading: Icon(icon),
-      title: Text(title),
-      subtitle: subtitle == null ? null : Text(subtitle),
+      title: Text(title, style: compact ? textTheme.bodyMedium : null),
+      // Atenuada, la explicación de por qué no responde debe seguir legible.
+      subtitle: subtitle == null ? null : Text(subtitle, style: subtitleStyle),
       trailing: trailing ??
           (interactive && !destructive
-              ? Icon(Icons.chevron_right, size: AppSizes.iconCompact, color: colors.textTertiary)
+              ? Icon(AppIcons.chevronRight, size: AppSizes.iconCompact, color: colors.textTertiary)
               : null),
       onTap: interactive ? onTap : null,
     );
