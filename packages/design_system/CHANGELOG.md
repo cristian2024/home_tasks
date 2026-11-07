@@ -7,6 +7,8 @@
 - `showAppActionSheet<T>` y `AppSheetAction<T>`: hoja inferior con acciones agrupadas, para el menú ⋮.
 - `showAppDateSheet`, con `AppDateOption`, `AppDateSheetTexts` y `AppDateChoice`: elegir un día con accesos rápidos, escribiéndolo o con el calendario del sistema.
 - `AppPickerField`: campo que abre un selector al tocarlo.
+- `AppCheckTile.subtitleSemantics`: lo que leen los lectores de pantalla en lugar de la línea de datos (p. ej. la fecha completa).
+- `AppTextField.focusNode`.
 - `AppButtonVariant.dangerText`: botón de texto en color de peligro.
 - Token `bgBadgeNeutral` (`neutral100` en claro y `neutral800` en oscuro).
 - Iconos `AppIcons.calendar` y `AppIcons.listChecks`.
@@ -21,6 +23,7 @@
 ### Corregido
 
 - `AppCard` pulsable es un solo control para los lectores de pantalla: la etiqueta y la pulsación quedaban en nodos distintos.
+- `AppModuleCard` pulsable se anuncia con su título, su resumen y sus etiquetas; antes solo con el título.
 - `AppSectionHeader` con acción ya no parte las palabras del título con el texto grande: la acción pasa debajo.
 
 ## 0.3.0 - 2026-11-05

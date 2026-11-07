@@ -16,6 +16,7 @@ class AppTextField extends StatelessWidget {
     super.key,
     required this.label,
     this.controller,
+    this.focusNode,
     this.hint,
     this.errorText,
     this.helperText,
@@ -36,6 +37,9 @@ class AppTextField extends StatelessWidget {
 
   final String label;
   final TextEditingController? controller;
+
+  /// Para llevar el foco al campo, p. ej. al campo con error al guardar.
+  final FocusNode? focusNode;
   final String? hint;
   final String? errorText;
   final String? helperText;
@@ -75,6 +79,7 @@ class AppTextField extends StatelessWidget {
           label: label,
           child: TextField(
             controller: controller,
+            focusNode: focusNode,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             keyboardType: keyboardType,

@@ -335,4 +335,56 @@ void main() {
       semantics.dispose();
     });
   });
+
+  testWidgets('AppCheckTile puede leer su línea de datos de otra forma', (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      host(
+        AppCheckTile(
+          title: 'Limpiar el horno',
+          subtitle: '12 nov',
+          subtitleSemantics: 'jueves, 12 de noviembre de 2026',
+          value: false,
+          checkboxLabel: 'Marcar como hecha',
+          onChanged: (bool _) {},
+        ),
+      ),
+    );
+
+    expect(find.text('12 nov'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('jueves, 12 de noviembre')), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('AppModuleCard pulsable se anuncia con su título, su resumen y sus etiquetas', (WidgetTester tester) async {
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      host(
+        AppModuleCard(
+          icon: AppIcons.listChecks,
+          title: 'Lista de tareas',
+          summary: '7 por hacer',
+          badges: const <Widget>[AppBadge(label: '2 atrasadas')],
+          onTap: () {},
+        ),
+      ),
+    );
+
+    final SemanticsData data =
+        tester.getSemantics(find.bySemanticsLabel(RegExp('Lista de tareas.*7 por hacer.*2 atrasadas', dotAll: true))).getSemanticsData();
+    expect(data.hasAction(SemanticsAction.tap), isTrue);
+    semantics.dispose();
+  });
+
+  testWidgets('AppTextField acepta un FocusNode', (WidgetTester tester) async {
+    final FocusNode focus = FocusNode();
+    addTearDown(focus.dispose);
+    await tester.pumpWidget(host(AppTextField(label: 'Título', focusNode: focus)));
+
+    focus.requestFocus();
+    await tester.pump();
+
+    expect(tester.widget<TextField>(find.byType(TextField)).focusNode, focus);
+    expect(focus.hasFocus, isTrue);
+  });
 }
