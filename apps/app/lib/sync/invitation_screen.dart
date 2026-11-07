@@ -18,10 +18,10 @@ class InvitationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppTranslations$app$sync$invitation$es invitationStrings = appStrings.app.sync.invitation;
     return Scaffold(
-      appBar: AppBar(title: Text(invitationStrings.title)),
+      appBar: AppTopBar(title: Text(invitationStrings.title)),
       body: BlocBuilder<InvitationCubit, String?>(
         builder: (BuildContext context, String? code) => code == null
-            ? AppStatusView(icon: Icons.qr_code_2, title: invitationStrings.loading)
+            ? AppStatusView(icon: AppIcons.qrCode, title: invitationStrings.loading)
             : _InvitationBody(code: code),
       ),
     );
@@ -48,19 +48,21 @@ class _InvitationBody extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final TextTheme textTheme = theme.textTheme;
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
       children: <Widget>[
         Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 320),
-            child: AppQrCode(data: code, semanticLabel: invitationStrings.qrLabel),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.large),
+              child: AppQrCode(data: code, semanticLabel: invitationStrings.qrLabel),
+            ),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
         Text(
           invitationStrings.message,
           style: textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.lg),
         Text(invitationStrings.codeLabel, style: textTheme.labelLarge),
@@ -73,15 +75,17 @@ class _InvitationBody extends StatelessWidget {
           children: <Widget>[
             AppButton(
               label: invitationStrings.copy,
-              icon: Icons.copy,
+              icon: AppIcons.copy,
               variant: AppButtonVariant.secondary,
+              size: AppButtonSize.medium,
               onPressed: () => _copy(context),
             ),
             if (cubit.canShare)
               AppButton(
                 label: invitationStrings.share,
-                icon: Icons.share,
+                icon: AppIcons.share2,
                 variant: AppButtonVariant.outline,
+                size: AppButtonSize.medium,
                 onPressed: () => unawaited(cubit.share(subject: invitationStrings.title)),
               ),
           ],
@@ -109,7 +113,7 @@ class _WarningNote extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            ExcludeSemantics(child: Icon(Icons.warning_amber_rounded, size: AppSizes.iconCompact, color: colors.textWarning)),
+            ExcludeSemantics(child: Icon(AppIcons.triangleAlert, size: AppSizes.iconCompact, color: colors.textWarning)),
             const SizedBox(width: AppSpacing.s300),
             Expanded(child: Text(message, style: Theme.of(context).textTheme.bodyMedium)),
           ],

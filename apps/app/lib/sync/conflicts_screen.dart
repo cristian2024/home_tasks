@@ -16,7 +16,7 @@ class ConflictsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppTranslations$app$sync$conflicts$es conflictStrings = appStrings.app.sync.conflicts;
     return Scaffold(
-      appBar: AppBar(title: Text(conflictStrings.title)),
+      appBar: AppTopBar(title: Text(conflictStrings.title)),
       body: BlocBuilder<ConflictsCubit, ConflictsState>(
         builder: (BuildContext context, ConflictsState state) {
           if (!state.loaded) {
@@ -24,11 +24,11 @@ class ConflictsScreen extends StatelessWidget {
           }
           final List<SyncConflict> conflicts = state.conflicts;
           if (conflicts.isEmpty) {
-            return AppStatusView(icon: Icons.check_circle_outline, title: conflictStrings.emptyTitle, message: conflictStrings.emptyMessage);
+            return AppStatusView(icon: AppIcons.circleCheck, title: conflictStrings.emptyTitle, message: conflictStrings.emptyMessage);
           }
           final ConflictsCubit cubit = context.read<ConflictsCubit>();
           return ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
             children: <Widget>[
               if (conflicts.length > 1) ...<Widget>[
                 AppButton(

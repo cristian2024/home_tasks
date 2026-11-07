@@ -17,10 +17,10 @@ class CatalogScreen extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final TextStyle? descriptionStyle = theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     return Scaffold(
-      appBar: AppBar(title: Text(catalogStrings.title)),
+      appBar: AppTopBar(title: Text(catalogStrings.title)),
       body: BlocBuilder<CatalogCubit, CatalogState>(
         builder: (BuildContext context, CatalogState state) => ListView(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
           children: <Widget>[
             Text(catalogStrings.description, style: descriptionStyle),
             const SizedBox(height: AppSpacing.md),

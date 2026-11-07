@@ -1,4 +1,5 @@
 import 'package:core_sync/testing.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -72,7 +73,7 @@ void main() {
     await tester.tap(find.text(t.create));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AlertDialog, t.createTitle), findsOneWidget);
-    expect(find.widgetWithText(TextField, t.newSpaceName(n: 3)), findsOneWidget);
+    expect(find.widgetWithText(AppTextField, t.newSpaceName(n: 3)), findsOneWidget);
     await tester.tap(find.text(t.cancel));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
