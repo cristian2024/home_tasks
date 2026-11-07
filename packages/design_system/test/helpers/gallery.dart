@@ -17,6 +17,8 @@ Widget gallery() => ListView(
         AppButton(label: 'Secundario', icon: AppIcons.plus, variant: AppButtonVariant.secondary, onPressed: () {}),
         AppButton(label: 'Borde', icon: AppIcons.download, variant: AppButtonVariant.outline, onPressed: () {}),
         AppButton(label: 'Texto', variant: AppButtonVariant.text, onPressed: () {}),
+        AppButton(label: 'Borrar tarea', icon: AppIcons.trash, variant: AppButtonVariant.dangerText, onPressed: () {}),
+        AppPickerField(label: 'Fecha', placeholder: 'Sin fecha', icon: AppIcons.calendar, onTap: () {}),
         AppIconButton(icon: Icons.delete, tooltip: 'Eliminar', onPressed: () {}),
         AppIconButton(icon: AppIcons.plus, tooltip: 'Añadir', variant: AppIconButtonVariant.filled, onPressed: () {}),
         const AppTextField(label: 'Nombre'),
@@ -80,6 +82,14 @@ Widget gallery() => ListView(
           ],
         ),
         AppCheckTile(title: 'Pan', value: true, checkboxLabel: 'Marcar como comprado', onChanged: (bool _) {}),
+        AppCheckTile(
+          title: 'Revisar el extintor',
+          subtitle: 'Cada 30 días · vuelve el 20 nov',
+          value: false,
+          checkboxLabel: 'Marcar «Revisar el extintor» como hecha',
+          onChanged: (bool _) {},
+          badges: const <Widget>[AppBadge(label: 'En espera', icon: AppIcons.hourglass)],
+        ),
         AppModuleCard(
           icon: AppIcons.shoppingCart,
           title: 'Lista de compras',

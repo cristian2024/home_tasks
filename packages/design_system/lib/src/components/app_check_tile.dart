@@ -8,7 +8,9 @@ import 'app_touch_target.dart';
 /// Fila de una lista que se marca como hecha (p. ej. comprado) con su
 /// casilla. Un toque en el resto de la fila llama a [onTap] (p. ej. editar).
 ///
-/// Marcada, el título se tacha. [badges] se muestran bajo el subtítulo.
+/// Marcada, el título se tacha y pasa al color secundario, que conserva el
+/// contraste. [subtitle] es la línea de datos (fecha, categoría…) y [badges] se
+/// muestran debajo.
 class AppCheckTile extends StatelessWidget {
   const AppCheckTile({
     super.key,
@@ -70,7 +72,7 @@ class AppCheckTile extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: value ? colors.textTertiary : colors.textPrimary,
+                      color: value ? colors.textSecondary : colors.textPrimary,
                       decoration: value ? TextDecoration.lineThrough : null,
                     ),
                   ),

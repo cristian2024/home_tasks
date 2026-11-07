@@ -23,6 +23,10 @@ enum AppButtonVariant {
 
   /// Solo borde, en color de peligro: una opción destructiva entre otras.
   dangerOutline,
+
+  /// Solo texto, en color de peligro: una acción destructiva secundaria (p. ej.
+  /// «Borrar tarea» al final de un formulario).
+  dangerText,
 }
 
 enum AppButtonSize {
@@ -63,7 +67,9 @@ class AppButton extends StatelessWidget {
   /// Ocupa todo el ancho disponible.
   final bool expand;
 
-  AppButtonSize get _size => size ?? (variant == AppButtonVariant.text ? AppButtonSize.small : AppButtonSize.large);
+  AppButtonSize get _size =>
+      size ??
+      (variant == AppButtonVariant.text || variant == AppButtonVariant.dangerText ? AppButtonSize.small : AppButtonSize.large);
 
   ButtonStyle _style(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
@@ -90,6 +96,7 @@ class AppButton extends StatelessWidget {
             side: BorderSide(color: colors.borderDanger),
           ),
         ),
+      AppButtonVariant.dangerText => style.merge(TextButton.styleFrom(foregroundColor: colors.textDanger)),
       _ => style,
     };
   }
@@ -118,8 +125,9 @@ class AppButton extends StatelessWidget {
         OutlinedButton(style: style, onPressed: onPressed, child: text),
       (AppButtonVariant.outline || AppButtonVariant.dangerOutline, final Widget leading) =>
         OutlinedButton.icon(style: style, onPressed: onPressed, icon: leading, label: text),
-      (AppButtonVariant.text, null) => TextButton(style: style, onPressed: onPressed, child: text),
-      (AppButtonVariant.text, final Widget leading) =>
+      (AppButtonVariant.text || AppButtonVariant.dangerText, null) =>
+        TextButton(style: style, onPressed: onPressed, child: text),
+      (AppButtonVariant.text || AppButtonVariant.dangerText, final Widget leading) =>
         TextButton.icon(style: style, onPressed: onPressed, icon: leading, label: text),
     };
 

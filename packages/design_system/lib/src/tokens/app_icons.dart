@@ -19,6 +19,7 @@ abstract final class AppIcons {
   static const IconData ban = IconData(0xe051, fontFamily: _family, fontPackage: _package);
   static const IconData barcode = IconData(0xe533, fontFamily: _family, fontPackage: _package);
   static const IconData box = IconData(0xe061, fontFamily: _family, fontPackage: _package);
+  static const IconData calendar = IconData(0xe063, fontFamily: _family, fontPackage: _package);
   static const IconData cameraOff = IconData(0xe065, fontFamily: _family, fontPackage: _package);
   static const IconData check = IconData(0xe06c, fontFamily: _family, fontPackage: _package);
   static const IconData chevronDown = IconData(0xe06d, fontFamily: _family, fontPackage: _package);
@@ -39,6 +40,7 @@ abstract final class AppIcons {
   static const IconData layoutGrid = IconData(0xe0ff, fontFamily: _family, fontPackage: _package);
   static const IconData link = IconData(0xe102, fontFamily: _family, fontPackage: _package);
   static const IconData list = IconData(0xe106, fontFamily: _family, fontPackage: _package);
+  static const IconData listChecks = IconData(0xe1d0, fontFamily: _family, fontPackage: _package);
   static const IconData logOut = IconData(0xe10e, fontFamily: _family, fontPackage: _package);
   static const IconData messageCircle = IconData(0xe116, fontFamily: _family, fontPackage: _package);
   static const IconData nfc = IconData(0xe3c3, fontFamily: _family, fontPackage: _package);

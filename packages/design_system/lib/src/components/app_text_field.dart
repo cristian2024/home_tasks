@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
+import 'field_error.dart';
 
 /// Campo de texto con etiqueta obligatoria, visible encima del campo y leída
 /// por los lectores de pantalla.
@@ -63,6 +64,7 @@ class AppTextField extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final AppThemeColors colors = AppThemeColors.of(context);
     final IconData? prefixIcon = this.prefixIcon;
+    final String? errorText = this.errorText;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -85,7 +87,7 @@ class AppTextField extends StatelessWidget {
             autofocus: autofocus,
             decoration: InputDecoration(
               hintText: hint,
-              errorText: errorText,
+              error: errorText == null ? null : FieldError(errorText),
               helperText: helperText,
               helperMaxLines: 3,
               errorMaxLines: 3,

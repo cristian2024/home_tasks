@@ -25,25 +25,28 @@ Algunos nombres no coinciden con Figma y están documentados en cada clase: `rad
 
 | Componente | Para qué |
 | :--- | :--- |
-| `AppButton` | Botón `primary`, `secondary` (relleno suave), `outline`, `text`, `danger` o `dangerOutline` (`AppButtonVariant`), de 36, 40 o 48 de alto (`AppButtonSize`), con icono opcional. |
+| `AppButton` | Botón `primary`, `secondary` (relleno suave), `outline`, `text`, `danger`, `dangerOutline` o `dangerText` (`AppButtonVariant`), de 36, 40 o 48 de alto (`AppButtonSize`), con icono opcional. |
 | `AppTouchTarget` | Da 48 de área táctil y semántica a un control más pequeño, sin ocupar más sitio. |
 | `AppTopBar` | Barra superior de las pantallas. Usarla en lugar de `AppBar`. |
 | `AppFooterActions` | Acciones fijas al pie de una pantalla. |
 | `AppNote` | Nota destacada con icono. |
 | `AppCameraFrame` | Panel oscuro con guía para la vista previa de una cámara. |
 | `showAppBottomSheet` | Hoja inferior que mide lo que su contenido. |
+| `showAppActionSheet<T>` | Hoja inferior con acciones agrupadas (`AppSheetAction<T>`, con `destructive`), p. ej. el menú ⋮. Devuelve la elegida. |
+| `showAppDateSheet` | Hoja para elegir un día: accesos rápidos (`AppDateOption`), campo en el formato del idioma y calendario del sistema. Devuelve `AppDateChoice`, sin fecha si se quita. |
 | `AppIconButton` | Botón de icono con `tooltip` obligatorio. |
 | `AppTextField` | Campo de texto con la etiqueta encima, error e icono opcional. El contador aparece cerca del límite. |
+| `AppPickerField` | Campo que no se escribe: muestra un valor y abre un selector al tocarlo (p. ej. la fecha). Se anuncia como botón. |
 | `AppCard` | Tarjeta, pulsable si recibe `onTap` (con `semanticLabel`). |
 | `AppIconBox` | Icono en un recuadro de 56, de marca o de error. |
 | `AppModuleCard` | Tarjeta de un módulo en el inicio: icono, título, resumen, etiquetas y acciones. Pulsable con `onTap`, o con acciones, pero no ambas. |
-| `AppSectionHeader` | Título de sección con acción opcional a la derecha. |
+| `AppSectionHeader` | Título de sección con acción opcional a la derecha, que pasa debajo si no cabe. |
 | `AppStatusView`, `AppLoadingView` | Estados vacío, de error y de carga. El icono va en un círculo de marca. |
 | `AppShortcutTile`, `AppShortcutGrid` | Accesos rápidos en una grilla con tantas columnas como quepan (`columnsFor`). |
 | `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración (`destructive` para acciones peligrosas) y elección entre pocas opciones con un control segmentado (`AppChoiceSegment`), que quita la marca y luego apila las opciones si no caben. `padding: EdgeInsets.zero` para usarlo suelto en una pantalla. |
 | `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). |
 | `AppBadge` | Etiqueta corta con tono `critical`, `warning`, `neutral`, `brand` o `success`. |
-| `AppCheckTile` | Fila que se marca como hecha con su casilla. |
+| `AppCheckTile` | Fila que se marca como hecha con su casilla, con una línea de datos y etiquetas. Hecha, el título se tacha en color secundario. |
 | `AppSyncStatusCard` | Estado de una sincronización (`AppSyncTone`: `off`, `idle`, `syncing`, `error`), con detalles, mensaje de error y acción. El título se anuncia al cambiar. |
 | `AppConflictCard<T>` | Conflicto entre dispositivos con sus opciones (`AppConflictOption<T>`): marca la que ya rige (`applied`) con una fila de marca y su etiqueta, avisa de la elegida (`onSelected`) y confirma la actual (`keepLabel`, `onKeep`). |
 
