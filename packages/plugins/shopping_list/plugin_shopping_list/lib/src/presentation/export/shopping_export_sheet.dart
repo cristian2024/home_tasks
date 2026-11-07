@@ -9,7 +9,7 @@ import '../../domain/use_cases/build_shopping_export.dart';
 import '../../i18n/strings.g.dart';
 import '../common/shopping_list_l10n.dart';
 
-const EdgeInsets _selectorPadding = EdgeInsets.only(top: AppSpacing.md);
+const EdgeInsets _selectorPadding = EdgeInsets.only(top: AppSpacing.s300);
 
 /// Hoja para exportar la lista (completa o filtrada) por WhatsApp, como
 /// texto o como archivo Markdown. Es parte de la pantalla de la lista.
@@ -76,11 +76,9 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
     final ShoppingListTranslations$shoppingList$es strings = shoppingListStrings.shoppingList;
     final ShareService share = widget.shareService;
     final bool empty = _document.isEmpty;
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
+    return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Semantics(
               header: true,
@@ -112,10 +110,10 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 child: Text(strings.export.nothing),
               ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.whatsapp,
-              icon: Icons.chat_outlined,
+              icon: AppIcons.messageCircle,
               expand: true,
               onPressed: empty
                   ? null
@@ -124,10 +122,10 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
                           ? null
                           : strings.export.whatsappMissing),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.shareText,
-              icon: Icons.share_outlined,
+              icon: AppIcons.textAlignStart,
               variant: AppButtonVariant.secondary,
               expand: true,
               onPressed: empty
@@ -137,10 +135,10 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
                         return null;
                       }),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.shareFile,
-              icon: Icons.description_outlined,
+              icon: AppIcons.file,
               variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
@@ -150,10 +148,10 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
                         return null;
                       }),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: strings.export.saveFile,
-              icon: Icons.save_alt,
+              icon: AppIcons.download,
               variant: AppButtonVariant.outline,
               expand: true,
               onPressed: empty
@@ -162,8 +160,6 @@ class _ShoppingExportSheetState extends State<ShoppingExportSheet> {
                       await share.saveFile(_markdownFile(document)) == SaveFileResult.saved ? strings.export.saved : null),
             ),
           ],
-        ),
-      ),
     );
   }
 }

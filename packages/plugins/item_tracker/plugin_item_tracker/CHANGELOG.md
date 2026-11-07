@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.0.2 - 2026-11-05
+
+### Cambiado
+
+- Los iconos pasan a la familia lineal de `AppIcons`.
+- El selector de modo al escanear y el tipo de identificador usan `AppChoiceSelector`.
+- La cámara se muestra en un panel con esquinas redondeadas y una guía.
+- En «no registrado» el código es un badge y las acciones van fijas al pie. En los formularios, «Guardar» también.
+- Los buscadores llevan lupa. Las notas de identificador usan `AppNote`.
+- En el listado, la tarjeta muestra solo la ruta, y al asociar solo el nombre.
+- Con la lista vacía no se muestra el botón de añadir de la barra.
+- Los datos adicionales muestran Tipo y Valor lado a lado.
+
+### Corregido
+
+- Si la cámara falla, ya no se muestra «Apunta al código» bajo el error.
+
+### Interno
+
+- Usa `design_system` 0.3.0.
+
 ## 3.0.1 - 2026-11-04
 
 ### Cambiado

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.2 - 2026-11-05
+
+### Cambiado
+
+- Los iconos pasan a la familia lineal de `AppIcons`.
+- La urgencia alta se muestra en rojo, como la inmediata.
+- Con la lista vacía no se muestran compartir ni filtros. Si nada coincide con los filtros, el aviso va centrado y sin la franja de filtros activos.
+- «Guardar» queda fijo al pie del formulario. El botón de añadir categoría es rectangular y las acciones de cada fila, más discretas.
+- La hoja de exportar mide lo que su contenido.
+
+### Interno
+
+- Usa `design_system` 0.3.0.
+
 ## 0.2.1 - 2026-11-04
 
 ### Cambiado

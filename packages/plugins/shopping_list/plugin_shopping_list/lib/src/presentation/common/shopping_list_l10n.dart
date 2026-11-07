@@ -44,8 +44,7 @@ String recurrenceLabel(Recurrence recurrence) => recurrence.isFixed
 
 /// Tono del badge de urgencia; `null` si no merece badge.
 AppBadgeTone? urgencyTone(Urgency urgency) => switch (urgency) {
-      Urgency.immediate => AppBadgeTone.critical,
-      Urgency.high => AppBadgeTone.warning,
+      Urgency.immediate || Urgency.high => AppBadgeTone.critical,
       Urgency.normal || Urgency.low => null,
     };
 

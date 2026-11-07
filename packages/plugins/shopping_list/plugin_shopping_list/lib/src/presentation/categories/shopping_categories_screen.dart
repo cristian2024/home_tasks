@@ -47,14 +47,14 @@ class _ShoppingCategoriesScreenState extends State<ShoppingCategoriesScreen> {
       builder: (BuildContext context, ShoppingCategoriesState state) {
         final ShoppingCategoriesState(:List<ShoppingCategory> categories) = state;
         return Scaffold(
-          appBar: AppBar(title: Text(categoryStrings.title)),
+          appBar: AppTopBar(title: Text(categoryStrings.title)),
           body: state.loading
               ? const AppLoadingView()
               : ListView(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                   children: <Widget>[
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       spacing: AppSpacing.sm,
                       children: <Widget>[
                         Expanded(
@@ -67,9 +67,9 @@ class _ShoppingCategoriesScreenState extends State<ShoppingCategoriesScreen> {
                           ),
                         ),
                         AppIconButton(
-                          icon: Icons.add,
+                          icon: AppIcons.plus,
                           tooltip: categoryStrings.add,
-                          variant: AppIconButtonVariant.filled,
+                          variant: AppIconButtonVariant.primary,
                           onPressed: () => _create(cubit),
                         ),
                       ],
@@ -156,17 +156,29 @@ class _CategoryRow extends StatelessWidget {
       trailing: Wrap(
         children: <Widget>[
           AppIconButton(
-            icon: Icons.arrow_upward,
+            icon: AppIcons.arrowUp,
             tooltip: categoryStrings.moveUp(name: name),
+            variant: AppIconButtonVariant.subtle,
             onPressed: isFirst ? null : () => onMove(-1),
           ),
           AppIconButton(
-            icon: Icons.arrow_downward,
+            icon: AppIcons.arrowDown,
             tooltip: categoryStrings.moveDown(name: name),
+            variant: AppIconButtonVariant.subtle,
             onPressed: isLast ? null : () => onMove(1),
           ),
-          AppIconButton(icon: Icons.edit_outlined, tooltip: categoryStrings.rename(name: name), onPressed: () => _rename(context)),
-          AppIconButton(icon: Icons.delete_outline, tooltip: categoryStrings.delete(name: name), onPressed: () => _delete(context)),
+          AppIconButton(
+            icon: AppIcons.pencil,
+            tooltip: categoryStrings.rename(name: name),
+            variant: AppIconButtonVariant.subtle,
+            onPressed: () => _rename(context),
+          ),
+          AppIconButton(
+            icon: AppIcons.trash2,
+            tooltip: categoryStrings.delete(name: name),
+            variant: AppIconButtonVariant.subtle,
+            onPressed: () => _delete(context),
+          ),
         ],
       ),
     );
@@ -197,12 +209,16 @@ class _RenameDialogState extends State<_RenameDialog> {
     final ShoppingListTranslations$shoppingList$categories$es categoryStrings = shoppingListStrings.shoppingList.categories;
     return AlertDialog(
       title: Text(categoryStrings.renameTitle),
-      content: AppTextField(
-        label: categoryStrings.name,
-        controller: _name,
-        autofocus: true,
-        maxLength: ShoppingValidator.maxCategoryNameLength,
-        onSubmitted: (String value) => Navigator.of(context).pop(value),
+      content: SizedBox(
+        // Sin esto, el diálogo se encoge al ancho mínimo del campo.
+        width: double.maxFinite,
+        child: AppTextField(
+          label: categoryStrings.name,
+          controller: _name,
+          autofocus: true,
+          maxLength: ShoppingValidator.maxCategoryNameLength,
+          onSubmitted: (String value) => Navigator.of(context).pop(value),
+        ),
       ),
       actions: <Widget>[
         AppButton(
@@ -210,7 +226,11 @@ class _RenameDialogState extends State<_RenameDialog> {
           variant: AppButtonVariant.text,
           onPressed: () => Navigator.of(context).pop(),
         ),
-        AppButton(label: commonStrings.common.save, onPressed: () => Navigator.of(context).pop(_name.text)),
+        AppButton(
+          label: commonStrings.common.save,
+          size: AppButtonSize.medium,
+          onPressed: () => Navigator.of(context).pop(_name.text),
+        ),
       ],
     );
   }

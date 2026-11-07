@@ -26,30 +26,29 @@ class NotFoundScreen extends StatelessWidget {
     final ItemTrackerTranslations$itemTracker$notFound$es t = itemTrackerStrings.itemTracker.notFound;
     final String type = identifierTypeLabel(identifier.type);
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(t.title)),
       body: AppStatusView(
-        icon: Icons.search_off,
+        icon: AppIcons.qrCode,
         title: t.title,
-        message: '${t.message(type: type)}\n\n${identifier.rawValue}',
-        action: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            AppButton(
-              label: t.create,
-              icon: Icons.add,
-              expand: true,
-              onPressed: () => _open(context, ItemTrackerRoutes.create),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            AppButton(
-              label: t.associate,
-              icon: Icons.link,
-              variant: AppButtonVariant.secondary,
-              expand: true,
-              onPressed: () => _open(context, ItemTrackerRoutes.associate),
-            ),
-          ],
-        ),
+        message: t.message(type: type),
+        action: AppBadge(label: identifier.rawValue),
+      ),
+      bottomNavigationBar: AppFooterActions(
+        children: <Widget>[
+          AppButton(
+            label: t.create,
+            icon: AppIcons.plus,
+            expand: true,
+            onPressed: () => _open(context, ItemTrackerRoutes.create),
+          ),
+          AppButton(
+            label: t.associate,
+            icon: AppIcons.link,
+            variant: AppButtonVariant.secondary,
+            expand: true,
+            onPressed: () => _open(context, ItemTrackerRoutes.associate),
+          ),
+        ],
       ),
     );
   }
