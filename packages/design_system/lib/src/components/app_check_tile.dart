@@ -19,6 +19,7 @@ class AppCheckTile extends StatelessWidget {
     required this.onChanged,
     required this.checkboxLabel,
     this.subtitle,
+    this.subtitleSemantics,
     this.badges = const <Widget>[],
     this.onTap,
     this.trailing,
@@ -26,6 +27,10 @@ class AppCheckTile extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+
+  /// Cómo leen [subtitle] los lectores de pantalla, si debe ser distinto (p. ej.
+  /// la fecha completa en lugar de «12 nov»).
+  final String? subtitleSemantics;
 
   /// Si está marcada.
   final bool value;
@@ -77,7 +82,11 @@ class AppCheckTile extends StatelessWidget {
                     ),
                   ),
                   if (subtitle != null)
-                    Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
+                    Text(
+                      subtitle,
+                      semanticsLabel: subtitleSemantics,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+                    ),
                   if (badges.isNotEmpty) Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: badges),
                 ],
               ),

@@ -9,8 +9,8 @@ import 'app_icon_box.dart';
 /// corto con sus [badges] y, debajo, sus [actions] (normalmente [AppButton]) a
 /// partes iguales.
 ///
-/// Con [onTap], toda la tarjeta es un botón que se anuncia con [title]. No
-/// combinarlo con [actions].
+/// Con [onTap], toda la tarjeta es un botón que se anuncia con su título, su
+/// resumen y sus etiquetas. No combinarlo con [actions].
 class AppModuleCard extends StatelessWidget {
   const AppModuleCard({
     super.key,
@@ -35,7 +35,6 @@ class AppModuleCard extends StatelessWidget {
     final AppThemeColors colors = AppThemeColors.of(context);
     final String? summary = this.summary;
     return AppCard(
-      semanticLabel: onTap == null ? null : title,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
