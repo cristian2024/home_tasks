@@ -151,7 +151,7 @@ class _HomePage extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           AppButton(
             label: 'Cargar datos de ejemplo',
-            icon: Icons.dataset,
+            icon: AppIcons.layoutGrid,
             variant: AppButtonVariant.secondary,
             onPressed: () => _loadDemoData(context),
           ),
