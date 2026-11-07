@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2 - 2026-11-07
+
+### Añadido
+
+- `CalendarDay`: días de calendario como medianoche UTC (`of`, `localDayOf`, `daysBetween`, `relativeTo`).
+- `RelativeDay`: «Ayer», «Hoy», «Mañana» u otra fecha.
+- `Clock.today()`: el día local de hoy según el reloj.
+
 ## 0.1.1 - 2026-10-29
 
 Primera versión con CHANGELOG.
