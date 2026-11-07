@@ -6,7 +6,7 @@ Dominio de la lista de compras, en Dart puro: entidades, reglas, errores y el co
 
 - **Entidades:**
   - `ShoppingItem`: nombre, notas, cantidad, urgencia, estado, categorías, recurrencia y última compra.
-  - `ShoppingCategory`, con `DefaultShoppingCategory` para las que se crean por defecto.
+  - `ShoppingCategory`, alias de `ListCategory` (paquete `categories`, que se reexporta), con `DefaultShoppingCategory` para las que se crean por defecto.
   - `ShoppingPurchase`: el historial de compras.
 - **`ShoppingItem.stateAt(now)`**: el estado que se muestra (`overdue`, `pending`, `waiting` o `purchased`), según el estado guardado y la recurrencia (`recurrence`).
 - **`ShoppingListView`**: une cada item con su estado y sus categorías (`entries`), los ordena (`compare`: primero lo atrasado y lo urgente) y los agrupa (`group`) por categoría o por urgencia. Por categoría, cada item aparece una sola vez, bajo su primera categoría, y «Sin categoría» va al final.

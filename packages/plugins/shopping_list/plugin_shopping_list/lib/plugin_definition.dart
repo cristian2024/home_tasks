@@ -70,7 +70,7 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
   IconData get icon => Icons.shopping_cart_outlined;
 
   @override
-  String get version => '0.2.1';
+  String get version => '0.2.2';
 
   /// La lista: desde la grilla del inicio se abre directamente.
   @override

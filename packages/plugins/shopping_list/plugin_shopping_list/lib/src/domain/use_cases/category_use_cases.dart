@@ -13,11 +13,8 @@ Future<void> _checkNameFree(
   String name, {
   String? exceptId,
 }) async {
-  final String key = ShoppingValidator.normalize(name);
-  for (final ShoppingCategory category in await repository.getCategories()) {
-    if (category.id != exceptId && ShoppingValidator.normalize(namer(category)) == key) {
-      throw ShoppingCategoryNameTakenException(name);
-    }
+  if (ListCategories.isNameTaken(await repository.getCategories(), name, nameOf: namer, exceptId: exceptId)) {
+    throw ShoppingCategoryNameTakenException(name);
   }
 }
 
@@ -32,11 +29,10 @@ class CreateShoppingCategory {
   Future<ShoppingCategory> call(String name) async {
     final String validName = ShoppingValidator.categoryName(name);
     await _checkNameFree(_repository, _namer, validName);
-    final List<ShoppingCategory> categories = await _repository.getCategories();
     final ShoppingCategory category = ShoppingCategory(
       id: _ids.newId(),
       name: validName,
-      sortOrder: categories.isEmpty ? 0 : categories.last.sortOrder + 1,
+      sortOrder: ListCategories.nextSortOrder(await _repository.getCategories()),
     );
     await _repository.saveCategories(<ShoppingCategory>[category]);
     return category;
@@ -101,17 +97,8 @@ class ReorderShoppingCategories {
 
   final ShoppingListRepository _repository;
 
-  Future<void> call(List<String> orderedIds) async {
-    final Map<String, ShoppingCategory> byId = <String, ShoppingCategory>{
-      for (final ShoppingCategory category in await _repository.getCategories()) category.id: category,
-    };
-    if (orderedIds.length != byId.length || !byId.keys.toSet().containsAll(orderedIds)) {
-      throw ArgumentError.value(orderedIds, 'orderedIds', 'Debe contener exactamente los IDs de todas las categorías');
-    }
-    await _repository.saveCategories(<ShoppingCategory>[
-      for (int i = 0; i < orderedIds.length; i++) byId[orderedIds[i]]!.copyWith(sortOrder: i),
-    ]);
-  }
+  Future<void> call(List<String> orderedIds) async =>
+      _repository.saveCategories(ListCategories.reordered(await _repository.getCategories(), orderedIds));
 }
 
 /// Crea las categorías por defecto la primera vez.
