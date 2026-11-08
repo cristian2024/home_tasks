@@ -16,7 +16,7 @@ class MoveItemScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$move$es t = itemTrackerStrings.itemTracker.move;
+    final ItemTrackerTranslations$itemTracker$move$es moveStrings = itemTrackerStrings.itemTracker.move;
     final MoveItemCubit cubit = context.read<MoveItemCubit>();
     return BlocConsumer<MoveItemCubit, MoveItemState>(
       // El árbol puede volver a emitir después de mover el objeto; el estado
@@ -27,7 +27,7 @@ class MoveItemScreen extends StatelessWidget {
         if (state.status == MoveItemStatus.moved && destination != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(t.moved(name: destination.name))));
+            ..showSnackBar(SnackBar(content: Text(moveStrings.moved(name: destination.name))));
           context.pop(destination.id);
         }
       },
@@ -38,7 +38,7 @@ class MoveItemScreen extends StatelessWidget {
           for (final MoveCandidate candidate in state.visible) candidate.item.id: candidate,
         };
         return Scaffold(
-          appBar: AppTopBar(title: Text(item == null ? itemTrackerStrings.itemTracker.detail.move : t.title(name: item.name))),
+          appBar: AppTopBar(title: Text(item == null ? itemTrackerStrings.itemTracker.detail.move : moveStrings.title(name: item.name))),
           body: switch (state.status) {
             MoveItemStatus.loading => const AppLoadingView(),
             MoveItemStatus.missing => AppStatusView(
@@ -57,7 +57,7 @@ class MoveItemScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                     child: AppTextField(
-                      label: t.search,
+                      label: moveStrings.search,
                       prefixIcon: AppIcons.search,
                       textInputAction: TextInputAction.search,
                       onChanged: cubit.search,
@@ -66,19 +66,19 @@ class MoveItemScreen extends StatelessWidget {
                   if (state.status == MoveItemStatus.moving) const LinearProgressIndicator(),
                   Expanded(
                     child: candidates.isEmpty
-                        ? AppStatusView(icon: AppIcons.search, title: t.empty)
+                        ? AppStatusView(icon: AppIcons.search, title: moveStrings.empty)
                         : ItemCardList(
                             items: <HouseholdItem>[
                               for (final MoveCandidate candidate in candidates.values) candidate.item,
                             ],
-                            semanticLabelBuilder: (HouseholdItem container) => t.select(name: container.name),
+                            semanticLabelBuilder: (HouseholdItem container) => moveStrings.select(name: container.name),
                             subtitleBuilder: (HouseholdItem container) {
                               final MoveCandidate candidate = candidates[container.id]!;
                               return <String>[
                                 formatItemPath(candidate.path),
                                 switch (candidate.block) {
-                                  MoveBlock.current => t.current,
-                                  MoveBlock.tooDeep => t.tooDeep(max: cubit.maxDepth),
+                                  MoveBlock.current => moveStrings.current,
+                                  MoveBlock.tooDeep => moveStrings.tooDeep(max: cubit.maxDepth),
                                   null => '',
                                 },
                               ].where((String line) => line.isNotEmpty).join('\n');
