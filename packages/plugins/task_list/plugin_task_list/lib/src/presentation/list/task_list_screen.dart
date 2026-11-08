@@ -11,6 +11,7 @@ import 'package:task_list_domain/task_list_domain.dart';
 import '../../domain/use_cases/completion_use_cases.dart';
 import '../../i18n/strings.g.dart';
 import '../common/task_list_l10n.dart';
+import '../common/task_list_motion.dart';
 import '../task_list_routes.dart';
 import 'task_list_cubit.dart';
 
@@ -312,7 +313,7 @@ class _ListBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       children: <Widget>[
-        if (showFilters) _Filters(state: state),
+        _FiltersReveal(visible: showFilters, child: _Filters(state: state)),
         if (groups.isEmpty) SizedBox(height: 320, child: _NoMatches(onClear: _clearFilters(context.read<TaskListCubit>()))),
         for (final TaskGroup group in groups) ...<Widget>[
           Padding(
@@ -329,6 +330,27 @@ class _ListBody extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Abre y cierra el panel de filtros desplegándolo desde la barra, con un
+/// fundido. Si el sistema pide reducir el movimiento, aparece sin animar.
+class _FiltersReveal extends StatelessWidget {
+  const _FiltersReveal({required this.visible, required this.child});
+
+  final bool visible;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+        duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : TaskListMotion.filters,
+        switchInCurve: TaskListMotion.filtersCurve,
+        switchOutCurve: TaskListMotion.filtersCurve.flipped,
+        transitionBuilder: (Widget panel, Animation<double> animation) => FadeTransition(
+          opacity: animation,
+          child: SizeTransition(sizeFactor: animation, alignment: Alignment.topCenter, child: panel),
+        ),
+        child: visible ? KeyedSubtree(key: const ValueKey<bool>(true), child: child) : const SizedBox.shrink(),
+      );
 }
 
 class _Filters extends StatelessWidget {

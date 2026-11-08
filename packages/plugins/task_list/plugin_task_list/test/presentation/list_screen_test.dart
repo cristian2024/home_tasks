@@ -140,6 +140,47 @@ void main() {
     expect(find.text('Sacar la basura'), findsOneWidget);
   });
 
+  testWidgets('el panel de filtros se despliega y se recoge animado', (WidgetTester tester) async {
+    await seed();
+    await harness.pump(tester);
+    double panelHeight() =>
+        tester.getSize(find.ancestor(of: find.text('Agrupar por'), matching: find.byType(SizeTransition))).height;
+
+    await tester.tap(find.byTooltip('Filtros y agrupación'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    final double halfway = panelHeight();
+    await tester.pumpAndSettle();
+    final double open = panelHeight();
+    expect(halfway, greaterThan(0));
+    expect(halfway, lessThan(open));
+
+    await tester.tap(find.byTooltip('Cerrar filtros y agrupación'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(panelHeight(), lessThan(open));
+    await tester.pumpAndSettle();
+    expect(find.text('Agrupar por'), findsNothing);
+  });
+
+  testWidgets('con el movimiento reducido, el panel de filtros aparece sin animar', (WidgetTester tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await seed();
+    await harness.pump(tester);
+
+    await tester.tap(find.byTooltip('Filtros y agrupación'));
+    await tester.pump();
+
+    final double firstFrame =
+        tester.getSize(find.ancestor(of: find.text('Agrupar por'), matching: find.byType(SizeTransition))).height;
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.ancestor(of: find.text('Agrupar por'), matching: find.byType(SizeTransition))).height,
+      firstFrame,
+    );
+  });
+
   testWidgets('el menú abre categorías y borra las hechas tras confirmar', (WidgetTester tester) async {
     final HouseholdTask task = await harness.task('Sacar la basura');
     await harness.task('Regar las plantas');
