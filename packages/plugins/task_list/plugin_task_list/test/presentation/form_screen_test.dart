@@ -64,6 +64,17 @@ void main() {
     expect(find.text('Lista de tareas'), findsOneWidget);
   });
 
+  testWidgets('el título empieza en una línea y el contador dice cuánto queda', (WidgetTester tester) async {
+    await harness.pump(tester, initialLocation: TaskListRoutes.create);
+    final double emptyHeight = tester.getSize(find.byType(TextField).first).height;
+
+    await tester.enterText(field('Título'), 'a' * 84);
+    await tester.pump();
+
+    expect(find.text('84 de 100'), findsOneWidget);
+    expect(tester.getSize(find.byType(TextField).first).height, greaterThan(emptyHeight));
+  });
+
   testWidgets('sin título lo explica y no guarda', (WidgetTester tester) async {
     await harness.pump(tester, initialLocation: TaskListRoutes.create);
 

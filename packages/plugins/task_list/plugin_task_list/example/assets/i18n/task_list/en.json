@@ -129,6 +129,7 @@
       "edit_title": "Edit task",
       "title": "Title",
       "title_hint": "E.g. Clean the fridge",
+      "counter": "{current} of {max}",
       "date": "Date",
       "no_date": "No date",
       "change": "Change",

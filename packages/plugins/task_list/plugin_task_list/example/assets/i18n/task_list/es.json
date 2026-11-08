@@ -129,6 +129,7 @@
       "edit_title": "Editar tarea",
       "title": "Título",
       "title_hint": "Ej.: Limpiar la nevera",
+      "counter": "{current} de {max}",
       "date": "Fecha",
       "no_date": "Sin fecha",
       "change": "Cambiar",
