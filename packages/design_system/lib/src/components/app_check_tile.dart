@@ -8,7 +8,9 @@ import 'app_touch_target.dart';
 /// Fila de una lista que se marca como hecha (p. ej. comprado) con su
 /// casilla. Un toque en el resto de la fila llama a [onTap] (p. ej. editar).
 ///
-/// Marcada, el título se tacha. [badges] se muestran bajo el subtítulo.
+/// Marcada, el título se tacha y pasa al color secundario, que conserva el
+/// contraste. [subtitle] es la línea de datos (fecha, categoría…) y [badges] se
+/// muestran debajo.
 class AppCheckTile extends StatelessWidget {
   const AppCheckTile({
     super.key,
@@ -17,6 +19,7 @@ class AppCheckTile extends StatelessWidget {
     required this.onChanged,
     required this.checkboxLabel,
     this.subtitle,
+    this.subtitleSemantics,
     this.badges = const <Widget>[],
     this.onTap,
     this.trailing,
@@ -24,6 +27,10 @@ class AppCheckTile extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+
+  /// Cómo leen [subtitle] los lectores de pantalla, si debe ser distinto (p. ej.
+  /// la fecha completa en lugar de «12 nov»).
+  final String? subtitleSemantics;
 
   /// Si está marcada.
   final bool value;
@@ -70,12 +77,16 @@ class AppCheckTile extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: value ? colors.textTertiary : colors.textPrimary,
+                      color: value ? colors.textSecondary : colors.textPrimary,
                       decoration: value ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   if (subtitle != null)
-                    Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
+                    Text(
+                      subtitle,
+                      semanticsLabel: subtitleSemantics,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+                    ),
                   if (badges.isNotEmpty) Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: badges),
                 ],
               ),

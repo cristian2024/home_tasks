@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.3.1 - 2026-11-07
+
+### Añadido
+
+- `showAppActionSheet<T>` y `AppSheetAction<T>`: hoja inferior con acciones agrupadas, para el menú ⋮.
+- `showAppDateSheet`, con `AppDateOption`, `AppDateSheetTexts` y `AppDateChoice`: elegir un día con accesos rápidos, escribiéndolo o con el calendario del sistema.
+- `AppPickerField`: campo que abre un selector al tocarlo.
+- `AppCheckTile.subtitleSemantics`: lo que leen los lectores de pantalla en lugar de la línea de datos (p. ej. la fecha completa).
+- `AppTextField.focusNode`, `AppTextField.minLines` (con `1`, un campo de varias líneas empieza como uno de una) y `AppTextField.counterText` (texto del contador, p. ej. «84 de 100»).
+- `AppButtonVariant.dangerText`: botón de texto en color de peligro.
+- Token `bgBadgeNeutral` (`neutral100` en claro y `neutral800` en oscuro).
+- Iconos `AppIcons.calendar` y `AppIcons.listChecks`.
+
+### Cambiado
+
+- `AppBadge` neutro usa `bgBadgeNeutral`. Se ve igual que antes.
+- `AppCheckTile` hecha usa el color secundario en el título tachado. El terciario no llegaba a 4,5:1 en claro.
+- `AppFilterChips` mide 36 de alto, como en el diseño, y separa las filas 12 en lugar de 8: las áreas táctiles de 48 ya no se solapan.
+- `AppTextField` y `AppPickerField` muestran el error con un icono además del texto en rojo.
+
+### Corregido
+
+- `AppCard` pulsable es un solo control para los lectores de pantalla: la etiqueta y la pulsación quedaban en nodos distintos.
+- `AppModuleCard` pulsable se anuncia con su título, su resumen y sus etiquetas; antes solo con el título.
+- `AppSectionHeader` con acción ya no parte las palabras del título con el texto grande: la acción pasa debajo.
+
 ## 0.3.0 - 2026-11-05
 
 ### Añadido

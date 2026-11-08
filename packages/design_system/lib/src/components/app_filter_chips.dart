@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
 import 'app_touch_target.dart';
@@ -47,13 +48,17 @@ class AppFilterChips<T> extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
+          // Con 12 entre filas, las áreas de 48 de chips de 36 no se solapan.
           Wrap(
             spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
+            runSpacing: AppSpacing.s300,
             children: <Widget>[
               for (final AppChoice<T> option in options)
                 AppTouchTarget(
-                  child: FilterChip(
+                  // 36 de alto, como en el diseño; el texto grande lo hace crecer.
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: AppSizes.controlCompact),
+                    child: FilterChip(
                     label: Text(option.label),
                     avatar: option.icon == null ? null : Icon(option.icon),
                     labelPadding: selected.contains(option.value) ? const EdgeInsets.only(left: AppSpacing.xs) : EdgeInsets.zero,
@@ -67,6 +72,7 @@ class AppFilterChips<T> extends StatelessWidget {
                                   ? <T>{...selected, option.value}
                                   : <T>{for (final T value in selected) if (value != option.value) value},
                             ),
+                    ),
                   ),
                 ),
             ],

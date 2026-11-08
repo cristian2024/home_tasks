@@ -3,6 +3,7 @@
 /// Solo depende de Flutter y de `core_ui` (Regla 3 del §5.2).
 library;
 
+export 'src/components/app_action_sheet.dart';
 export 'src/components/app_badge.dart';
 export 'src/components/app_bottom_sheet.dart';
 export 'src/components/app_button.dart';
@@ -13,6 +14,7 @@ export 'src/components/app_choice_dialog.dart';
 export 'src/components/app_choice_selector.dart';
 export 'src/components/app_confirm_dialog.dart';
 export 'src/components/app_conflict_card.dart';
+export 'src/components/app_date_sheet.dart';
 export 'src/components/app_filter_chips.dart';
 export 'src/components/app_footer_actions.dart';
 export 'src/components/app_icon_box.dart';
@@ -20,6 +22,7 @@ export 'src/components/app_icon_button.dart';
 export 'src/components/app_loading_view.dart';
 export 'src/components/app_module_card.dart';
 export 'src/components/app_note.dart';
+export 'src/components/app_picker_field.dart';
 export 'src/components/app_section_header.dart';
 export 'src/components/app_settings_section.dart';
 export 'src/components/app_settings_tile.dart';

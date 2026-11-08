@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +70,7 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
     final AppTranslations$app$sync$join$es joinStrings = appStrings.app.sync.join;
     final JoinHouseholdCubit cubit = context.read<JoinHouseholdCubit>();
     return Scaffold(
-      appBar: AppBar(title: Text(joinStrings.title)),
+      appBar: AppTopBar(title: Text(joinStrings.title)),
       body: BlocConsumer<JoinHouseholdCubit, JoinState>(
         listenWhen: (JoinState previous, JoinState current) =>
             current.attempt != previous.attempt ||
@@ -80,26 +81,32 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
           final bool joining = state.phase == JoinPhase.joining ||
               state.phase == JoinPhase.joined ||
               state.phase == JoinPhase.choosingData;
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            children: <Widget>[
-              _CameraArea(state: state, cubit: cubit),
-              const SizedBox(height: AppSpacing.lg),
-              AppTextField(
-                label: joinStrings.manualField,
-                controller: _code,
-                enabled: !joining,
-                textInputAction: TextInputAction.done,
-                onSubmitted: cubit.submit,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              AppButton(
-                label: joining ? joinStrings.joining : joinStrings.manualSubmit,
-                isLoading: joining,
-                expand: true,
-                onPressed: () => cubit.submit(_code.text),
-              ),
-            ],
+          return LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) => ListView(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
+              children: <Widget>[
+                _CameraArea(
+                  state: state,
+                  cubit: cubit,
+                  previewHeight: math.max(_minPreviewHeight, constraints.maxHeight - _heightBesidesPreview),
+                ),
+                const SizedBox(height: AppSpacing.s300),
+                AppTextField(
+                  label: joinStrings.manualField,
+                  controller: _code,
+                  enabled: !joining,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: cubit.submit,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: joining ? joinStrings.joining : joinStrings.manualSubmit,
+                  isLoading: joining,
+                  expand: true,
+                  onPressed: () => cubit.submit(_code.text),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -107,11 +114,18 @@ class _JoinHouseholdScreenState extends State<JoinHouseholdScreen> {
   }
 }
 
+/// Alto mínimo de la vista previa de la cámara.
+const double _minPreviewHeight = 240.0;
+
+/// Lo que ocupa el resto de la pantalla: márgenes, aviso, campo y botón.
+const double _heightBesidesPreview = 234.0;
+
 class _CameraArea extends StatelessWidget {
-  const _CameraArea({required this.state, required this.cubit});
+  const _CameraArea({required this.state, required this.cubit, required this.previewHeight});
 
   final JoinState state;
   final JoinHouseholdCubit cubit;
+  final double previewHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -134,9 +148,19 @@ class _CameraArea extends StatelessWidget {
               children: <Widget>[
                 // Vuelve a pedir el permiso o, si se dio desde Ajustes, lo
                 // comprueba y arranca la cámara.
-                AppButton(label: joinStrings.retryPermission, variant: AppButtonVariant.secondary, onPressed: cubit.start),
+                AppButton(
+                  label: joinStrings.retryPermission,
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.medium,
+                  onPressed: cubit.start,
+                ),
                 if (state.canOpenSettings)
-                  AppButton(label: joinStrings.openSettings, variant: AppButtonVariant.outline, onPressed: cubit.openSettings),
+                  AppButton(
+                    label: joinStrings.openSettings,
+                    variant: AppButtonVariant.outline,
+                    size: AppButtonSize.medium,
+                    onPressed: cubit.openSettings,
+                  ),
               ],
             ),
           ],
@@ -148,18 +172,14 @@ class _CameraArea extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadii.large),
-                child: cubit.camera?.buildPreview(context) ?? const SizedBox.shrink(),
-              ),
+            SizedBox(
+              height: previewHeight,
+              child: AppCameraFrame(child: cubit.camera?.buildPreview(context) ?? const SizedBox.shrink()),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.s300),
             Text(
               joinStrings.scanPrompt,
               style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
             ),
           ],
         );

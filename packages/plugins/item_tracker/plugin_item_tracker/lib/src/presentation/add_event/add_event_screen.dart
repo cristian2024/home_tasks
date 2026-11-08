@@ -28,9 +28,9 @@ class _AddEventScreenState extends State<AddEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$addEvent$es t = itemTrackerStrings.itemTracker.addEvent;
+    final ItemTrackerTranslations$itemTracker$addEvent$es addEventStrings = itemTrackerStrings.itemTracker.addEvent;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(addEventStrings.title)),
       body: BlocConsumer<AddEventCubit, AddEventState>(
         listener: (BuildContext context, AddEventState state) {
           if (state.status == AddEventStatus.saved) {
@@ -41,35 +41,45 @@ class _AddEventScreenState extends State<AddEventScreen> {
           final Object? error = state.error;
           String? fieldError(ValidationField field) =>
               error is ItemValidationException && error.field == field ? validationMessage(error) : null;
-          return ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
+                  children: <Widget>[
               if (error != null && error is! ItemValidationException)
                 Text(errorMessage(error), style: TextStyle(color: Theme.of(context).colorScheme.error)),
               AppTextField(
-                label: t.eventTitle,
+                label: addEventStrings.eventTitle,
                 controller: _title,
                 autofocus: true,
                 maxLength: ItemValidator.maxEventTitleLength,
                 textInputAction: TextInputAction.next,
                 errorText: fieldError(ValidationField.eventTitle),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.s300),
               AppTextField(
-                label: t.eventDescription,
+                label: addEventStrings.eventDescription,
                 controller: _description,
                 maxLines: 4,
                 maxLength: ItemValidator.maxDescriptionLength,
                 errorText: fieldError(ValidationField.eventDescription),
               ),
-              const SizedBox(height: AppSpacing.lg),
-              AppButton(
-                label: t.save,
-                icon: Icons.check,
-                expand: true,
-                isLoading: state.status == AddEventStatus.submitting,
-                onPressed: () =>
-                    context.read<AddEventCubit>().submit(title: _title.text, description: _description.text),
+                  ],
+                ),
+              ),
+              AppFooterActions(
+                children: <Widget>[
+                  AppButton(
+                    label: addEventStrings.save,
+                    icon: AppIcons.check,
+                    expand: true,
+                    isLoading: state.status == AddEventStatus.submitting,
+                    onPressed: () =>
+                        context.read<AddEventCubit>().submit(title: _title.text, description: _description.text),
+                  ),
+                ],
               ),
             ],
           );

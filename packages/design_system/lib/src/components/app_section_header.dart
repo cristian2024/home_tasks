@@ -22,15 +22,18 @@ class AppSectionHeader extends StatelessWidget {
       padding: EdgeInsets.only(top: AppSpacing.xs, bottom: compact ? AppSpacing.s0 : AppSpacing.s150),
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: compact ? AppSpacing.s0 : AppSizes.controlSmall),
-        child: Row(
+        // Con texto grande, la acción pasa debajo del título en lugar de
+        // estrecharlo hasta partir las palabras.
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          runSpacing: AppSpacing.xs,
           children: <Widget>[
-            Expanded(
-              child: Semantics(
-                header: true,
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
+            Semantics(
+              header: true,
+              child: Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ),
             ?trailing,

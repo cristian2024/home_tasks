@@ -4,6 +4,7 @@ import 'package:core_events/core_events.dart';
 import 'package:core_share/core_share.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:core_utils/core_utils.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -67,10 +68,10 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
   String get descriptionKey => 'shoppingList.description';
 
   @override
-  IconData get icon => Icons.shopping_cart_outlined;
+  IconData get icon => AppIcons.shoppingCart;
 
   @override
-  String get version => '0.2.2';
+  String get version => '0.2.3';
 
   /// La lista: desde la grilla del inicio se abre directamente.
   @override

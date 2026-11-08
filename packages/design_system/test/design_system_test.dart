@@ -1022,6 +1022,36 @@ void main() {
       expect(tester.widget<TextField>(find.byType(TextField)).minLines, AppTextField.multilineMinLines);
       expect(tester.getSize(find.byType(TextField)).height, 80);
     });
+
+    testWidgets('con minLines 1 mide como uno de una línea y crece al escribir', (WidgetTester tester) async {
+      final TextEditingController controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(host(const AppTextField(label: 'Nombre')));
+      final double singleLine = tester.getSize(find.byType(TextField)).height;
+      await tester.pumpWidget(host(AppTextField(label: 'Título', controller: controller, maxLines: null, minLines: 1)));
+
+      expect(tester.getSize(find.byType(TextField)).height, singleLine);
+      controller.text = 'Una línea\ny otra';
+      await tester.pump();
+      expect(tester.getSize(find.byType(TextField)).height, greaterThan(singleLine));
+    });
+
+    testWidgets('el contador usa el texto que se le pasa', (WidgetTester tester) async {
+      final TextEditingController controller = TextEditingController(text: '12345678');
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        host(
+          AppTextField(
+            label: 'Nombre',
+            controller: controller,
+            maxLength: 10,
+            counterText: (int current, int max) => '$current de $max',
+          ),
+        ),
+      );
+
+      expect(find.text('8 de 10'), findsOneWidget);
+    });
   });
 
   group('AppTopBar', () {
