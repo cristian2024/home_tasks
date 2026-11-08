@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.9.0+16 - 2026-11-07
+
+### Añadido
+
+- Módulo Lista de tareas, con su base de datos (`TaskListIsar`), sus textos y su acceso rápido del icono.
+- Las tareas se sincronizan entre los dispositivos del hogar.
+
+### Interno
+
+- Usa `design_system` 0.3.1.
+
 ## 1.8.3+15 - 2026-11-05
 
 ### Cambiado
