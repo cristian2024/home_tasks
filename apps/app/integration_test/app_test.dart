@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:core_di/core_di.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hardware_mobile_scanner/hardware_mobile_scanner.dart';
@@ -68,7 +69,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Código'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Código'), 'UNKNOWN-99');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Código'), 'UNKNOWN-99');
     await tester.tap(find.text('Buscar'));
     await tester.pumpAndSettle();
     expect(find.text('Crear nuevo objeto'), findsOneWidget);
@@ -76,7 +77,7 @@ void main() {
 
     await tester.tap(find.text('Crear nuevo objeto'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Nombre'), 'Caja A');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Nombre'), 'Caja A');
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Caja A'), findsOneWidget);
@@ -107,7 +108,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Código'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Código'), 'UNKNOWN-99');
+    await tester.enterText(find.widgetWithText(AppTextField, 'Código'), 'UNKNOWN-99');
     await tester.tap(find.text('Buscar'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Caja A'), findsOneWidget);

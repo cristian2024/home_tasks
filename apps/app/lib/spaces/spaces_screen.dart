@@ -15,29 +15,32 @@ class SpacesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppTranslations$app$spaces$es t = appStrings.app.spaces;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(t.title)),
       body: BlocBuilder<SpacesCubit, SpacesState>(
         builder: (BuildContext context, SpacesState state) => ListView(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
           children: <Widget>[
             AppSettingsSection(
-              title: t.section,
               children: <Widget>[
                 for (final DataSpace space in state.spaces)
                   _SpaceTile(space: space, active: space.id == state.activeSpaceId, busy: state.busy),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.s300),
             AppButton(
               label: t.create,
-              icon: Icons.add,
+              icon: AppIcons.plus,
               variant: AppButtonVariant.secondary,
+              size: AppButtonSize.medium,
               expand: true,
               isLoading: state.busy,
               onPressed: () => _create(context, spaceCount: state.spaces.length),
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(t.createDescription, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.s300),
+            Text(
+              t.createDescription,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppThemeColors.of(context).textSecondary),
+            ),
           ],
         ),
       ),
@@ -127,7 +130,7 @@ class _SpaceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppTranslations$app$spaces$es t = appStrings.app.spaces;
     return AppSettingsTile(
-      icon: space.isShared ? Icons.home_outlined : Icons.smartphone,
+      icon: space.isShared ? AppIcons.house : AppIcons.smartphone,
       title: space.name,
       subtitle: <String>[space.isShared ? t.shared : t.local, if (active) t.active].join(' · '),
       enabled: !busy,
@@ -136,14 +139,16 @@ class _SpaceTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           AppIconButton(
-            icon: Icons.edit_outlined,
+            icon: AppIcons.pencil,
             tooltip: t.rename(name: space.name),
+            variant: AppIconButtonVariant.subtle,
             onPressed: busy ? null : () => _rename(context),
           ),
           if (!active)
             AppIconButton(
-              icon: Icons.delete_outline,
+              icon: AppIcons.trash2,
               tooltip: t.delete(name: space.name),
+              variant: AppIconButtonVariant.subtle,
               onPressed: busy ? null : () => _delete(context),
             ),
         ],
@@ -179,16 +184,24 @@ class _SpaceNameDialogState extends State<_SpaceNameDialog> {
     final AppTranslations$app$spaces$es t = appStrings.app.spaces;
     return AlertDialog(
       title: Text(widget.title),
-      content: AppTextField(
-        label: t.renameField,
-        controller: _controller,
-        autofocus: true,
-        maxLength: 40,
-        onSubmitted: (String value) => Navigator.of(context).pop(value),
+      content: SizedBox(
+        // Sin esto, el diálogo se encoge al ancho mínimo del campo.
+        width: double.maxFinite,
+        child: AppTextField(
+          label: t.renameField,
+          controller: _controller,
+          autofocus: true,
+          maxLength: 40,
+          onSubmitted: (String value) => Navigator.of(context).pop(value),
+        ),
       ),
       actions: <Widget>[
         AppButton(label: t.cancel, variant: AppButtonVariant.text, onPressed: () => Navigator.of(context).pop()),
-        AppButton(label: widget.confirmLabel, onPressed: () => Navigator.of(context).pop(_controller.text)),
+        AppButton(
+          label: widget.confirmLabel,
+          size: AppButtonSize.medium,
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+        ),
       ],
     );
   }
