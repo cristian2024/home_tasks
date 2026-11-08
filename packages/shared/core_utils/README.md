@@ -11,6 +11,8 @@ Utilidades neutrales en Dart puro para generar IDs y leer la hora sin depender d
 
 Además, `isUuidV4(value)` comprueba que un texto es un UUID v4 canónico (minúsculas).
 
+**Días de calendario.** Una fecha sin hora (p. ej. una fecha límite) se guarda como la medianoche UTC de ese día: `CalendarDay.of(date)`. Para compararla con la hora actual se usa el día local, `clock.today()`, y no `nowUtc()`: a las 23:00 en Bogotá ya es el día siguiente en UTC. `CalendarDay.relativeTo(day, today: …)` dice si es ayer, hoy, mañana u otro día; los textos los pone quien lo muestra.
+
 ## Uso
 
 La app registra `UuidV4Generator` y `SystemClock` en el `ServiceLocator`. Los plugins los piden al iniciar y los pasan a sus casos de uso:

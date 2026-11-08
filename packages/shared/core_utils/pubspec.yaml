@@ -1,6 +1,6 @@
 name: core_utils
-description: Utilidades neutrales compartidas (generación de UUID v4, reloj UTC).
-version: 0.1.1
+description: Utilidades neutrales compartidas (generación de UUID v4, reloj UTC, días de calendario).
+version: 0.1.2
 publish_to: none
 
 environment:

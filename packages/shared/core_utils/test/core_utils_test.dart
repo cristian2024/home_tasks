@@ -34,4 +34,40 @@ void main() {
       expect(FixedClock(DateTime(2026)).nowUtc().isUtc, isTrue);
     });
   });
+
+  group('CalendarDay', () {
+    test('quita la hora y deja la medianoche UTC', () {
+      expect(CalendarDay.of(DateTime(2026, 11, 12, 23, 59)), DateTime.utc(2026, 11, 12));
+      expect(CalendarDay.of(DateTime.utc(2026, 11, 12, 1)), DateTime.utc(2026, 11, 12));
+    });
+
+    test('el día local de un instante usa la zona del dispositivo', () {
+      final DateTime instant = DateTime.utc(2026, 11, 12, 3, 30);
+      final DateTime local = instant.toLocal();
+
+      expect(CalendarDay.localDayOf(instant), DateTime.utc(local.year, local.month, local.day));
+    });
+
+    test('cuenta días entre fechas, también con cambios de hora', () {
+      expect(CalendarDay.daysBetween(DateTime.utc(2026, 11, 12), DateTime.utc(2026, 11, 20)), 8);
+      expect(CalendarDay.daysBetween(DateTime.utc(2026, 11, 20), DateTime.utc(2026, 11, 12)), -8);
+      expect(CalendarDay.daysBetween(DateTime(2026, 3, 28), DateTime(2026, 3, 30)), 2);
+    });
+
+    test('nombra ayer, hoy y mañana', () {
+      final DateTime today = DateTime.utc(2026, 11, 7);
+
+      expect(CalendarDay.relativeTo(DateTime.utc(2026, 11, 6), today: today), RelativeDay.yesterday);
+      expect(CalendarDay.relativeTo(DateTime.utc(2026, 11, 7), today: today), RelativeDay.today);
+      expect(CalendarDay.relativeTo(DateTime.utc(2026, 11, 8), today: today), RelativeDay.tomorrow);
+      expect(CalendarDay.relativeTo(DateTime.utc(2026, 11, 12), today: today), RelativeDay.other);
+      expect(CalendarDay.relativeTo(DateTime.utc(2026, 11, 5), today: today), RelativeDay.other);
+    });
+
+    test('Clock.today es el día local del reloj', () {
+      final FixedClock clock = FixedClock(DateTime.utc(2026, 11, 7, 12));
+
+      expect(clock.today(), CalendarDay.localDayOf(DateTime.utc(2026, 11, 7, 12)));
+    });
+  });
 }
