@@ -20,18 +20,18 @@ class ItemDetailScreen extends StatelessWidget {
       builder: (BuildContext context, ItemDetailState state) {
         final HouseholdItem? item = state.item;
         return Scaffold(
-          appBar: AppBar(
+          appBar: AppTopBar(
             title: Text(item?.name ?? detailStrings.title),
             actions: <Widget>[
               if (item != null)
                 AppIconButton(
-                  icon: Icons.edit,
+                  icon: AppIcons.pencil,
                   tooltip: detailStrings.edit,
                   onPressed: () => context.push<String>(ItemTrackerRoutes.edit(item.id)),
                 ),
               if (item != null && state.status == ItemDetailStatus.loaded)
                 AppIconButton(
-                  icon: Icons.delete_outline,
+                  icon: AppIcons.trash2,
                   tooltip: detailStrings.delete,
                   onPressed: () => _delete(context, state, item),
                 ),
@@ -40,7 +40,7 @@ class ItemDetailScreen extends StatelessWidget {
           body: switch (state.status) {
             ItemDetailStatus.loading => const AppLoadingView(),
             ItemDetailStatus.missing => AppStatusView(
-                icon: Icons.search_off,
+                icon: AppIcons.search,
                 title: detailStrings.missingTitle,
                 message: detailStrings.missingMessage,
               ),
@@ -109,7 +109,7 @@ class _DetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
       children: <Widget>[
         if (item.description.isNotEmpty)
           Text(item.description, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
@@ -205,8 +205,9 @@ class _LocationSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         AppButton(
           label: detailStrings.move,
-          icon: Icons.drive_file_move_outline,
+          icon: AppIcons.folderInput,
           variant: AppButtonVariant.secondary,
+          size: AppButtonSize.medium,
           expand: true,
           onPressed: () => context.push<String>(ItemTrackerRoutes.move(item.id)),
         ),
@@ -214,8 +215,9 @@ class _LocationSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           AppButton(
             label: detailStrings.moveOut,
-            icon: Icons.outbox_outlined,
+            icon: AppIcons.upload,
             variant: AppButtonVariant.outline,
+            size: AppButtonSize.medium,
             expand: true,
             onPressed: () => _moveOut(context, path.last.name),
           ),
@@ -246,7 +248,7 @@ class _ContentsSection extends StatelessWidget {
           detailStrings.contents,
           trailing: AppButton(
             label: detailStrings.addInside,
-            icon: Icons.add_box_outlined,
+            icon: AppIcons.plus,
             variant: AppButtonVariant.text,
             onPressed: canHoldMore ? () => context.push<String>(ItemTrackerRoutes.createInside(item.id)) : null,
           ),
@@ -255,7 +257,7 @@ class _ContentsSection extends StatelessWidget {
           AppCard(
             child: Row(
               children: <Widget>[
-                Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error),
+                Icon(AppIcons.triangleAlert, color: theme.colorScheme.error),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(child: Text(detailStrings.overflowing(depth: state.depth, max: maxDepth))),
               ],
@@ -270,7 +272,7 @@ class _ContentsSection extends StatelessWidget {
             children: <Widget>[
               for (final HouseholdItem child in children)
                 AppSettingsTile(
-                  icon: Icons.inventory_2_outlined,
+                  icon: AppIcons.box,
                   title: child.name,
                   onTap: () => context.push<void>(ItemTrackerRoutes.detail(child.id)),
                 ),
@@ -351,7 +353,7 @@ class _IdentifiersSection extends StatelessWidget {
           detailStrings.identifiers,
           trailing: AppButton(
             label: detailStrings.addIdentifier,
-            icon: Icons.add_link,
+            icon: AppIcons.link,
             variant: AppButtonVariant.text,
             onPressed: () => context.push<String>(ItemTrackerRoutes.addIdentifier(item.id)),
           ),
@@ -382,15 +384,16 @@ class _IdentifierTile extends StatelessWidget {
     final String value = identifier.rawValue;
     return AppSettingsTile(
       icon: switch (identifier.type) {
-        IdentifierType.nfc => Icons.nfc,
-        IdentifierType.barcode => Icons.barcode_reader,
-        IdentifierType.qr => Icons.qr_code,
+        IdentifierType.nfc => AppIcons.nfc,
+        IdentifierType.barcode => AppIcons.barcode,
+        IdentifierType.qr => AppIcons.qrCode,
       },
       title: type,
       subtitle: value,
       trailing: AppIconButton(
-        icon: Icons.link_off,
+        icon: AppIcons.unlink,
         tooltip: itemTrackerStrings.itemTracker.detail.removeIdentifier(type: type, value: value),
+        variant: AppIconButtonVariant.subtle,
         onPressed: onRemove,
       ),
     );
@@ -415,7 +418,7 @@ class _HistorySection extends StatelessWidget {
           detailStrings.history,
           trailing: AppButton(
             label: detailStrings.addEvent,
-            icon: Icons.add,
+            icon: AppIcons.plus,
             variant: AppButtonVariant.text,
             onPressed: () => context.push<void>(ItemTrackerRoutes.addEvent(item.id)),
           ),
@@ -446,9 +449,10 @@ class _EventTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ({String? subtitle, String title}) text = describeEvent(event);
     return AppSettingsTile(
-      icon: event.isTechnical ? Icons.history : Icons.sticky_note_2_outlined,
+      icon: event.isTechnical ? AppIcons.history : AppIcons.stickyNote,
       title: text.title,
       subtitle: <String>[?text.subtitle, formatTimestamp(context, event.timestamp)].join('\n'),
+      compact: true,
     );
   }
 }

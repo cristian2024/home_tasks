@@ -23,33 +23,32 @@ class NotFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$notFound$es t = itemTrackerStrings.itemTracker.notFound;
+    final ItemTrackerTranslations$itemTracker$notFound$es notFoundStrings = itemTrackerStrings.itemTracker.notFound;
     final String type = identifierTypeLabel(identifier.type);
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(notFoundStrings.title)),
       body: AppStatusView(
-        icon: Icons.search_off,
-        title: t.title,
-        message: '${t.message(type: type)}\n\n${identifier.rawValue}',
-        action: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            AppButton(
-              label: t.create,
-              icon: Icons.add,
-              expand: true,
-              onPressed: () => _open(context, ItemTrackerRoutes.create),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            AppButton(
-              label: t.associate,
-              icon: Icons.link,
-              variant: AppButtonVariant.secondary,
-              expand: true,
-              onPressed: () => _open(context, ItemTrackerRoutes.associate),
-            ),
-          ],
-        ),
+        icon: AppIcons.qrCode,
+        title: notFoundStrings.title,
+        message: notFoundStrings.message(type: type),
+        action: AppBadge(label: identifier.rawValue),
+      ),
+      bottomNavigationBar: AppFooterActions(
+        children: <Widget>[
+          AppButton(
+            label: notFoundStrings.create,
+            icon: AppIcons.plus,
+            expand: true,
+            onPressed: () => _open(context, ItemTrackerRoutes.create),
+          ),
+          AppButton(
+            label: notFoundStrings.associate,
+            icon: AppIcons.link,
+            variant: AppButtonVariant.secondary,
+            expand: true,
+            onPressed: () => _open(context, ItemTrackerRoutes.associate),
+          ),
+        ],
       ),
     );
   }

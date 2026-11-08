@@ -23,9 +23,16 @@ class ItemListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ItemTrackerTranslations$itemTracker$list$es listStrings = itemTrackerStrings.itemTracker.list;
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppTopBar(
         title: Text(listStrings.title),
-        actions: <Widget>[AppIconButton(icon: Icons.add, tooltip: listStrings.create, onPressed: () => _create(context))],
+        actions: <Widget>[
+          BlocSelector<ItemListCubit, ItemListState, bool>(
+            selector: (ItemListState state) => state.loading || state.all.isEmpty,
+            builder: (BuildContext context, bool empty) => empty
+                ? const SizedBox.shrink()
+                : AppIconButton(icon: AppIcons.plus, tooltip: listStrings.create, onPressed: () => _create(context)),
+          ),
+        ],
       ),
       body: BlocBuilder<ItemListCubit, ItemListState>(
         builder: (BuildContext context, ItemListState state) {
@@ -34,32 +41,35 @@ class ItemListScreen extends StatelessWidget {
           }
           if (state.all.isEmpty) {
             return AppStatusView(
-              icon: Icons.inventory_2_outlined,
+              icon: AppIcons.box,
               title: listStrings.emptyTitle,
               message: listStrings.emptyMessage,
-              action: AppButton(label: listStrings.create, icon: Icons.add, onPressed: () => _create(context)),
+              action: AppButton(
+                label: listStrings.create,
+                icon: AppIcons.plus,
+                size: AppButtonSize.medium,
+                onPressed: () => _create(context),
+              ),
             );
           }
           final List<HouseholdItem> visible = state.visible;
           return Column(
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
                 child: AppTextField(
                   label: listStrings.search,
+                  prefixIcon: AppIcons.search,
                   textInputAction: TextInputAction.search,
                   onChanged: context.read<ItemListCubit>().search,
                 ),
               ),
               Expanded(
                 child: visible.isEmpty
-                    ? AppStatusView(icon: Icons.search_off, title: listStrings.noResults)
+                    ? AppStatusView(icon: AppIcons.search, title: listStrings.noResults)
                     : ItemCardList(
                         items: visible,
-                        subtitleBuilder: (HouseholdItem item) => <String>[
-                          formatItemPath(state.tree.pathOf(item.id)),
-                          item.description,
-                        ].where((String line) => line.isNotEmpty).join('\n'),
+                        subtitleBuilder: (HouseholdItem item) => formatItemPath(state.tree.pathOf(item.id)),
                         onSelected: (HouseholdItem item) => context.push<void>(ItemTrackerRoutes.detail(item.id)),
                       ),
               ),
@@ -112,11 +122,13 @@ class ItemCardList extends StatelessWidget {
           child: ExcludeSemantics(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
+              minVerticalPadding: AppSpacing.s0,
+              minTileHeight: AppSizes.iconMedium,
               enabled: onSelected == null || selectable,
-              leading: const Icon(Icons.inventory_2_outlined),
+              leading: const Icon(AppIcons.box),
               title: Text(item.name),
-              subtitle: subtitle.isEmpty ? null : Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
-              trailing: selectable ? Icon(Icons.chevron_right, size: AppSizes.iconCompact, color: colors.textTertiary) : null,
+              subtitle: subtitle.isEmpty ? null : Text(subtitle, maxLines: 3, overflow: TextOverflow.ellipsis),
+              trailing: selectable ? Icon(AppIcons.chevronRight, size: AppSizes.iconCompact, color: colors.textTertiary) : null,
             ),
           ),
         );

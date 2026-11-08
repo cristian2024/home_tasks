@@ -16,16 +16,16 @@ class AssociateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$associate$es t = itemTrackerStrings.itemTracker.associate;
+    final ItemTrackerTranslations$itemTracker$associate$es associateStrings = itemTrackerStrings.itemTracker.associate;
     final AssociateCubit cubit = context.read<AssociateCubit>();
     final ({String rawValue, IdentifierType type}) identifier = cubit.identifier;
     return Scaffold(
-      appBar: AppBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(associateStrings.title)),
       body: BlocConsumer<AssociateCubit, AssociateState>(
         listener: (BuildContext context, AssociateState state) {
           final HouseholdItem? boundItem = state.boundItem;
           if (state.status == AssociateStatus.bound && boundItem != null) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.success(name: boundItem.name))));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(associateStrings.success(name: boundItem.name))));
             context.pop(boundItem.id);
           }
         },
@@ -35,9 +35,10 @@ class AssociateScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: AppCard(
-                  child: Text(t.identifier(type: identifierTypeLabel(identifier.type), value: identifier.rawValue)),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.s0),
+                child: AppNote(
+                  icon: AppIcons.link,
+                  text: associateStrings.identifier(type: identifierTypeLabel(identifier.type), value: identifier.rawValue),
                 ),
               ),
               if (error != null)
@@ -58,9 +59,10 @@ class AssociateScreen extends StatelessWidget {
                   ),
                 ),
               Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.s300, AppSpacing.md, AppSpacing.s300),
                 child: AppTextField(
-                  label: t.search,
+                  label: associateStrings.search,
+                  prefixIcon: AppIcons.search,
                   textInputAction: TextInputAction.search,
                   onChanged: cubit.search,
                 ),
@@ -69,10 +71,11 @@ class AssociateScreen extends StatelessWidget {
                 const LinearProgressIndicator(),
               Expanded(
                 child: state.status != AssociateStatus.searching && state.results.isEmpty
-                    ? AppStatusView(icon: Icons.search_off, title: t.empty)
+                    ? AppStatusView(icon: AppIcons.search, title: associateStrings.empty)
                     : ItemCardList(
                         items: state.results,
-                        semanticLabelBuilder: (HouseholdItem item) => t.select(name: item.name),
+                        semanticLabelBuilder: (HouseholdItem item) => associateStrings.select(name: item.name),
+                        subtitleBuilder: (_) => '',
                         onSelected: state.status == AssociateStatus.binding ? null : cubit.bind,
                       ),
               ),

@@ -22,19 +22,21 @@ class ItemTrackerDashboardTile extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<List<HouseholdItem>> snapshot) {
         final List<HouseholdItem>? items = snapshot.data;
         return AppModuleCard(
-          icon: Icons.qr_code_scanner,
+          icon: AppIcons.scanLine,
           title: strings.title,
           summary: items == null ? strings.description : dashboardStrings.itemsCount(n: items.length),
           actions: <Widget>[
             AppButton(
               label: dashboardStrings.scan,
-              icon: Icons.qr_code_scanner,
+              icon: AppIcons.scanLine,
+              size: AppButtonSize.medium,
               onPressed: () => context.push<void>(ItemTrackerRoutes.scan),
             ),
             AppButton(
               label: dashboardStrings.items,
-              icon: Icons.inventory_2_outlined,
+              icon: AppIcons.box,
               variant: AppButtonVariant.secondary,
+              size: AppButtonSize.medium,
               onPressed: () => context.push<void>(ItemTrackerRoutes.items),
             ),
           ],
