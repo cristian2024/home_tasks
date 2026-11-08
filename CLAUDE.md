@@ -148,7 +148,7 @@
   - **Consumir:** depender solo del contrato. Pedir la capacidad al locator al usarla (`isRegistered<T>()` y `get<T>()`), nunca guardarla en `initialize()`; si falta, ocultar o degradar sin error. Escuchar eventos con un `EventSubscriptions` registrado en el scope propio con `dispose: (EventSubscriptions s) => s.cancelAll()`.
   - Los eventos no se guardan: lo publicado mientras un plugin está desactivado se pierde. Para el estado actual, una capacidad.
   - En los tests de la app, `AppHarness(includeShoppingList: true)` monta la lista de compras real. Ejemplo de consumidor: `apps/app/test/cross_plugin_communication_test.dart`.
-- **Paquetes comunes en `packages/shared/`:** `urgency` (niveles), `recurrence` (ventana mínimo–máximo de días y sus estados) y `list_export` (formateadores para WhatsApp y Markdown). Son Dart puro y van al 100 % de cobertura.
+- **Paquetes comunes en `packages/shared/`:** `urgency` (niveles), `recurrence` (ventana mínimo–máximo de días y sus estados), `list_export` (formateadores para WhatsApp y Markdown) y `categories` (categorías de una lista: validación y orden). Son Dart puro y van al 100 % de cobertura.
 - **Compartir:** contrato `ShareService` (`core_share`, con `FakeShareService` y `shareServiceContract` en `testing.dart`) y adaptador `NativeShare` (`share_native`). Para detectar WhatsApp, la app declara el esquema `whatsapp` en `<queries>` (Android) y en `LSApplicationQueriesSchemes` (iOS).
 - **Plugin lista de compras (§9.5):** ID `shopping_list`, rutas bajo `/shopping-list`. Reglas de negocio, estado derivado (`ShoppingItem.stateAt`) y agrupación (`ShoppingListView`) en `shopping_list_domain`. Las categorías son propias del plugin. En los tests de widgets, `PluginHarness` (`test/helpers/presentation_fixtures.dart`) con repositorio en memoria, `RecordingEventBus` y `FakeShareService`.
 - **Apps de ejemplo de plugins:** el workspace las cubre con el glob `packages/plugins/*/plugin_*/example`.
@@ -189,3 +189,15 @@
 - **`--timeout` no corta un `testWidgets` colgado:** con el reloj simulado, el límite por test no salta. Para encontrar el que se cuelga, ejecutar el archivo con `--reporter expanded` y ver cuál no termina.
 - **Snackbars entre rutas:** con varias pantallas apiladas, `find.text` de un snackbar puede encontrar más de uno. Para comprobar que se avisó una sola vez, mirar el estado del cubit (p. ej. `JoinState.attempt`).
 
+## Fase 7 (lista de tareas)
+- **Plugin lista de tareas (§9.6):** ID `task_list`, rutas bajo `/task-list`. Estado (`HouseholdTask.stateAt`), grupos y resumen (`TaskListView`) en `task_list_domain`. En los tests de widgets, `PluginHarness` (`test/helpers/presentation_fixtures.dart`) con repositorio en memoria y reloj fijo (viernes 6 de noviembre de 2026).
+- **Días de calendario:** una fecha sin hora (fecha límite) se guarda como medianoche UTC de ese día y se compara con el día local de `now`: `CalendarDay` y `Clock.today()` de `core_utils`.
+- **Categorías:** la lógica común está en `packages/shared/categories`; cada plugin guarda las suyas y declara su alias (`typedef TaskCategory = ListCategory`).
+- **Menú ⋮ de una pantalla:** hoja inferior con `showAppActionSheet` (`design_system`).
+
+## Trampas de los widget tests de listas
+- **`router.push` devuelve un futuro que se completa al volver.** Si se hace `await`, el test se cuelga. Lanzarlo con `unawaited` y luego `pumpAndSettle()`.
+- **`ListView` construye solo lo visible.** Antes de buscar algo que esté más abajo, `tester.scrollUntilVisible(find.text(…), 200, scrollable: find.byType(Scrollable).first)`. Si después queda bajo el pie, `ensureVisible` antes de tocarlo.
+- **Dos toques en el mismo frame:** `AppFilterChips` calcula la selección con el estado que pintó. Entre dos toques, `await tester.pump()`.
+- **Snackbars:** con `hideCurrentSnackBar()` el aviso nuevo espera a que salga el anterior. Antes de buscarlo o tocar su acción, `await tester.pump(const Duration(seconds: 1))`.
+- **Guardar desde un formulario abierto como ruta inicial:** `context.pop()` falla (`There is nothing to pop`). Abrirlo encima de la lista.
