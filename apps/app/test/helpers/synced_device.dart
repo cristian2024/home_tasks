@@ -11,6 +11,8 @@ import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 import 'package:plugin_shopping_list/testing.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
+import 'package:plugin_task_list/testing.dart';
 import 'package:sync_engine/sync_engine.dart';
 
 import 'app_harness.dart';
@@ -32,6 +34,7 @@ class SyncedDevice {
     final InMemoryChangeLog log = InMemoryChangeLog();
     final InMemoryHouseholdItemRepository items = InMemoryHouseholdItemRepository(hlcClock: hlcClock, changeLog: log);
     final InMemoryShoppingListRepository shopping = InMemoryShoppingListRepository(hlcClock: hlcClock, changeLog: log);
+    final InMemoryTaskListRepository tasks = InMemoryTaskListRepository(hlcClock: hlcClock, changeLog: log);
     locator
       ..registerSingleton<HlcClock>(hlcClock)
       ..registerSingleton<ChangeLog>(log)
@@ -42,15 +45,18 @@ class SyncedDevice {
     SyncTransports.of(locator).add(network.transport());
     SyncParticipants.of(locator)
       ..add(ItemTrackerSyncParticipant(store: items, repository: items))
-      ..add(ShoppingListSyncParticipant(store: shopping, repository: shopping));
+      ..add(ShoppingListSyncParticipant(store: shopping, repository: shopping))
+      ..add(TaskListSyncParticipant(store: tasks));
     await const SyncModule(debounce: Duration(milliseconds: 10)).register(locator);
     return SyncedDevice._(
       name,
       AppHarness(
         locator: locator,
         includeShoppingList: true,
+        includeTaskList: true,
         items: items,
         shoppingItems: shopping,
+        tasks: tasks,
         sync: SyncServices.of(locator),
       ),
     );

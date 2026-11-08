@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:home_utility_app/i18n/injected_translations.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
 
 /// Paquete Dart de cada nombre de [injectedTranslationPackages], para leer
 /// sus JSON.
@@ -15,6 +16,7 @@ const Map<String, String> _dartPackages = <String, String>{
   'core_ui': 'core_ui',
   ItemTrackerPlugin.pluginId: 'plugin_item_tracker',
   ShoppingListPlugin.pluginId: 'plugin_shopping_list',
+  TaskListPlugin.pluginId: 'plugin_task_list',
 };
 
 void main() {

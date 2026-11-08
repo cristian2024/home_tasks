@@ -21,6 +21,8 @@ import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_item_tracker/testing.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 import 'package:plugin_shopping_list/testing.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
+import 'package:plugin_task_list/testing.dart';
 
 import 'in_memory_app_settings_repository.dart';
 
@@ -77,7 +79,8 @@ class FakeHomePlugin implements HomePlugin {
 /// repositorio en memoria registrado en el locator (como lo haría un
 /// adaptador), más los [extraPlugins] que se indiquen. Con
 /// [includeShoppingList] registra también la lista de compras real, con su
-/// repositorio en memoria. Con [sync] (ver `SyncedDevice`), la
+/// repositorio en memoria, y con [includeTaskList], la lista de tareas real
+/// con [tasks]. Con [sync] (ver `SyncedDevice`), la
 /// sincronización compuesta sobre [locator], con [items] y [shoppingItems]
 /// sincronizados. Con [shortcuts] (p. ej. `FakeAppShortcutService`), los
 /// accesos rápidos del icono.
@@ -86,14 +89,17 @@ class AppHarness {
     List<HomePlugin> extraPlugins = const <HomePlugin>[],
     AppSettings savedSettings = const AppSettings(),
     bool includeShoppingList = false,
+    bool includeTaskList = false,
     ServiceLocator? locator,
     InMemoryHouseholdItemRepository? items,
     InMemoryShoppingListRepository? shoppingItems,
+    InMemoryTaskListRepository? tasks,
     SyncServices? sync,
     AppShortcutService? shortcuts,
   })  : extraPlugins = extraPlugins,
         items = items ?? InMemoryHouseholdItemRepository(),
         shoppingItems = shoppingItems ?? InMemoryShoppingListRepository(),
+        tasks = tasks ?? InMemoryTaskListRepository(),
         locator = locator ?? ServiceLocator(),
         preferences = InMemoryPluginPreferenceRepository(),
         settingsRepository = InMemoryAppSettingsRepository(savedSettings) {
@@ -102,7 +108,8 @@ class AppHarness {
     this.locator
       ..registerSingleton<EventBus>(EventBus(), dispose: (EventBus bus) => bus.dispose())
       ..registerSingleton<HouseholdItemRepository>(this.items)
-      ..registerSingleton<ShoppingListRepository>(this.shoppingItems);
+      ..registerSingleton<ShoppingListRepository>(this.shoppingItems)
+      ..registerSingleton<TaskListRepository>(this.tasks);
     localization.register(
       'app',
       (String code) => app_i18n.LocaleSettings.setLocaleRawSync(code),
@@ -130,6 +137,9 @@ class AppHarness {
         if (includeShoppingList)
           (ServiceLocator locator, LocalizationCoordinator localization) =>
               ShoppingListPlugin(locator: locator, localization: localization)..registerLocalization(),
+        if (includeTaskList)
+          (ServiceLocator locator, LocalizationCoordinator localization) =>
+              TaskListPlugin(locator: locator, localization: localization)..registerLocalization(),
         for (final HomePlugin plugin in extraPlugins) (_, _) => plugin,
       ],
     );
@@ -160,6 +170,7 @@ class AppHarness {
   final LocalizationCoordinator localization = LocalizationCoordinator();
   final InMemoryHouseholdItemRepository items;
   final InMemoryShoppingListRepository shoppingItems;
+  final InMemoryTaskListRepository tasks;
   late final AppEnvironment environment;
 
   PluginController get plugins => environment.plugins;

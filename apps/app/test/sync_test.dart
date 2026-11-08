@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
 import 'package:home_utility_app/sync/invitation_cubit.dart';
 import 'package:home_utility_app/sync/join_household_cubit.dart';
 import 'package:home_utility_app/sync/join_household_screen.dart';
@@ -128,6 +129,7 @@ void main() {
     await a.harness.pump(tester);
     await b.startHeadless();
     await b.harness.items.createItem(_item('item-b', 'Caja de B'), events: const <ItemEvent>[]);
+    final HouseholdTask task = await b.harness.locator.get<TaskListDependencies>().createTask(title: 'Sacar la basura');
 
     await openSync(tester);
     await tester.tap(find.text('Crear un hogar'));
@@ -140,6 +142,7 @@ void main() {
     await _settleSync(tester);
 
     expect((await a.harness.items.getById('item-b'))?.name, 'Caja de B');
+    expect((await a.harness.tasks.getTask(task.id))?.title, 'Sacar la basura');
     expect(find.text('Teléfono B'), findsOneWidget);
     expect(find.textContaining('Última sincronización:'), findsOneWidget);
 

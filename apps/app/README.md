@@ -18,6 +18,7 @@ App de utilidades del hogar. Es el punto de composición del monorepo: elige los
 - **Plugins instalados:**
   - Seguimiento de objetos (`plugin_item_tracker`): escanear, objetos, identificadores, contenedores y borrado.
   - Lista de compras (`plugin_shopping_list`): items, categorías, recurrencia y exportación.
+  - Lista de tareas (`plugin_task_list`): tareas con fecha límite o recurrencia, urgencia y categorías.
 
 ## Estructura
 

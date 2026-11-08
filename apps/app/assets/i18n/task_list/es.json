@@ -1,0 +1,196 @@
+{
+  "task_list": {
+    "title": "Lista de tareas",
+    "description": "Lo que hay que hacer en casa, con fechas, urgencias y tareas que se repiten.",
+    "delete": "Borrar",
+    "dashboard": {
+      "to_do_count(plural)": {
+        "zero": "Nada por hacer",
+        "one": "1 por hacer",
+        "other": "{n} por hacer"
+      },
+      "overdue_count(plural)": {
+        "one": "1 atrasada",
+        "other": "{n} atrasadas"
+      },
+      "urgent_count(plural)": {
+        "one": "1 urgente",
+        "other": "{n} urgentes"
+      },
+      "semantic_label": "{title}, {summary}"
+    },
+    "urgency": {
+      "immediate": "Inmediata",
+      "high": "Alta",
+      "normal": "Normal",
+      "low": "Baja"
+    },
+    "states": {
+      "overdue": "Atrasada",
+      "waiting": "En espera",
+      "no_date": "Sin fecha"
+    },
+    "groups": {
+      "overdue": "Atrasadas",
+      "today": "Hoy",
+      "upcoming": "Próximas",
+      "no_date": "Sin fecha"
+    },
+    "default_categories": {
+      "cleaning": "Limpieza",
+      "kitchen": "Cocina",
+      "garden": "Jardín",
+      "bills": "Pagos",
+      "repairs": "Reparaciones"
+    },
+    "dates": {
+      "yesterday": "Ayer",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "short": "{day} {month}",
+      "months": {
+        "m1": "ene",
+        "m2": "feb",
+        "m3": "mar",
+        "m4": "abr",
+        "m5": "may",
+        "m6": "jun",
+        "m7": "jul",
+        "m8": "ago",
+        "m9": "sept",
+        "m10": "oct",
+        "m11": "nov",
+        "m12": "dic"
+      }
+    },
+    "recurrence": {
+      "every(plural)": {
+        "one": "Cada día",
+        "other": "Cada {n} días"
+      },
+      "between": "Cada {min} a {max} días",
+      "returns_on": "vuelve el {date}"
+    },
+    "list": {
+      "add": "Añadir tarea",
+      "filters": "Filtros y agrupación",
+      "close_filters": "Cerrar filtros y agrupación",
+      "more_actions": "Más opciones",
+      "categories": "Categorías",
+      "clear_done": "Borrar hechas",
+      "filter_categories": "Categorías",
+      "filter_urgency": "Urgencia",
+      "filter_state": "Estado",
+      "uncategorized": "Sin categoría",
+      "group_by": "Agrupar por",
+      "group_by_date": "Fecha",
+      "group_by_category": "Categoría",
+      "done_row": "Hechas · {n}",
+      "done_row_label": "Hechas, {n}",
+      "empty_title": "Aún no hay tareas",
+      "empty_message": "Añade lo que haya que hacer en casa.",
+      "all_done_title": "Todo hecho",
+      "all_done_message": "Añade una tarea cuando surja algo.",
+      "no_matches_title": "Nada coincide con los filtros",
+      "clear_filters": "Quitar filtros",
+      "loading": "Cargando tareas…",
+      "load_error": "No se pudieron cargar las tareas",
+      "retry": "Reintentar",
+      "mark_done": "Marcar «{name}» como hecha",
+      "mark_pending": "Volver «{name}» a pendiente",
+      "done_snack": "«{name}» hecha",
+      "returns_snack": "«{name}» vuelve el {date}",
+      "pending_again": "«{name}» pendiente",
+      "undo": "Deshacer",
+      "to_do_announcement(plural)": {
+        "zero": "Nada por hacer",
+        "one": "1 tarea por hacer",
+        "other": "{n} tareas por hacer"
+      },
+      "matches_announcement(plural)": {
+        "zero": "Ninguna tarea coincide",
+        "one": "1 tarea coincide",
+        "other": "{n} tareas coinciden"
+      }
+    },
+    "done": {
+      "title": "Hechas",
+      "clear": "Borrar hechas",
+      "clear_title(plural)": {
+        "one": "¿Borrar 1 tarea hecha?",
+        "other": "¿Borrar {n} tareas hechas?"
+      },
+      "clear_message": "No se puede deshacer.",
+      "cleared": "Tareas hechas borradas",
+      "empty": "No hay tareas hechas."
+    },
+    "form": {
+      "create_title": "Nueva tarea",
+      "edit_title": "Editar tarea",
+      "title": "Título",
+      "title_hint": "Ej.: Limpiar la nevera",
+      "counter": "{current} de {max}",
+      "date": "Fecha",
+      "no_date": "Sin fecha",
+      "change": "Cambiar",
+      "urgency": "Urgencia",
+      "categories": "Categorías",
+      "no_categories": "Aún no hay categorías.",
+      "recurrence": "Se repite",
+      "recurrence_none": "No",
+      "recurrence_fixed": "Cada N días",
+      "recurrence_range": "Entre X e Y",
+      "every_days": "Cada cuántos días",
+      "min_days": "Mínimo de días",
+      "max_days": "Máximo de días",
+      "recurrence_help": "Al hacerla, vuelve a la lista cuando toque.",
+      "last_done": "Hecha por última vez el {date}.",
+      "delete": "Borrar tarea",
+      "delete_title": "¿Borrar «{name}»?",
+      "delete_message": "No se puede deshacer.",
+      "saved": "Tarea guardada",
+      "deleted": "Tarea borrada",
+      "remaining(plural)": {
+        "one": "Queda 1 carácter",
+        "other": "Quedan {n} caracteres"
+      }
+    },
+    "date_sheet": {
+      "title": "Fecha límite",
+      "saturday": "Sábado",
+      "in_a_week": "En una semana",
+      "type_date": "Escribir la fecha",
+      "type_date_hint": "Ej.: 12/11/2026",
+      "invalid_date": "Esa fecha no existe. Escríbela como 12/11/2026.",
+      "calendar": "Abrir calendario",
+      "remove": "Quitar fecha"
+    },
+    "categories": {
+      "title": "Categorías",
+      "new_label": "Nueva categoría",
+      "add": "Añadir categoría",
+      "rename": "Renombrar «{name}»",
+      "rename_title": "Renombrar categoría",
+      "name": "Nombre",
+      "move_up": "Subir «{name}»",
+      "move_down": "Bajar «{name}»",
+      "delete": "Borrar «{name}»",
+      "delete_title": "¿Borrar «{name}»?",
+      "delete_unused": "Ninguna tarea la usa.",
+      "delete_in_use(plural)": {
+        "one": "La usa 1 tarea, que conservará sus demás categorías.",
+        "other": "La usan {n} tareas, que conservarán sus demás categorías."
+      },
+      "empty": "No hay categorías. Añade la primera."
+    },
+    "errors": {
+      "task_not_found": "La tarea ya no existe.",
+      "category_not_found": "La categoría ya no existe.",
+      "category_name_taken": "Ya hay una categoría «{name}».",
+      "title_required": "Escribe un título para guardar la tarea.",
+      "too_long": "Máximo {max} caracteres.",
+      "invalid_days": "Escribe un número de días entre 1 y 365.",
+      "invalid_range": "El mínimo no puede ser mayor que el máximo."
+    }
+  }
+}

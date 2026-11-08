@@ -11,6 +11,7 @@ import 'package:home_utility_app/spaces/space_title_cubit.dart';
 import 'package:home_utility_app/spaces/spaces_cubit.dart';
 import 'package:home_utility_app/sync/join_household_cubit.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
 import 'package:sync_engine/sync_engine.dart';
 
 import 'helpers/isar_test_library.dart';
@@ -120,11 +121,15 @@ void main() {
       final SpacePhone ana = phone('ana');
       final SpaceSwitcher switcher = await ana.start();
       await ana.app.plugins.setEnabled(ShoppingListPlugin.pluginId, enabled: false);
+      await ana.app.plugins.setEnabled(TaskListPlugin.pluginId, enabled: false);
       expect(ana.shortcuts.shortcuts, isEmpty);
 
       await switcher.createAndSwitch();
 
-      expect(ana.shortcuts.shortcuts.map((AppShortcut shortcut) => shortcut.id), <String>[ShoppingListPlugin.pluginId]);
+      expect(
+        ana.shortcuts.shortcuts.map((AppShortcut shortcut) => shortcut.id),
+        <String>[ShoppingListPlugin.pluginId, TaskListPlugin.pluginId],
+      );
       expect(ana.app.shortcuts, isNotNull);
     });
 

@@ -1,4 +1,5 @@
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
 
 /// Valores de los accesos rápidos del icono de la app.
 abstract final class AppShortcutDefaults {
@@ -11,5 +12,6 @@ abstract final class AppShortcutDefaults {
   /// icono.
   static const Map<String, String> icons = <String, String>{
     ShoppingListPlugin.pluginId: 'shortcut_shopping_list',
+    TaskListPlugin.pluginId: 'shortcut_task_list',
   };
 }

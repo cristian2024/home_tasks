@@ -9,6 +9,7 @@ import 'package:hardware_permission_handler/hardware_permission_handler.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
 import 'package:secret_store_secure_storage/secret_store_secure_storage.dart';
 import 'package:share_native/share_native.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
@@ -18,6 +19,7 @@ import 'package:sync_crypto_cryptography/sync_crypto_cryptography.dart';
 import 'package:sync_engine/sync_engine.dart';
 import 'package:sync_isar/sync_isar.dart';
 import 'package:sync_lan/sync_lan.dart';
+import 'package:task_list_isar/task_list_isar.dart';
 
 import 'spaces/space_defaults.dart';
 
@@ -45,7 +47,7 @@ const Future<DataSpaceStorage> Function() appSpaceStorage = IsarSpaceStorage.doc
 List<DependencyModule> appAdaptersFor({DataSpace? space, String? deviceName}) => <DependencyModule>[
       IsarStorage(
         name: space?.databaseName ?? SpaceDefaults.legacyDatabaseName,
-        features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), SyncIsar()],
+        features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), TaskListIsar(), SyncIsar()],
       ),
       const NativeShare(),
       const MobileScannerHardware(),
@@ -68,7 +70,7 @@ typedef PluginFactory =
 
 /// Registro en tiempo de compilación de todos los plugins conocidos (§3.2).
 /// Para añadir un plugin: dependencia en `pubspec.yaml` y una entrada aquí.
-const List<PluginFactory> appPluginFactories = <PluginFactory>[_itemTracker, _shoppingList];
+const List<PluginFactory> appPluginFactories = <PluginFactory>[_itemTracker, _shoppingList, _taskList];
 
 HomePlugin _itemTracker(
   ServiceLocator locator,
@@ -82,6 +84,13 @@ HomePlugin _shoppingList(
   LocalizationCoordinator localization,
 ) =>
     ShoppingListPlugin(locator: locator, localization: localization)
+      ..registerLocalization();
+
+HomePlugin _taskList(
+  ServiceLocator locator,
+  LocalizationCoordinator localization,
+) =>
+    TaskListPlugin(locator: locator, localization: localization)
       ..registerLocalization();
 
 /// Registra en un [PluginRegistry] los plugins que crean [factories].

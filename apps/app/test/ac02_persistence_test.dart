@@ -17,7 +17,9 @@ import 'package:home_utility_app/settings/app_settings.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
+import 'package:plugin_task_list/plugin_task_list.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
+import 'package:task_list_isar/task_list_isar.dart';
 import 'package:storage_isar/storage_isar.dart';
 import 'package:sync_engine/sync_engine.dart';
 import 'package:sync_isar/sync_isar.dart';
@@ -77,7 +79,7 @@ void main() {
         adapters: <DependencyModule>[
           IsarStorage(
             directory: directory.path,
-            features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar()],
+            features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), TaskListIsar()],
           ),
           const _FakeHardware(),
         ],
@@ -137,6 +139,27 @@ void main() {
 
     // Al reactivarlo no se vuelven a crear las categorías por defecto.
     await app.plugins.setEnabled(ShoppingListPlugin.pluginId, enabled: true);
+    expect(await repository.getCategories(), hasLength(5));
+    await app.dispose();
+  });
+
+  test('AC-02: la lista de tareas desactivada conserva sus tareas y categorías', () async {
+    AppEnvironment app = await start();
+    final TaskListDependencies deps = app.locator.get<TaskListDependencies>();
+    final HouseholdTask fridge = await deps.createTask(title: 'Limpiar la nevera', recurrence: Recurrence.between(10, 14));
+    await deps.completeTask(fridge.id);
+    await app.plugins.setEnabled(TaskListPlugin.pluginId, enabled: false);
+    expect(app.locator.isRegistered<TaskListDependencies>(), isFalse, reason: 'dispose() libera su scope');
+    await app.dispose();
+
+    app = await start();
+    expect(app.plugins.stateOf(TaskListPlugin.pluginId)?.preference.isEnabled, isFalse);
+    final TaskListRepository repository = app.locator.get<TaskListRepository>();
+    expect((await repository.getTask(fridge.id))?.lastDoneAt, isNotNull);
+    expect(await repository.getCategories(), hasLength(5));
+
+    // Al reactivarlo no se vuelven a crear las categorías por defecto.
+    await app.plugins.setEnabled(TaskListPlugin.pluginId, enabled: true);
     expect(await repository.getCategories(), hasLength(5));
     await app.dispose();
   });
