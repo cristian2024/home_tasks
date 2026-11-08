@@ -23,12 +23,12 @@ class ShoppingListDashboardTile extends StatelessWidget {
         final List<ShoppingListEntry>? toBuy = snapshot.data?.toBuy;
         final int urgent = toBuy?.where((ShoppingListEntry entry) => entry.item.urgency.isUrgent).length ?? 0;
         return AppModuleCard(
-          icon: Icons.shopping_cart_outlined,
+          icon: AppIcons.shoppingCart,
           title: strings.title,
           summary: toBuy == null ? strings.description : strings.dashboard.toBuyCount(n: toBuy.length),
           badges: <Widget>[
             if (urgent > 0)
-              AppBadge(label: strings.dashboard.urgentCount(n: urgent), tone: AppBadgeTone.critical, icon: Icons.priority_high),
+              AppBadge(label: strings.dashboard.urgentCount(n: urgent), tone: AppBadgeTone.critical, icon: AppIcons.exclamation),
           ],
           onTap: () => context.push<void>(ShoppingListRoutes.base),
         );

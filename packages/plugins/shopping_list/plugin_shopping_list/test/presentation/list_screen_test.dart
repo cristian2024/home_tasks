@@ -29,6 +29,13 @@ void main() {
     expect(find.text('Huevos'), findsOneWidget);
   });
 
+  testWidgets('con la lista vacía no ofrece exportar ni filtrar', (WidgetTester tester) async {
+    await harness.pump(tester, initialLocation: ShoppingListRoutes.base);
+
+    expect(find.byTooltip('Exportar'), findsNothing);
+    expect(find.byTooltip('Filtros y agrupación'), findsNothing);
+  });
+
   testWidgets('una lista vacía lo dice', (WidgetTester tester) async {
     await harness.pump(tester);
 
