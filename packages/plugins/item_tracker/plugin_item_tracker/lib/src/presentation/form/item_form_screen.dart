@@ -39,7 +39,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$form$es t = itemTrackerStrings.itemTracker.form;
+    final ItemTrackerTranslations$itemTracker$form$es formStrings = itemTrackerStrings.itemTracker.form;
     final ItemFormCubit cubit = context.read<ItemFormCubit>();
     return BlocConsumer<ItemFormCubit, ItemFormState>(
       listener: (BuildContext context, ItemFormState state) {
@@ -55,7 +55,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
             error is ItemFormValidationError && error.error.field == field ? validationMessage(error.error) : null;
 
         return Scaffold(
-          appBar: AppTopBar(title: Text(cubit.isEditing ? t.editTitle : t.createTitle)),
+          appBar: AppTopBar(title: Text(cubit.isEditing ? formStrings.editTitle : formStrings.createTitle)),
           body: state.status == ItemFormStatus.loading
               ? const AppLoadingView()
               : Column(
@@ -70,7 +70,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: AppNote(
                           icon: AppIcons.link,
-                          text: t.initialIdentifier(
+                          text: formStrings.initialIdentifier(
                             type: identifierTypeLabel(identifier.type),
                             value: identifier.rawValue,
                           ),
@@ -79,7 +79,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                     if (state.parentPath.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: AppNote(icon: AppIcons.box, text: t.parent(path: formatItemPath(state.parentPath))),
+                        child: AppNote(icon: AppIcons.box, text: formStrings.parent(path: formatItemPath(state.parentPath))),
                       ),
                     if (error is ItemFormGeneralError)
                       Padding(
@@ -90,7 +90,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                         ),
                       ),
                     AppTextField(
-                      label: t.name,
+                      label: formStrings.name,
                       controller: _name,
                       maxLength: ItemValidator.maxNameLength,
                       textInputAction: TextInputAction.next,
@@ -98,7 +98,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     AppTextField(
-                      label: t.description,
+                      label: formStrings.description,
                       controller: _description,
                       maxLines: 4,
                       maxLength: ItemValidator.maxDescriptionLength,
@@ -106,20 +106,20 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                     ),
                     if (cubit.itemId case final String itemId?) ...<Widget>[
                       AppSectionHeader(
-                        t.identifiers,
+                        formStrings.identifiers,
                         trailing: AppButton(
-                          label: t.addIdentifier,
+                          label: formStrings.addIdentifier,
                           icon: AppIcons.link,
                           variant: AppButtonVariant.text,
                           onPressed: () => context.push<String>(ItemTrackerRoutes.addIdentifier(itemId)),
                         ),
                       ),
-                      Text(t.identifiersHelp, style: Theme.of(context).textTheme.bodySmall),
+                      Text(formStrings.identifiersHelp, style: Theme.of(context).textTheme.bodySmall),
                     ],
                     AppSectionHeader(
-                      t.metadata,
+                      formStrings.metadata,
                       trailing: AppButton(
-                        label: t.addField,
+                        label: formStrings.addField,
                         icon: AppIcons.plus,
                         variant: AppButtonVariant.text,
                         onPressed: cubit.addEntry,
@@ -136,7 +136,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                       _MetadataRow(key: ValueKey<int>(entry.id), entry: entry, error: _entryError(error, entry)),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      t.metadataHelp,
+                      formStrings.metadataHelp,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppThemeColors.of(context).textSecondary),
                     ),
                   ],
@@ -145,7 +145,7 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                     AppFooterActions(
                       children: <Widget>[
                         AppButton(
-                          label: t.save,
+                          label: formStrings.save,
                           expand: true,
                           isLoading: state.status == ItemFormStatus.submitting,
                           onPressed: () => cubit.submit(name: _name.text, description: _description.text),
@@ -195,18 +195,18 @@ class _MetadataRowState extends State<_MetadataRow> {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$form$es t = itemTrackerStrings.itemTracker.form;
+    final ItemTrackerTranslations$itemTracker$form$es formStrings = itemTrackerStrings.itemTracker.form;
     final ItemFormCubit cubit = context.read<ItemFormCubit>();
     final MetadataEntry entry = widget.entry;
     final Widget valueField = entry.type == MetadataValueType.boolean
         ? SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(t.value),
+            title: Text(formStrings.value),
             value: entry.flag,
             onChanged: (bool flag) => cubit.updateEntry(entry.copyWith(flag: flag)),
           )
         : AppTextField(
-            label: t.value,
+            label: formStrings.value,
             controller: _value,
             keyboardType: entry.type == MetadataValueType.number
                 ? const TextInputType.numberWithOptions(decimal: true, signed: true)
@@ -226,7 +226,7 @@ class _MetadataRowState extends State<_MetadataRow> {
               children: <Widget>[
                 Expanded(
                   child: AppTextField(
-                    label: t.key,
+                    label: formStrings.key,
                     controller: _key,
                     errorText: widget.error,
                     onChanged: (String key) => cubit.updateEntry(entry.copyWith(key: key)),
@@ -234,7 +234,7 @@ class _MetadataRowState extends State<_MetadataRow> {
                 ),
                 AppIconButton(
                   icon: AppIcons.trash2,
-                  tooltip: t.removeField(key: entry.key.isEmpty ? '' : entry.key),
+                  tooltip: formStrings.removeField(key: entry.key.isEmpty ? '' : entry.key),
                   onPressed: () => cubit.removeEntry(entry.id),
                 ),
               ],
@@ -262,17 +262,17 @@ class _TypeField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$form$es t = itemTrackerStrings.itemTracker.form;
+    final ItemTrackerTranslations$itemTracker$form$es formStrings = itemTrackerStrings.itemTracker.form;
     final ThemeData theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.s150,
       children: <Widget>[
         ExcludeSemantics(
-          child: Text(t.valueType, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurface)),
+          child: Text(formStrings.valueType, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurface)),
         ),
         Semantics(
-          label: t.valueType,
+          label: formStrings.valueType,
           child: DropdownMenu<MetadataValueType>(
             initialSelection: entry.type,
             expandedInsets: EdgeInsets.zero,
@@ -283,9 +283,9 @@ class _TypeField extends StatelessWidget {
               constraints: const BoxConstraints.tightFor(height: AppSizes.controlLarge),
             ),
             dropdownMenuEntries: <DropdownMenuEntry<MetadataValueType>>[
-              DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.text, label: t.typeText),
-              DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.number, label: t.typeNumber),
-              DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.boolean, label: t.typeBoolean),
+              DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.text, label: formStrings.typeText),
+              DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.number, label: formStrings.typeNumber),
+              DropdownMenuEntry<MetadataValueType>(value: MetadataValueType.boolean, label: formStrings.typeBoolean),
             ],
             onSelected: (MetadataValueType? type) =>
                 context.read<ItemFormCubit>().updateEntry(entry.copyWith(type: type)),

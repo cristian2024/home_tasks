@@ -20,6 +20,7 @@
 ### Interno
 
 - Usa `design_system` 0.3.0.
+- Nombres descriptivos para los textos de cada pantalla (`scanStrings`, `formStrings`…) en lugar de `t`.
 
 ## 3.0.1 - 2026-11-04
 
