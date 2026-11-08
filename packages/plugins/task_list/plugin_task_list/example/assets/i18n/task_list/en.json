@@ -1,0 +1,195 @@
+{
+  "task_list": {
+    "title": "Task list",
+    "description": "What needs doing at home, with dates, urgency and recurring tasks.",
+    "delete": "Delete",
+    "dashboard": {
+      "to_do_count(plural)": {
+        "zero": "Nothing to do",
+        "one": "1 to do",
+        "other": "{n} to do"
+      },
+      "overdue_count(plural)": {
+        "one": "1 overdue",
+        "other": "{n} overdue"
+      },
+      "urgent_count(plural)": {
+        "one": "1 urgent",
+        "other": "{n} urgent"
+      },
+      "semantic_label": "{title}, {summary}"
+    },
+    "urgency": {
+      "immediate": "Immediate",
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low"
+    },
+    "states": {
+      "overdue": "Overdue",
+      "waiting": "Waiting",
+      "no_date": "No date"
+    },
+    "groups": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "no_date": "No date"
+    },
+    "default_categories": {
+      "cleaning": "Cleaning",
+      "kitchen": "Kitchen",
+      "garden": "Garden",
+      "bills": "Bills",
+      "repairs": "Repairs"
+    },
+    "dates": {
+      "yesterday": "Yesterday",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "short": "{month} {day}",
+      "months": {
+        "m1": "Jan",
+        "m2": "Feb",
+        "m3": "Mar",
+        "m4": "Apr",
+        "m5": "May",
+        "m6": "Jun",
+        "m7": "Jul",
+        "m8": "Aug",
+        "m9": "Sep",
+        "m10": "Oct",
+        "m11": "Nov",
+        "m12": "Dec"
+      }
+    },
+    "recurrence": {
+      "every(plural)": {
+        "one": "Every day",
+        "other": "Every {n} days"
+      },
+      "between": "Every {min} to {max} days",
+      "returns_on": "back on {date}"
+    },
+    "list": {
+      "add": "Add task",
+      "filters": "Filters and grouping",
+      "close_filters": "Close filters and grouping",
+      "more_actions": "More options",
+      "categories": "Categories",
+      "clear_done": "Delete done tasks",
+      "filter_categories": "Categories",
+      "filter_urgency": "Urgency",
+      "filter_state": "Status",
+      "uncategorized": "No category",
+      "group_by": "Group by",
+      "group_by_date": "Date",
+      "group_by_category": "Category",
+      "done_row": "Done · {n}",
+      "done_row_label": "Done, {n}",
+      "empty_title": "No tasks yet",
+      "empty_message": "Add what needs doing at home.",
+      "all_done_title": "All done",
+      "all_done_message": "Add a task when something comes up.",
+      "no_matches_title": "Nothing matches the filters",
+      "clear_filters": "Clear filters",
+      "loading": "Loading tasks…",
+      "load_error": "Tasks couldn't be loaded",
+      "retry": "Try again",
+      "mark_done": "Mark “{name}” as done",
+      "mark_pending": "Set “{name}” back to pending",
+      "done_snack": "“{name}” done",
+      "returns_snack": "“{name}” is back on {date}",
+      "pending_again": "“{name}” pending",
+      "undo": "Undo",
+      "to_do_announcement(plural)": {
+        "zero": "Nothing to do",
+        "one": "1 task to do",
+        "other": "{n} tasks to do"
+      },
+      "matches_announcement(plural)": {
+        "zero": "No task matches",
+        "one": "1 task matches",
+        "other": "{n} tasks match"
+      }
+    },
+    "done": {
+      "title": "Done",
+      "clear": "Delete done tasks",
+      "clear_title(plural)": {
+        "one": "Delete 1 done task?",
+        "other": "Delete {n} done tasks?"
+      },
+      "clear_message": "This can't be undone.",
+      "cleared": "Done tasks deleted",
+      "empty": "No done tasks."
+    },
+    "form": {
+      "create_title": "New task",
+      "edit_title": "Edit task",
+      "title": "Title",
+      "title_hint": "E.g. Clean the fridge",
+      "date": "Date",
+      "no_date": "No date",
+      "change": "Change",
+      "urgency": "Urgency",
+      "categories": "Categories",
+      "no_categories": "No categories yet.",
+      "recurrence": "Repeats",
+      "recurrence_none": "No",
+      "recurrence_fixed": "Every N days",
+      "recurrence_range": "X to Y days",
+      "every_days": "Every how many days",
+      "min_days": "Minimum days",
+      "max_days": "Maximum days",
+      "recurrence_help": "Once done, it comes back to the list when it is due.",
+      "last_done": "Last done on {date}.",
+      "delete": "Delete task",
+      "delete_title": "Delete “{name}”?",
+      "delete_message": "This can't be undone.",
+      "saved": "Task saved",
+      "deleted": "Task deleted",
+      "remaining(plural)": {
+        "one": "1 character left",
+        "other": "{n} characters left"
+      }
+    },
+    "date_sheet": {
+      "title": "Due date",
+      "saturday": "Saturday",
+      "in_a_week": "In a week",
+      "type_date": "Type the date",
+      "type_date_hint": "E.g. 11/12/2026",
+      "invalid_date": "That date doesn't exist. Write it like 11/12/2026.",
+      "calendar": "Open calendar",
+      "remove": "Remove date"
+    },
+    "categories": {
+      "title": "Categories",
+      "new_label": "New category",
+      "add": "Add category",
+      "rename": "Rename “{name}”",
+      "rename_title": "Rename category",
+      "name": "Name",
+      "move_up": "Move “{name}” up",
+      "move_down": "Move “{name}” down",
+      "delete": "Delete “{name}”",
+      "delete_title": "Delete “{name}”?",
+      "delete_unused": "No task uses it.",
+      "delete_in_use(plural)": {
+        "one": "1 task uses it and will keep its other categories.",
+        "other": "{n} tasks use it and will keep their other categories."
+      },
+      "empty": "No categories. Add the first one."
+    },
+    "errors": {
+      "task_not_found": "The task no longer exists.",
+      "category_not_found": "The category no longer exists.",
+      "category_name_taken": "There is already a category “{name}”.",
+      "title_required": "Enter a title to save the task.",
+      "too_long": "Up to {max} characters.",
+      "invalid_days": "Enter a number of days between 1 and 365.",
+      "invalid_range": "The minimum can't be greater than the maximum."
+    }
+  }
+}

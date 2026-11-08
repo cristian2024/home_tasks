@@ -2,6 +2,7 @@
   "task_list": {
     "title": "Task list",
     "description": "What needs doing at home, with dates, urgency and recurring tasks.",
+    "delete": "Delete",
     "dashboard": {
       "to_do_count(plural)": {
         "zero": "Nothing to do",

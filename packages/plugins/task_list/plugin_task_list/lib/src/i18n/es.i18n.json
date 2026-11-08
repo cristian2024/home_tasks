@@ -2,6 +2,7 @@
   "task_list": {
     "title": "Lista de tareas",
     "description": "Lo que hay que hacer en casa, con fechas, urgencias y tareas que se repiten.",
+    "delete": "Borrar",
     "dashboard": {
       "to_do_count(plural)": {
         "zero": "Nada por hacer",
