@@ -9,8 +9,9 @@ import 'field_error.dart';
 /// por los lectores de pantalla.
 ///
 /// Con [maxLength], el contador aparece solo al acercarse al límite
-/// ([counterThreshold]). Con más de una línea, el campo empieza con
-/// [multilineMinLines] y crece hasta [maxLines].
+/// ([counterThreshold]), con el texto de [counterText] («84 de 100»). Con más
+/// de una línea, el campo empieza con [minLines] (por defecto
+/// [multilineMinLines]) y crece hasta [maxLines].
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
@@ -26,7 +27,9 @@ class AppTextField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.maxLines = 1,
+    this.minLines,
     this.maxLength,
+    this.counterText,
     this.enabled = true,
     this.autofocus = false,
   });
@@ -49,19 +52,33 @@ class AppTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final int? maxLines;
+
+  /// Líneas con las que empieza un campo de varias líneas. Con `1`, el campo
+  /// mide como uno de una línea y crece al escribir.
+  final int? minLines;
   final int? maxLength;
+
+  /// Texto del contador a partir de lo escrito y el máximo. Sin él, `84/100`.
+  final String Function(int current, int max)? counterText;
   final bool enabled;
   final bool autofocus;
 
   bool get _multiline => maxLines != 1;
+
+  int? get _minLines => _multiline ? minLines ?? multilineMinLines : null;
 
   Widget? _counter(
     BuildContext context, {
     required int currentLength,
     required bool isFocused,
     required int? maxLength,
-  }) =>
-      maxLength == null || currentLength < maxLength * counterThreshold ? null : Text('$currentLength/$maxLength');
+  }) {
+    if (maxLength == null || currentLength < maxLength * counterThreshold) {
+      return null;
+    }
+    final String Function(int current, int max)? counterText = this.counterText;
+    return Text(counterText == null ? '$currentLength/$maxLength' : counterText(currentLength, maxLength));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +101,7 @@ class AppTextField extends StatelessWidget {
             onSubmitted: onSubmitted,
             keyboardType: keyboardType,
             textInputAction: textInputAction,
-            minLines: _multiline ? multilineMinLines : null,
+            minLines: _minLines,
             maxLines: maxLines,
             maxLength: maxLength,
             buildCounter: _counter,
@@ -100,7 +117,7 @@ class AppTextField extends StatelessWidget {
               prefixIconConstraints: const BoxConstraints(minWidth: AppSizes.minTouchTarget),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.s300,
-                vertical: _multiline ? AppSpacing.md : AppSpacing.s300,
+                vertical: (_minLines ?? 1) > 1 ? AppSpacing.md : AppSpacing.s300,
               ),
             ),
           ),

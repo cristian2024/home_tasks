@@ -8,7 +8,7 @@
 - `showAppDateSheet`, con `AppDateOption`, `AppDateSheetTexts` y `AppDateChoice`: elegir un día con accesos rápidos, escribiéndolo o con el calendario del sistema.
 - `AppPickerField`: campo que abre un selector al tocarlo.
 - `AppCheckTile.subtitleSemantics`: lo que leen los lectores de pantalla en lugar de la línea de datos (p. ej. la fecha completa).
-- `AppTextField.focusNode`.
+- `AppTextField.focusNode`, `AppTextField.minLines` (con `1`, un campo de varias líneas empieza como uno de una) y `AppTextField.counterText` (texto del contador, p. ej. «84 de 100»).
 - `AppButtonVariant.dangerText`: botón de texto en color de peligro.
 - Token `bgBadgeNeutral` (`neutral100` en claro y `neutral800` en oscuro).
 - Iconos `AppIcons.calendar` y `AppIcons.listChecks`.
