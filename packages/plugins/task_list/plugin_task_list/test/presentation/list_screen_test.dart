@@ -163,6 +163,35 @@ void main() {
     expect(find.text('Agrupar por'), findsNothing);
   });
 
+  testWidgets('sin coincidencias, el panel también se anima al cerrarse y al abrirse', (WidgetTester tester) async {
+    await seed();
+    await harness.pump(tester);
+    double panelHeight() =>
+        tester.getSize(find.ancestor(of: find.text('Agrupar por'), matching: find.byType(SizeTransition))).height;
+
+    await tester.tap(find.byTooltip('Filtros y agrupación'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilterChip, 'Baja'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nada coincide con los filtros'), findsOneWidget);
+    final double open = panelHeight();
+
+    await tester.tap(find.byTooltip('Cerrar filtros y agrupación'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(panelHeight(), allOf(greaterThan(0), lessThan(open)));
+    await tester.pumpAndSettle();
+    expect(find.text('Agrupar por'), findsNothing);
+    expect(find.text('Nada coincide con los filtros'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Filtros y agrupación'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(panelHeight(), allOf(greaterThan(0), lessThan(open)));
+    await tester.pumpAndSettle();
+    expect(panelHeight(), open);
+  });
+
   testWidgets('con el movimiento reducido, el panel de filtros aparece sin animar', (WidgetTester tester) async {
     tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);

@@ -153,7 +153,6 @@ class TaskListScreen extends StatelessWidget {
             _ when state.snapshot.entries.isEmpty =>
               AppStatusView(icon: AppIcons.listChecks, title: strings.list.emptyTitle, message: strings.list.emptyMessage),
             TaskListState(hasPending: false) => _AllDone(doneCount: state.done.length),
-            TaskListState(showFilters: false, groups: <TaskGroup>[]) => _NoMatches(onClear: _clearFilters(cubit)),
             _ => _ListBody(state: state),
           },
         );
@@ -300,6 +299,9 @@ class _DoneRow extends StatelessWidget {
   }
 }
 
+/// La lista con el panel de filtros encima. El panel es siempre el primer
+/// bloque, también cuando nada coincide, para que se anime al abrirse y al
+/// cerrarse; el aviso de «nada coincide» ocupa el resto, centrado.
 class _ListBody extends StatelessWidget {
   const _ListBody({required this.state});
 
@@ -310,22 +312,34 @@ class _ListBody extends StatelessWidget {
     final List<TaskGroup> groups = state.groups;
     final bool showFilters = state.showFilters;
     final int doneCount = state.done.length;
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      children: <Widget>[
-        _FiltersReveal(visible: showFilters, child: _Filters(state: state)),
-        if (groups.isEmpty) SizedBox(height: 320, child: _NoMatches(onClear: _clearFilters(context.read<TaskListCubit>()))),
-        for (final TaskGroup group in groups) ...<Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: AppSectionHeader(groupTitle(group), compact: true),
-          ),
-          for (final TaskListEntry entry in group.entries) _TaskTile(key: ValueKey<String>(entry.task.id), entry: entry, state: state),
-        ],
-        if (doneCount > 0 && !showFilters)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.s0),
-            child: _DoneRow(count: doneCount),
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverToBoxAdapter(child: _FiltersReveal(visible: showFilters, child: _Filters(state: state))),
+        if (groups.isEmpty)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: _NoMatches(onClear: _clearFilters(context.read<TaskListCubit>())),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            sliver: SliverList.list(
+              children: <Widget>[
+                for (final TaskGroup group in groups) ...<Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: AppSectionHeader(groupTitle(group), compact: true),
+                  ),
+                  for (final TaskListEntry entry in group.entries)
+                    _TaskTile(key: ValueKey<String>(entry.task.id), entry: entry, state: state),
+                ],
+                if (doneCount > 0 && !showFilters)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.s0),
+                    child: _DoneRow(count: doneCount),
+                  ),
+              ],
+            ),
           ),
       ],
     );
