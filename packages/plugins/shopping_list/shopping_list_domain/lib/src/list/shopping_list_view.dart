@@ -1,3 +1,4 @@
+import 'package:categories/categories.dart';
 import 'package:equatable/equatable.dart';
 import 'package:urgency/urgency.dart';
 
@@ -114,12 +115,7 @@ abstract final class ShoppingListView {
   }
 
   /// Categorías por [ShoppingCategory.sortOrder]; a igual orden, por ID.
-  static List<ShoppingCategory> sortCategories(List<ShoppingCategory> categories) =>
-      categories.toList()
-        ..sort((ShoppingCategory a, ShoppingCategory b) {
-          final int bySortOrder = a.sortOrder.compareTo(b.sortOrder);
-          return bySortOrder != 0 ? bySortOrder : a.id.compareTo(b.id);
-        });
+  static List<ShoppingCategory> sortCategories(List<ShoppingCategory> categories) => ListCategories.sorted(categories);
 
   /// Orden dentro de un grupo: primero lo atrasado y lo pendiente, luego lo
   /// que espera y al final lo comprado; a igual estado, lo más urgente, y

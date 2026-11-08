@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-11-07
+
+### Cambiado
+
+- `ShoppingCategory` es un alias de `ListCategory`, del paquete común `categories`, que el dominio reexporta. Mismos campos y misma igualdad.
+- `ShoppingValidator.categoryName`, `normalize` y `ShoppingListView.sortCategories` usan las reglas de `ListCategories`. Se comportan igual.
+
 ## 0.2.0 - 2026-10-30
 
 ### Añadido

@@ -1,3 +1,5 @@
+import 'package:categories/categories.dart';
+
 import 'errors/shopping_list_exception.dart';
 
 /// Reglas de validación de los textos de la lista. Devuelven el valor
@@ -7,9 +9,7 @@ abstract final class ShoppingValidator {
   static const int maxNameLength = 120;
   static const int maxNotesLength = 2000;
   static const int maxQuantityLength = 40;
-  static const int maxCategoryNameLength = 40;
-
-  static final RegExp _spaces = RegExp(r'\s+');
+  static const int maxCategoryNameLength = ListCategories.maxNameLength;
 
   static String name(String value) => _required(value.trim(), ShoppingValidationField.name, maxNameLength);
 
@@ -18,12 +18,24 @@ abstract final class ShoppingValidator {
   static String quantity(String value) =>
       _optional(value.trim(), ShoppingValidationField.quantity, maxQuantityLength);
 
-  static String categoryName(String value) =>
-      _required(value.trim(), ShoppingValidationField.categoryName, maxCategoryNameLength);
+  static String categoryName(String value) {
+    final String name = value.trim();
+    return switch (ListCategories.problemWith(name)) {
+      null => name,
+      CategoryNameProblem.empty => throw const ShoppingValidationException(
+          ShoppingValidationField.categoryName,
+          ShoppingValidationReason.empty,
+        ),
+      CategoryNameProblem.tooLong => throw const ShoppingValidationException(
+          ShoppingValidationField.categoryName,
+          ShoppingValidationReason.tooLong,
+        ),
+    };
+  }
 
   /// Forma con que se comparan nombres (de items o de categorías): sin
   /// mayúsculas ni espacios de sobra.
-  static String normalize(String value) => value.trim().replaceAll(_spaces, ' ').toLowerCase();
+  static String normalize(String value) => ListCategories.normalize(value);
 
   static String _required(String value, ShoppingValidationField field, int maxLength) {
     if (value.isEmpty) {

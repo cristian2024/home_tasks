@@ -4,6 +4,7 @@
 /// de datos.
 library;
 
+export 'package:categories/categories.dart';
 export 'package:recurrence/recurrence.dart';
 export 'package:urgency/urgency.dart';
 
