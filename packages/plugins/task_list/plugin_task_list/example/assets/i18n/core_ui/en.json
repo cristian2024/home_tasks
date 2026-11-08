@@ -1,0 +1,13 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "retry": "Retry",
+    "close": "Close",
+    "back": "Back",
+    "loading": "Loading…",
+    "unexpected_error": "An unexpected error occurred.",
+    "required_field": "This field is required."
+  }
+}
