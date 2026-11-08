@@ -21,6 +21,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.bgDangerSubtle,
     required this.bgSuccessSubtle,
     required this.bgWarningSubtle,
+    required this.bgBadgeNeutral,
     required this.bgInfoSubtle,
     required this.bgScrim,
     required this.textPrimary,
@@ -73,6 +74,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     bgDangerSubtle: AppColors.red50,
     bgSuccessSubtle: AppColors.green50,
     bgWarningSubtle: AppColors.amber100,
+    bgBadgeNeutral: AppColors.neutral100,
     bgInfoSubtle: AppColors.blue100,
     bgScrim: AppColors.alphaBlack40,
     textPrimary: AppColors.neutral900,
@@ -125,6 +127,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     bgDangerSubtle: AppColors.red950,
     bgSuccessSubtle: AppColors.green950,
     bgWarningSubtle: AppColors.amber950,
+    bgBadgeNeutral: AppColors.neutral800,
     bgInfoSubtle: AppColors.blue950,
     bgScrim: AppColors.alphaBlack60,
     textPrimary: AppColors.neutral100,
@@ -183,6 +186,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color bgDangerSubtle;
   final Color bgSuccessSubtle;
   final Color bgWarningSubtle;
+
+  /// Fondo de la etiqueta neutra. En oscuro se separa del fondo de la pantalla.
+  final Color bgBadgeNeutral;
   final Color bgInfoSubtle;
   final Color bgScrim;
   final Color textPrimary;
@@ -235,6 +241,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? bgDangerSubtle,
     Color? bgSuccessSubtle,
     Color? bgWarningSubtle,
+    Color? bgBadgeNeutral,
     Color? bgInfoSubtle,
     Color? bgScrim,
     Color? textPrimary,
@@ -286,6 +293,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
         bgDangerSubtle: bgDangerSubtle ?? this.bgDangerSubtle,
         bgSuccessSubtle: bgSuccessSubtle ?? this.bgSuccessSubtle,
         bgWarningSubtle: bgWarningSubtle ?? this.bgWarningSubtle,
+        bgBadgeNeutral: bgBadgeNeutral ?? this.bgBadgeNeutral,
         bgInfoSubtle: bgInfoSubtle ?? this.bgInfoSubtle,
         bgScrim: bgScrim ?? this.bgScrim,
         textPrimary: textPrimary ?? this.textPrimary,
@@ -343,6 +351,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       bgDangerSubtle: Color.lerp(bgDangerSubtle, other.bgDangerSubtle, t)!,
       bgSuccessSubtle: Color.lerp(bgSuccessSubtle, other.bgSuccessSubtle, t)!,
       bgWarningSubtle: Color.lerp(bgWarningSubtle, other.bgWarningSubtle, t)!,
+      bgBadgeNeutral: Color.lerp(bgBadgeNeutral, other.bgBadgeNeutral, t)!,
       bgInfoSubtle: Color.lerp(bgInfoSubtle, other.bgInfoSubtle, t)!,
       bgScrim: Color.lerp(bgScrim, other.bgScrim, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,

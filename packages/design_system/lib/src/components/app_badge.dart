@@ -39,7 +39,7 @@ class AppBadge extends StatelessWidget {
     final (Color background, Color foreground) = switch (tone) {
       AppBadgeTone.critical => (colors.bgDangerSubtle, colors.textDanger),
       AppBadgeTone.warning => (colors.bgWarningSubtle, colors.textWarning),
-      AppBadgeTone.neutral => (theme.colorScheme.surfaceContainerHighest, colors.textSecondary),
+      AppBadgeTone.neutral => (colors.bgBadgeNeutral, colors.textSecondary),
       AppBadgeTone.brand => (colors.bgBrandSubtle, colors.textBrand),
       AppBadgeTone.success => (colors.bgSuccessSubtle, colors.textSuccess),
     };

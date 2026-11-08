@@ -270,6 +270,36 @@ class _GalleryPage extends StatelessWidget {
               },
             ),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          Builder(
+            builder: (BuildContext context) => AppButton(
+              label: 'Mostrar el menú',
+              variant: AppButtonVariant.secondary,
+              onPressed: () async {
+                final String? action = await showAppActionSheet<String>(
+                  context,
+                  label: 'Más opciones',
+                  actions: const <AppSheetAction<String>>[
+                    AppSheetAction<String>(value: 'Categorías', label: 'Categorías', icon: AppIcons.tag),
+                    AppSheetAction<String>(value: 'Exportar', label: 'Exportar', icon: AppIcons.share),
+                    AppSheetAction<String>(
+                      value: 'Borrar hechas',
+                      label: 'Borrar hechas',
+                      icon: AppIcons.trash,
+                      destructive: true,
+                    ),
+                  ],
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(action ?? 'Cancelado')));
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(label: 'Borrar tarea', icon: AppIcons.trash, variant: AppButtonVariant.dangerText, onPressed: () {}),
+          const AppSectionHeader('Fechas'),
+          const _DateDemo(),
           const AppSectionHeader('Sincronización'),
           const _SyncDemo(),
           const AppSectionHeader('Estados'),
@@ -408,6 +438,57 @@ class _SyncDemoState extends State<_SyncDemo> {
           onKeep: () {},
         ),
       ],
+    );
+  }
+}
+
+class _DateDemo extends StatefulWidget {
+  const _DateDemo();
+
+  @override
+  State<_DateDemo> createState() => _DateDemoState();
+}
+
+class _DateDemoState extends State<_DateDemo> {
+  DateTime? _date;
+
+  Future<void> _pick() async {
+    final DateTime today = DateUtils.dateOnly(DateTime.now());
+    final AppDateChoice? choice = await showAppDateSheet(
+      context,
+      texts: const AppDateSheetTexts(
+        title: 'Fecha límite',
+        fieldLabel: 'Escribir la fecha',
+        fieldHint: 'Ej.: 12/11/2026',
+        invalidDate: 'Esa fecha no existe. Escríbela como 12/11/2026.',
+        save: 'Guardar',
+        calendar: 'Abrir calendario',
+        remove: 'Quitar fecha',
+      ),
+      options: <AppDateOption>[
+        AppDateOption(label: 'Hoy', date: today),
+        AppDateOption(label: 'Mañana', date: today.add(const Duration(days: 1))),
+        AppDateOption(label: 'En una semana', date: today.add(const Duration(days: 7))),
+      ],
+      firstDate: DateTime(today.year - 1),
+      lastDate: DateTime(today.year + 5),
+      initialDate: _date,
+    );
+    if (choice != null) {
+      setState(() => _date = choice.date);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final DateTime? date = _date;
+    return AppPickerField(
+      label: 'Fecha',
+      placeholder: 'Sin fecha',
+      value: date == null ? null : MaterialLocalizations.of(context).formatMediumDate(date),
+      icon: AppIcons.calendar,
+      semanticHint: 'Cambiar',
+      onTap: _pick,
     );
   }
 }
