@@ -23,26 +23,26 @@ class NotFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$notFound$es t = itemTrackerStrings.itemTracker.notFound;
+    final ItemTrackerTranslations$itemTracker$notFound$es notFoundStrings = itemTrackerStrings.itemTracker.notFound;
     final String type = identifierTypeLabel(identifier.type);
     return Scaffold(
-      appBar: AppTopBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(notFoundStrings.title)),
       body: AppStatusView(
         icon: AppIcons.qrCode,
-        title: t.title,
-        message: t.message(type: type),
+        title: notFoundStrings.title,
+        message: notFoundStrings.message(type: type),
         action: AppBadge(label: identifier.rawValue),
       ),
       bottomNavigationBar: AppFooterActions(
         children: <Widget>[
           AppButton(
-            label: t.create,
+            label: notFoundStrings.create,
             icon: AppIcons.plus,
             expand: true,
             onPressed: () => _open(context, ItemTrackerRoutes.create),
           ),
           AppButton(
-            label: t.associate,
+            label: notFoundStrings.associate,
             icon: AppIcons.link,
             variant: AppButtonVariant.secondary,
             expand: true,

@@ -28,9 +28,9 @@ class _AddEventScreenState extends State<AddEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$addEvent$es t = itemTrackerStrings.itemTracker.addEvent;
+    final ItemTrackerTranslations$itemTracker$addEvent$es addEventStrings = itemTrackerStrings.itemTracker.addEvent;
     return Scaffold(
-      appBar: AppTopBar(title: Text(t.title)),
+      appBar: AppTopBar(title: Text(addEventStrings.title)),
       body: BlocConsumer<AddEventCubit, AddEventState>(
         listener: (BuildContext context, AddEventState state) {
           if (state.status == AddEventStatus.saved) {
@@ -51,7 +51,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
               if (error != null && error is! ItemValidationException)
                 Text(errorMessage(error), style: TextStyle(color: Theme.of(context).colorScheme.error)),
               AppTextField(
-                label: t.eventTitle,
+                label: addEventStrings.eventTitle,
                 controller: _title,
                 autofocus: true,
                 maxLength: ItemValidator.maxEventTitleLength,
@@ -60,7 +60,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
               ),
               const SizedBox(height: AppSpacing.s300),
               AppTextField(
-                label: t.eventDescription,
+                label: addEventStrings.eventDescription,
                 controller: _description,
                 maxLines: 4,
                 maxLength: ItemValidator.maxDescriptionLength,
@@ -72,7 +72,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
               AppFooterActions(
                 children: <Widget>[
                   AppButton(
-                    label: t.save,
+                    label: addEventStrings.save,
                     icon: AppIcons.check,
                     expand: true,
                     isLoading: state.status == AddEventStatus.submitting,

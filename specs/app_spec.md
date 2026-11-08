@@ -888,14 +888,14 @@ Todo va en una sola transacción (`HouseholdItemRepository.deleteItems`). El con
 
 ### 9.5. Lista de Compras (`packages/plugins/shopping_list`)
 
-Plugin `ShoppingListPlugin`: ID `shopping_list` (scope DI, preferencia y namespace i18n) y rutas bajo `/shopping-list` (`/item/new`, `/item/:id/edit`, `/categories`). Sigue la estructura del §10.2: `shopping_list_domain`, `plugin_shopping_list` (con `example/`) y `shopping_list_isar`. Su API pública es `shopping_list_contract` (§11.2). La lista de tareas seguirá el mismo patrón (`task_list`, `/task-list`).
+Plugin `ShoppingListPlugin`: ID `shopping_list` (scope DI, preferencia y namespace i18n) y rutas bajo `/shopping-list` (`/item/new`, `/item/:id/edit`, `/categories`). Sigue la estructura del §10.2: `shopping_list_domain`, `plugin_shopping_list` (con `example/`) y `shopping_list_isar`. Su API pública es `shopping_list_contract` (§11.2). La lista de tareas sigue el mismo patrón (§9.6).
 
 **Piezas compartidas** (paquetes Dart puros en `packages/shared/`, para compras y tareas):
 
 - `urgency`: `Urgency.immediate` (hoy), `high` (la próxima vez), `normal` (por defecto) y `low` (cuando se pueda). `isUrgent` = inmediata o alta. El orden natural pone primero lo más urgente.
 - `recurrence`: `Recurrence.between(min, max)` o `Recurrence.fixed(días)`, de 1 a 365. La ventana se abre a los `min` días de la última vez y se cierra al terminar el día `max`. Estados: `waiting`, `due` («toca») y `overdue` (atrasado). Si nunca se hizo, toca.
 - `list_export`: modelo neutro `ExportDocument` y formateadores `WhatsAppFormatter` (`*negrita*`, viñetas) y `MarkdownFormatter` (escapa los caracteres especiales). Los textos los pone quien exporta.
-- Las categorías **no** se comparten: cada plugin tiene las suyas. Se extraerán a un paquete común si tareas repite la misma lógica.
+- `categories`: `ListCategory` (`id`, `sortOrder`, `name?`, `defaultKey?`) y `ListCategories` (normalizar, validar el nombre, detectar repetidos, ordenar y reordenar). Se comparte la lógica, no los datos: cada plugin guarda sus propias categorías (`ShoppingCategory` y `TaskCategory` son alias de `ListCategory`).
 
 **Entidades**:
 
@@ -932,6 +932,50 @@ Plugin `ShoppingListPlugin`: ID `shopping_list` (scope DI, preferencia y namespa
 **Casos de uso** (`lib/src/domain/use_cases`): `CreateShoppingItem`, `UpdateShoppingItem`, `GetShoppingItem`, `DeleteShoppingItems`, `MarkShoppingItemPurchased`, `UndoShoppingPurchase`, `MarkShoppingItemPending`, `ClearPurchasedShoppingItems`, `CreateShoppingCategory`, `RenameShoppingCategory`, `CountShoppingCategoryUsage`, `DeleteShoppingCategory`, `ReorderShoppingCategories`, `EnsureDefaultShoppingCategories`, `WatchShoppingList`, `WatchShoppingCategories` y `BuildShoppingExport`. `ShoppingListApi` implementa las capacidades públicas.
 
 **Errores de dominio** (`sealed ShoppingListException`): `ShoppingItemNotFoundException`, `ShoppingCategoryNotFoundException`, `ShoppingCategoryNameTakenException` y `ShoppingValidationException`.
+
+### 9.6. Lista de Tareas (`packages/plugins/task_list`)
+
+Plugin `TaskListPlugin`: ID `task_list` (scope DI, preferencia y namespace i18n) y rutas bajo `/task-list` (`/task/new`, `/task/:id/edit`, `/done`, `/categories`). Misma estructura que compras: `task_list_domain`, `plugin_task_list` (con `example/`) y `task_list_isar`. Todavía no publica capacidades ni eventos: no hay `task_list_contract` hasta que otro plugin lo necesite.
+
+Usa las piezas compartidas del §9.5 (`urgency`, `recurrence`, `categories`) y el día de calendario de `core_utils` (`CalendarDay`, `Clock.today()`).
+
+**Entidades**:
+
+| Entidad | Campos |
+| :--- | :--- |
+| `HouseholdTask` | `id`, `title`, `urgency`, `status` (`pending`/`done`), `categoryIds`, `dueDate?`, `recurrence?`, `lastDoneAt?`, `createdAt`, `updatedAt`. Una tarea tiene fecha límite **o** recurrencia, nunca las dos. |
+| `TaskCategory` | `ListCategory` (§9.5) |
+
+**Fecha límite**: es un día de calendario, no un instante. Se guarda como la medianoche UTC de esa fecha y se compara con el día **local** de `now`. Así, una tarea para el 12 de noviembre vence el 12 en cualquier zona horaria. En la sincronización viaja como `AAAA-MM-DD`.
+
+**Validación** (`TaskValidator`; errores `TaskValidationException` con `field` y `reason`):
+
+| Campo | Regla |
+| :--- | :--- |
+| `title` | Obligatorio tras recortar espacios; máx. 100 caracteres. |
+| Nombre de categoría | Como en compras: obligatorio, máx. 40, único sin distinguir mayúsculas. |
+| Recurrencia | Días entre 1 y 365; el mínimo no puede ser mayor que el máximo. |
+
+**Estado que se muestra** (`HouseholdTask.stateAt(now, today:)`):
+
+- Con recurrencia: `waiting` (aún no toca), `today` (ventana abierta o nunca hecha) u `overdue` (pasado el máximo).
+- Sin recurrencia: `done` si está hecha; si no, `overdue` (fecha pasada), `today`, `upcoming` (fecha futura) o `noDate`.
+
+**Reglas**:
+
+- **Grupos por fecha**: Atrasadas, Hoy, Próximas (incluye las que esperan) y Sin fecha. Dentro de un grupo: lo más urgente primero, luego por fecha y por título. Agrupado por categoría, cada tarea sale una sola vez, bajo la primera de sus categorías, y lleva la etiqueta «Atrasada» si lo está.
+- **Categorías por defecto**: Limpieza, Cocina, Jardín, Pagos y Reparaciones, con las mismas reglas que compras (se crean una vez, se traducen por `defaultKey` hasta que se renombran; borrar una en uso la quita de sus tareas en la misma transacción).
+- **Completar** (`CompleteTask`): guarda `lastDoneAt`. Una tarea normal pasa a `done`; una que se repite sigue pendiente y espera a su ventana («vuelve el 16 nov»). La fila queda marcada en su sitio 5 s con un aviso para deshacer (`UndoTaskCompletion` restaura la tarea anterior); después pasa a «Hechas» o a «En espera».
+- **Hechas**: lista aparte. `ReopenTask` vuelve una a pendiente y `ClearDoneTasks` borra todas las hechas tras confirmar. Las que se repiten nunca están hechas.
+- **Filtrar**: por categorías («cualquiera de», con o sin «Sin categoría»), urgencias y estados (atrasada, en espera, sin fecha).
+- **Borrar**: lógico (`deletedAt`), para que la sincronización lo propague.
+- **Sincronización**: cada campo gana por su `hlc`, sin bandeja de conflictos. Completar la misma tarea en dos dispositivos cuenta una vez.
+
+**Casos de uso** (`lib/src/domain/use_cases`): `CreateTask`, `UpdateTask`, `GetTask`, `DeleteTasks`, `CompleteTask`, `UndoTaskCompletion`, `ReopenTask`, `ClearDoneTasks`, `CreateTaskCategory`, `RenameTaskCategory`, `CountTaskCategoryUsage`, `DeleteTaskCategory`, `ReorderTaskCategories`, `EnsureDefaultTaskCategories`, `WatchTaskList` y `WatchTaskCategories`.
+
+**Errores de dominio** (`sealed TaskListException`): `TaskNotFoundException`, `TaskCategoryNotFoundException`, `TaskCategoryNameTakenException` y `TaskValidationException`.
+
+**Pendiente**: exportar, bandeja de conflictos, asignar a una persona del hogar, recordatorios y notas. El diseño ya los incluye.
 
 ---
 

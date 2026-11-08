@@ -16,10 +16,10 @@ class ScanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
     final bool binding = context.read<ScanBloc>().bindToItemId != null;
     return Scaffold(
-      appBar: AppTopBar(title: Text(binding ? t.bindTitle : t.title)),
+      appBar: AppTopBar(title: Text(binding ? scanStrings.bindTitle : scanStrings.title)),
       body: BlocConsumer<ScanBloc, ScanState>(
         listenWhen: (ScanState previous, ScanState current) =>
             previous.outcome != current.outcome || previous.notice != current.notice,
@@ -33,7 +33,7 @@ class ScanScreen extends StatelessWidget {
             ),
             if (state.lookingUp)
               Semantics(
-                label: binding ? t.binding : t.lookingUp,
+                label: binding ? scanStrings.binding : scanStrings.lookingUp,
                 liveRegion: true,
                 child: const LinearProgressIndicator(),
               ),
@@ -54,12 +54,12 @@ class ScanScreen extends StatelessWidget {
     final ScanBloc bloc = context.read<ScanBloc>();
     final ScanNotice? notice = state.notice;
     if (notice != null) {
-      final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+      final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
       final ItemTrackerTranslations$itemTracker$errors$es errors = itemTrackerStrings.itemTracker.errors;
       _showMessage(context, switch (notice) {
-        ScanNotice.cameraError => t.cameraError,
-        ScanNotice.readError => t.readError,
-        ScanNotice.readCancelled => t.readCancelled,
+        ScanNotice.cameraError => scanStrings.cameraError,
+        ScanNotice.readError => scanStrings.readError,
+        ScanNotice.readCancelled => scanStrings.readCancelled,
         ScanNotice.invalidValue => errors.identifierInvalid,
         ScanNotice.itemNotFound => errors.itemNotFound,
         ScanNotice.unexpected => errors.unexpected,
@@ -129,15 +129,15 @@ class _ModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
     return AppChoiceSelector<ScanMode>(
-      label: t.modeLabel,
+      label: scanStrings.modeLabel,
       showLabel: false,
       padding: EdgeInsets.zero,
       options: <AppChoice<ScanMode>>[
-        AppChoice<ScanMode>(value: ScanMode.camera, icon: AppIcons.scanLine, label: t.modeCamera),
-        AppChoice<ScanMode>(value: ScanMode.nfc, icon: AppIcons.nfc, label: t.modeNfc),
-        AppChoice<ScanMode>(value: ScanMode.manual, icon: AppIcons.keyboard, label: t.modeManual),
+        AppChoice<ScanMode>(value: ScanMode.camera, icon: AppIcons.scanLine, label: scanStrings.modeCamera),
+        AppChoice<ScanMode>(value: ScanMode.nfc, icon: AppIcons.nfc, label: scanStrings.modeNfc),
+        AppChoice<ScanMode>(value: ScanMode.manual, icon: AppIcons.keyboard, label: scanStrings.modeManual),
       ],
       selected: mode,
       onChanged: (ScanMode mode) => context.read<ScanBloc>().add(ScanModeChanged(mode)),
@@ -170,11 +170,11 @@ class _CameraViewState extends State<_CameraView> {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
     final ScanBloc bloc = context.read<ScanBloc>();
     final ScanState state = widget.state;
     final AppButton useManual = AppButton(
-      label: t.useManual,
+      label: scanStrings.useManual,
       variant: AppButtonVariant.secondary,
       size: AppButtonSize.medium,
       onPressed: () => bloc.add(const ScanModeChanged(ScanMode.manual)),
@@ -190,7 +190,7 @@ class _CameraViewState extends State<_CameraView> {
               Expanded(child: _CameraPreview(failed: _previewFailed, onFailed: _markPreviewFailed, useManual: useManual)),
               if (!_previewFailed)
                 Text(
-                  t.promptCamera,
+                  scanStrings.promptCamera,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppThemeColors.of(context).textSecondary),
                 ),
             ],
@@ -198,15 +198,15 @@ class _CameraViewState extends State<_CameraView> {
         ),
       HardwarePermissionStatus.denied => AppStatusView(
           icon: AppIcons.cameraOff,
-          title: t.cameraPermissionTitle,
-          message: t.cameraPermissionMessage,
+          title: scanStrings.cameraPermissionTitle,
+          message: scanStrings.cameraPermissionMessage,
           action: Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
             children: <Widget>[
               AppButton(
-                label: t.grantPermission,
+                label: scanStrings.grantPermission,
                 size: AppButtonSize.medium,
                 onPressed: () => bloc.add(const ScanCameraPermissionRequested()),
               ),
@@ -216,15 +216,15 @@ class _CameraViewState extends State<_CameraView> {
         ),
       HardwarePermissionStatus.permanentlyDenied => AppStatusView(
           icon: AppIcons.cameraOff,
-          title: t.cameraPermissionTitle,
-          message: t.cameraPermanentlyDeniedMessage,
+          title: scanStrings.cameraPermissionTitle,
+          message: scanStrings.cameraPermanentlyDeniedMessage,
           action: Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             alignment: WrapAlignment.center,
             children: <Widget>[
               AppButton(
-                label: t.openSettings,
+                label: scanStrings.openSettings,
                 size: AppButtonSize.medium,
                 onPressed: () => bloc.add(const ScanSettingsRequested()),
               ),
@@ -234,8 +234,8 @@ class _CameraViewState extends State<_CameraView> {
         ),
       HardwarePermissionStatus.restricted => AppStatusView(
           icon: AppIcons.ban,
-          title: t.cameraPermissionTitle,
-          message: t.cameraRestrictedMessage,
+          title: scanStrings.cameraPermissionTitle,
+          message: scanStrings.cameraRestrictedMessage,
           action: useManual,
         ),
     };
@@ -253,12 +253,12 @@ class _CameraPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
     final Widget view = context.read<ScanBloc>().cameraScanner?.buildPreview(
           context,
           errorBuilder: (BuildContext context, ScanException error) {
             onFailed();
-            return AppStatusView(icon: AppIcons.videoOff, title: t.cameraError, action: useManual);
+            return AppStatusView(icon: AppIcons.videoOff, title: scanStrings.cameraError, action: useManual);
           },
         ) ??
         const AppLoadingView();
@@ -273,7 +273,7 @@ class _NfcView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
     final ScanBloc bloc = context.read<ScanBloc>();
     final Wrap alternatives = Wrap(
       spacing: AppSpacing.sm,
@@ -281,14 +281,14 @@ class _NfcView extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: <Widget>[
         AppButton(
-          label: t.modeCamera,
+          label: scanStrings.modeCamera,
           icon: AppIcons.scanLine,
           variant: AppButtonVariant.secondary,
           size: AppButtonSize.medium,
           onPressed: () => bloc.add(const ScanModeChanged(ScanMode.camera)),
         ),
         AppButton(
-          label: t.useManual,
+          label: scanStrings.useManual,
           icon: AppIcons.keyboard,
           variant: AppButtonVariant.secondary,
           size: AppButtonSize.medium,
@@ -302,32 +302,32 @@ class _NfcView extends StatelessWidget {
       // AC-06: sin NFC la opción se desactiva con un mensaje accesible.
       HardwareStatus.unsupported => AppStatusView(
           icon: AppIcons.nfc,
-          title: t.nfcUnsupportedTitle,
-          message: t.nfcUnsupportedMessage,
+          title: scanStrings.nfcUnsupportedTitle,
+          message: scanStrings.nfcUnsupportedMessage,
           action: alternatives,
         ),
       HardwareStatus.disabled => AppStatusView(
           icon: AppIcons.nfc,
-          title: t.nfcDisabledTitle,
-          message: t.nfcDisabledMessage,
+          title: scanStrings.nfcDisabledTitle,
+          message: scanStrings.nfcDisabledMessage,
           action: AppButton(
-            label: t.checkAgain,
+            label: scanStrings.checkAgain,
             size: AppButtonSize.medium,
             onPressed: () => bloc.add(const ScanNfcStatusRefreshed()),
           ),
         ),
       HardwareStatus.available => AppStatusView(
           icon: AppIcons.nfc,
-          title: state.nfcReading ? t.nfcWaiting : t.promptNfc,
+          title: state.nfcReading ? scanStrings.nfcWaiting : scanStrings.promptNfc,
           action: state.nfcReading
               ? AppButton(
-                  label: t.nfcCancel,
+                  label: scanStrings.nfcCancel,
                   variant: AppButtonVariant.secondary,
                   size: AppButtonSize.medium,
                   onPressed: () => bloc.add(const ScanNfcReadCancelled()),
                 )
               : AppButton(
-                  label: t.nfcStart,
+                  label: scanStrings.nfcStart,
                   size: AppButtonSize.medium,
                   onPressed: state.lookingUp ? null : () => bloc.add(const ScanNfcReadRequested()),
                 ),
@@ -364,7 +364,7 @@ class _ManualViewState extends State<_ManualView> {
 
   @override
   Widget build(BuildContext context) {
-    final ItemTrackerTranslations$itemTracker$scan$es t = itemTrackerStrings.itemTracker.scan;
+    final ItemTrackerTranslations$itemTracker$scan$es scanStrings = itemTrackerStrings.itemTracker.scan;
     final bool lookingUp = context.select<ScanBloc, bool>((ScanBloc bloc) => bloc.state.lookingUp);
     final bool binding = context.read<ScanBloc>().bindToItemId != null;
     return SingleChildScrollView(
@@ -373,8 +373,8 @@ class _ManualViewState extends State<_ManualView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           AppTextField(
-            label: t.manualLabel,
-            hint: t.manualHint,
+            label: scanStrings.manualLabel,
+            hint: scanStrings.manualHint,
             controller: _controller,
             autofocus: true,
             maxLength: ItemValidator.maxIdentifierLength,
@@ -383,9 +383,9 @@ class _ManualViewState extends State<_ManualView> {
             onSubmitted: (_) => _submit(),
           ),
           const SizedBox(height: AppSpacing.s300),
-          AppSectionHeader(t.typeLabel),
+          AppSectionHeader(scanStrings.typeLabel),
           AppChoiceSelector<IdentifierType>(
-            label: t.typeLabel,
+            label: scanStrings.typeLabel,
             showLabel: false,
             wrapLabels: true,
             padding: EdgeInsets.zero,
@@ -398,7 +398,7 @@ class _ManualViewState extends State<_ManualView> {
           ),
           const SizedBox(height: AppSpacing.s300),
           AppButton(
-            label: binding ? t.bindSubmit : t.manualSubmit,
+            label: binding ? scanStrings.bindSubmit : scanStrings.manualSubmit,
             isLoading: lookingUp,
             expand: true,
             onPressed: _submit,

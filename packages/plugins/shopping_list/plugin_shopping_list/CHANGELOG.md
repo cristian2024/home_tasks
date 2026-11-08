@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 - 2026-11-08
+
+### Interno
+
+- Los casos de uso de categorías usan `ListCategories` para el nombre ocupado, la posición de una nueva y la reordenación.
+
 ## 0.2.2 - 2026-11-05
 
 ### Cambiado
