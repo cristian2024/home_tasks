@@ -35,7 +35,7 @@ Algunos nombres no coinciden con Figma y están documentados en cada clase: `rad
 | `showAppActionSheet<T>` | Hoja inferior con acciones agrupadas (`AppSheetAction<T>`, con `destructive`), p. ej. el menú ⋮. Devuelve la elegida. |
 | `showAppDateSheet` | Hoja para elegir un día: accesos rápidos (`AppDateOption`), campo en el formato del idioma y calendario del sistema. Devuelve `AppDateChoice`, sin fecha si se quita. |
 | `AppIconButton` | Botón de icono con `tooltip` obligatorio. |
-| `AppTextField` | Campo de texto con la etiqueta encima, error e icono opcional. El contador aparece cerca del límite. |
+| `AppTextField` | Campo de texto con la etiqueta encima, error e icono opcional. El contador aparece cerca del límite, con el texto de `counterText`. Con `minLines: 1`, un campo de varias líneas empieza en una y crece. |
 | `AppPickerField` | Campo que no se escribe: muestra un valor y abre un selector al tocarlo (p. ej. la fecha). Se anuncia como botón. |
 | `AppCard` | Tarjeta, pulsable si recibe `onTap` (con `semanticLabel`). |
 | `AppIconBox` | Icono en un recuadro de 56, de marca o de error. |
