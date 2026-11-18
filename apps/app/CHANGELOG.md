@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.10.0+17 - 2026-11-18
+
+### Añadido
+
+- La lista de compras recuerda en el dispositivo la última categoría usada al crear desde la lista y si ya sugirió deslizar para borrar (`SharedPreferencesShoppingList`).
+
+### Cambiado
+
+- La lista de compras se centra en lo pendiente: filtros fijos, crear sin salir de la lista, deslizar para borrar y pantallas de Comprados y En espera (`plugin_shopping_list` 0.3.0).
+- Foco visible al navegar con teclado y segmento elegido con borde (`design_system` 0.3.2).
+
+### Interno
+
+- El test de unirse con el mismo código a un hogar que ya tiene espacio dice, si falla, en qué fase quedó y si el cambio de espacio falló.
+
 ## 1.9.0+16 - 2026-11-07
 
 ### Añadido

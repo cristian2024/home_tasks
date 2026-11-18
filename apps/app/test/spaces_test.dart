@@ -206,11 +206,20 @@ void main() {
       await ben.until(() async => (await ben.spaces.active())!.householdId == invitation.household.id);
       expect(await switcher.spaceOfHousehold(invitation.household.id), joined);
 
-      await switcher.switchTo('ben-1');
+      expect(await switcher.switchTo('ben-1'), isTrue);
+      await ben.until(() async => (await ben.spaces.active())!.id == 'ben-1');
+      // Si el espacio perdió su hogar al salir de él, unirse no lo encuentra.
+      expect(await switcher.spaceOfHousehold(invitation.household.id), joined);
       final JoinHouseholdCubit join = JoinHouseholdCubit(households: ben.app.sync!.households, spaces: switcher);
       await join.submit(invitation.encode());
 
-      expect(switcher.activeSpaceId, joined);
+      // Con la fase y el aviso, un fallo dice si no se intentó cambiar o si
+      // el cambio falló y volvió al espacio anterior.
+      expect(
+        switcher.activeSpaceId,
+        joined,
+        reason: 'fase ${join.state.phase}, error ${join.state.error}, aviso ${switcher.state.notice}',
+      );
       await join.close();
     });
 

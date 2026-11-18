@@ -13,6 +13,7 @@ import 'package:plugin_task_list/plugin_task_list.dart';
 import 'package:secret_store_secure_storage/secret_store_secure_storage.dart';
 import 'package:share_native/share_native.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
+import 'package:shopping_list_shared_preferences/shopping_list_shared_preferences.dart';
 import 'package:spaces_shared_preferences/spaces_shared_preferences.dart';
 import 'package:storage_isar/storage_isar.dart';
 import 'package:sync_crypto_cryptography/sync_crypto_cryptography.dart';
@@ -36,7 +37,9 @@ const Future<DataSpaceStorage> Function() appSpaceStorage = IsarSpaceStorage.doc
 
 /// Adaptadores del espacio de datos [space] (sin él, la base de siempre).
 /// Cada uno abre sus recursos y registra sus contratos en el
-/// `ServiceLocator`; la app solo los elige. Incluye los adaptadores de
+/// `ServiceLocator`; la app solo los elige. Las preferencias de la lista de
+/// compras (`shared_preferences`) son del dispositivo aunque se registren en
+/// cada espacio: todos leen las mismas claves. Incluye los adaptadores de
 /// **todos** los plugins registrados, también los desactivados, para que sus
 /// datos sigan accesibles (AC-02).
 ///
@@ -50,6 +53,7 @@ List<DependencyModule> appAdaptersFor({DataSpace? space, String? deviceName}) =>
         features: const <IsarFeature>[ItemTrackerIsar(), ShoppingListIsar(), TaskListIsar(), SyncIsar()],
       ),
       const NativeShare(),
+      const SharedPreferencesShoppingList(),
       const MobileScannerHardware(),
       const NfcManagerHardware(),
       const PermissionHandlerHardware(),
