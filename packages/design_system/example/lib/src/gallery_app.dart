@@ -331,6 +331,7 @@ class _Swatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -340,10 +341,10 @@ class _Swatch extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(AppRadii.small),
-            border: Border.all(color: Theme.of(context).colorScheme.outline),
+            border: Border.all(color: theme.colorScheme.outline),
           ),
         ),
-        Text(name, style: Theme.of(context).textTheme.labelSmall),
+        Text(name, style: theme.textTheme.labelSmall),
       ],
     );
   }
