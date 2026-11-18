@@ -8,9 +8,8 @@ import 'package:shopping_list_domain/shopping_list_domain.dart';
 import 'package:shopping_list_domain/testing.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
 import 'package:storage_isar/storage_isar.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:sync_isar/sync_isar.dart';
-
-import 'helpers/isar_fixtures.dart';
 
 final DateTime _t0 = DateTime.utc(2026, 10, 28, 9);
 

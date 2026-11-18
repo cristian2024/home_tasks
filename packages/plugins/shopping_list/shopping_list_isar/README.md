@@ -29,7 +29,7 @@ Solo se activa si la app compuso la sincronización: `SyncIsar` dentro de `IsarS
 
 ## Tests
 
-Usan Isar real. `initializeIsarForTests` (`test/helpers/isar_fixtures.dart`) descarga `libisar` con un bloqueo de archivo, así que dos archivos de test no la escriben a la vez.
+Usan Isar real. `initializeIsarForTests` (`package:storage_isar/testing.dart`) descarga `libisar` con un bloqueo de archivo, así que dos archivos de test no la escriben a la vez.
 
 ```sh
 flutter test --coverage
