@@ -1,0 +1,22 @@
+name: shopping_list_shared_preferences
+description: Adaptador de las preferencias de la lista de compras con shared_preferences - guarda en el dispositivo la última categoría usada al crear y si ya se sugirió el gesto de borrar.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.27.0"
+
+resolution: workspace
+
+dependencies:
+  core_di: ^0.1.2
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.5.6
+  shopping_list_domain: ^0.2.2
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter

@@ -18,7 +18,7 @@ Plugin de lista de compras (ID `shopping_list`, rutas bajo `/shopping-list`). Im
 El plugin pide sus dependencias al `ServiceLocator`:
 - `ShoppingListRepository` (obligatorio): lo registra el adaptador de almacenamiento que elige la app, p. ej. `ShoppingListIsar`.
 - `ShareService` (opcional): sin él no se ofrece exportar.
-- `ShoppingListPreferences` (opcional): preferencias del dispositivo. Sin ella, se guardan en memoria mientras la app está abierta.
+- `ShoppingListPreferences` (opcional): preferencias del dispositivo. Sin ella, se guardan en memoria mientras la app está abierta; `shopping_list_shared_preferences` las guarda en el dispositivo.
 - `EventBus`, `IdGenerator` y `Clock` (opcionales): si faltan, usa los suyos.
 
 La app registra el plugin con `ShoppingListPlugin(locator: locator)..registerLocalization()` e inyecta sus textos desde `assets/i18n/shopping_list/`.
