@@ -95,7 +95,7 @@ class _AppCheckTileState extends State<AppCheckTile> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final TextTheme textTheme = Theme.of(context).textTheme;
     final AppThemeColors colors = AppThemeColors.of(context);
     final ValueChanged<bool>? onChanged = widget.onChanged;
     final String? subtitle = widget.subtitle;
@@ -110,7 +110,7 @@ class _AppCheckTileState extends State<AppCheckTile> {
       children: <Widget>[
         Text(
           widget.title,
-          style: theme.textTheme.bodyLarge?.copyWith(
+          style: textTheme.bodyLarge?.copyWith(
             color: value ? colors.textSecondary : colors.textPrimary,
             decoration: value ? TextDecoration.lineThrough : null,
           ),
@@ -119,7 +119,7 @@ class _AppCheckTileState extends State<AppCheckTile> {
           Text(
             subtitle,
             semanticsLabel: widget.subtitleSemantics,
-            style: theme.textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+            style: textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
           ),
         if (badges.isNotEmpty) Wrap(spacing: AppSpacing.xs, runSpacing: AppSpacing.xs, children: badges),
       ],
