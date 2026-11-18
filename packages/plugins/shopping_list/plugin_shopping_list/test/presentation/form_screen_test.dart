@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,9 +26,9 @@ void main() {
 
   testWidgets('crea un item con categorías, urgencia y recurrencia, y vuelve a la lista', (WidgetTester tester) async {
     await harness.pump(tester);
-    await tester.tap(find.text('Añadir item'));
+    unawaited(harness.router.push<String>(ShoppingListRoutes.create));
     await tester.pumpAndSettle();
-    expect(find.text('Nuevo item'), findsOneWidget);
+    expect(find.text('Nuevo ítem'), findsOneWidget);
 
     await tester.enterText(field('Nombre'), 'Huevos');
     await tester.enterText(field('Cantidad'), '2 docenas');
@@ -97,7 +99,7 @@ void main() {
     await tester.tap(find.text('Huevos'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Editar item'), findsOneWidget);
+    expect(find.text('Editar ítem'), findsOneWidget);
     expect(find.text('2'), findsWidgets);
     await tester.enterText(field('Nombre'), 'Huevos camperos');
     await scrollTo(tester, find.text('7'));
@@ -108,10 +110,10 @@ void main() {
 
     await tester.tap(find.text('Huevos camperos'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Borrar item'));
+    await tester.tap(find.byTooltip('Borrar ítem'));
     await tester.pumpAndSettle();
     expect(find.text('¿Borrar «Huevos camperos»?'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Borrar item'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Borrar ítem'));
     await tester.pumpAndSettle();
     expect(await harness.repository.getItems(), isEmpty);
     expect(find.text('La lista está vacía'), findsOneWidget);
@@ -120,7 +122,7 @@ void main() {
   testWidgets('un item que ya no existe muestra el error', (WidgetTester tester) async {
     await harness.pump(tester, initialLocation: ShoppingListRoutes.edit('nada'));
 
-    expect(find.text('El item ya no existe.'), findsOneWidget);
+    expect(find.text('El ítem ya no existe.'), findsOneWidget);
   });
 
   testWidgets('sin categorías lo dice', (WidgetTester tester) async {

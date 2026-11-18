@@ -7,9 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shopping_list_domain/shopping_list_domain.dart';
 import 'package:shopping_list_domain/testing.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
-import 'package:storage_isar/adapter.dart';
 import 'package:storage_isar/storage_isar.dart';
 import 'package:sync_isar/sync_isar.dart';
+
+import 'helpers/isar_fixtures.dart';
 
 final DateTime _t0 = DateTime.utc(2026, 10, 28, 9);
 
@@ -58,7 +59,7 @@ ShoppingPurchase _purchase(String id, int day) =>
     ShoppingPurchase(id: id, itemId: 'i1', purchasedAt: _t0.add(Duration(days: day)));
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   shoppingListSyncContract('Isar', create: _subject);
   shoppingListRepositoryContract(

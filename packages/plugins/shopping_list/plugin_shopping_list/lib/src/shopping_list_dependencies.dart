@@ -1,4 +1,5 @@
 import 'package:core_share/core_share.dart';
+import 'package:shopping_list_domain/shopping_list_domain.dart';
 
 import 'domain/use_cases/build_shopping_export.dart';
 import 'domain/use_cases/category_use_cases.dart';
@@ -14,6 +15,8 @@ class ShoppingListDependencies {
     required this.updateItem,
     required this.getItem,
     required this.deleteItems,
+    required this.restoreItem,
+    required this.revertItem,
     required this.markPurchased,
     required this.undoPurchase,
     required this.markPending,
@@ -27,6 +30,7 @@ class ShoppingListDependencies {
     required this.watchCategories,
     required this.buildExport,
     required this.shareService,
+    required this.preferences,
     required this.now,
   });
 
@@ -34,6 +38,8 @@ class ShoppingListDependencies {
   final UpdateShoppingItem updateItem;
   final GetShoppingItem getItem;
   final DeleteShoppingItems deleteItems;
+  final RestoreShoppingItem restoreItem;
+  final RevertShoppingItem revertItem;
   final MarkShoppingItemPurchased markPurchased;
   final UndoShoppingPurchase undoPurchase;
   final MarkShoppingItemPending markPending;
@@ -50,6 +56,10 @@ class ShoppingListDependencies {
   /// El `ShareService` que haya registrado la app, buscado en el momento de
   /// usarlo; `null` si no hay (y entonces no se ofrece exportar).
   final ShareService? Function() shareService;
+
+  /// Preferencias del dispositivo: la que haya registrado la app o, si no,
+  /// unas en memoria.
+  final ShoppingListPreferences preferences;
 
   /// Hora actual (UTC), del `Clock`.
   final DateTime Function() now;

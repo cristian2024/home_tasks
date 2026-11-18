@@ -25,8 +25,10 @@ import 'src/presentation/dashboard/shopping_list_dashboard_tile.dart';
 import 'src/presentation/export/shopping_export_sheet.dart';
 import 'src/presentation/form/shopping_item_form_cubit.dart';
 import 'src/presentation/form/shopping_item_form_screen.dart';
+import 'src/presentation/list/bought_items_screen.dart';
 import 'src/presentation/list/shopping_list_cubit.dart';
 import 'src/presentation/list/shopping_list_screen.dart';
+import 'src/presentation/list/waiting_items_screen.dart';
 import 'src/presentation/shopping_list_routes.dart';
 import 'src/shopping_list_dependencies.dart';
 
@@ -40,6 +42,9 @@ import 'src/shopping_list_dependencies.dart';
 ///   suyos).
 /// - `ShareService` (opcional, buscado al exportar): sin él no se ofrece
 ///   exportar.
+/// - `ShoppingListPreferences` (opcional): preferencias del dispositivo, como
+///   la última categoría usada al crear desde la lista. Sin ella se guardan en
+///   memoria mientras la app está abierta.
 ///
 /// Su pantalla principal es la lista ([entryRoute]).
 ///
@@ -71,7 +76,7 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
   IconData get icon => AppIcons.shoppingCart;
 
   @override
-  String get version => '0.2.3';
+  String get version => '0.3.0';
 
   /// La lista: desde la grilla del inicio se abre directamente.
   @override
@@ -127,6 +132,8 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
             updateItem: UpdateShoppingItem(repository, clock),
             getItem: GetShoppingItem(repository),
             deleteItems: DeleteShoppingItems(repository, clock),
+            restoreItem: RestoreShoppingItem(repository, ids, clock),
+            revertItem: RevertShoppingItem(repository, clock),
             markPurchased: MarkShoppingItemPurchased(repository, ids, clock, eventBus),
             undoPurchase: UndoShoppingPurchase(repository, clock),
             markPending: markPending,
@@ -141,6 +148,9 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
             buildExport: const BuildShoppingExport(),
             // Se busca al usarlo: la app puede no registrar ninguno.
             shareService: () => _locator.isRegistered<ShareService>() ? _locator.get<ShareService>() : null,
+            preferences: locator.isRegistered<ShoppingListPreferences>()
+                ? locator.get<ShoppingListPreferences>()
+                : InMemoryShoppingListPreferences(),
             now: clock.nowUtc,
           ),
         );
@@ -174,20 +184,14 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
             final ShoppingListDependencies deps = _dependencies;
             final ShareService? share = deps.shareService();
             return BlocProvider<ShoppingListCubit>(
-              create: (_) => ShoppingListCubit(
-                watchList: deps.watchList,
-                markPurchased: deps.markPurchased,
-                undoPurchase: deps.undoPurchase,
-                markPending: deps.markPending,
-                clearPurchased: deps.clearPurchased,
-              ),
+              create: (_) => _listCubit(deps),
               child: ShoppingListScreen(
                 exportSheet: share == null
                     ? null
                     : (ShoppingListState list) => ShoppingExportSheet(
                           allEntries: list.snapshot.entries,
                           filteredEntries: list.filtered,
-                          isFiltered: !list.filter.isEmpty,
+                          isFiltered: !list.filter.isDefault,
                           initialGrouping: list.grouping,
                           buildExport: deps.buildExport,
                           shareService: share,
@@ -196,6 +200,20 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
               ),
             );
           },
+        ),
+        GoRoute(
+          path: ShoppingListRoutes.bought,
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<ShoppingListCubit>(
+            create: (_) => _listCubit(_dependencies),
+            child: BoughtItemsScreen(today: () => CalendarDay.localDayOf(_dependencies.now())),
+          ),
+        ),
+        GoRoute(
+          path: ShoppingListRoutes.waiting,
+          builder: (BuildContext context, GoRouterState state) => BlocProvider<ShoppingListCubit>(
+            create: (_) => _listCubit(_dependencies),
+            child: const WaitingItemsScreen(),
+          ),
         ),
         GoRoute(
           path: ShoppingListRoutes.create,
@@ -223,6 +241,19 @@ class ShoppingListPlugin implements HomePlugin, HomePluginEntryRoute {
           },
         ),
       ];
+
+  ShoppingListCubit _listCubit(ShoppingListDependencies deps) => ShoppingListCubit(
+        watchList: deps.watchList,
+        markPurchased: deps.markPurchased,
+        undoPurchase: deps.undoPurchase,
+        markPending: deps.markPending,
+        revertItem: deps.revertItem,
+        clearPurchased: deps.clearPurchased,
+        createItem: deps.createItem,
+        deleteItems: deps.deleteItems,
+        restoreItem: deps.restoreItem,
+        preferences: deps.preferences,
+      );
 
   Widget _itemForm(String? itemId) {
     final ShoppingListDependencies deps = _dependencies;

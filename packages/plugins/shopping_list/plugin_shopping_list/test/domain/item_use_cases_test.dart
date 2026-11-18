@@ -96,4 +96,41 @@ void main() {
     await uc.deleteItems(<String>[item.id]);
     expect(await uc.repository.getItems(), isEmpty);
   });
+  group('RestoreShoppingItem', () {
+    test('crea uno nuevo con los mismos datos y sin las categorías que ya no existen', () async {
+      final ShoppingCategory food = await uc.createCategory('Comida');
+      final ShoppingCategory home = await uc.createCategory('Casa');
+      final ShoppingItem item = await uc.createItem(
+        name: 'Huevos',
+        quantity: '2 docenas',
+        urgency: Urgency.high,
+        categoryIds: <String>[food.id, home.id],
+        recurrence: Recurrence.fixed(7),
+      );
+      await uc.deleteItems(<String>[item.id]);
+      await uc.deleteCategory(home.id);
+
+      final ShoppingItem restored = await uc.restoreItem(item);
+
+      expect(restored.id, isNot(item.id));
+      expect(restored.name, 'Huevos');
+      expect(restored.quantity, '2 docenas');
+      expect(restored.urgency, Urgency.high);
+      expect(restored.categoryIds, <String>[food.id]);
+      expect(restored.recurrence, Recurrence.fixed(7));
+      expect(await uc.repository.getItem(item.id), isNull);
+      expect(await uc.repository.getItem(restored.id), restored);
+    });
+  });
+
+  test('RevertShoppingItem devuelve el item a como estaba', () async {
+    final ShoppingItem item = await uc.createItem(name: 'Pan');
+    await uc.markPurchased(item.id);
+    final ShoppingItem bought = (await uc.repository.getItem(item.id))!;
+    await uc.markPending(item.id);
+
+    await uc.revertItem(bought);
+
+    expect((await uc.repository.getItem(item.id))!.status, ShoppingItemStatus.purchased);
+  });
 }

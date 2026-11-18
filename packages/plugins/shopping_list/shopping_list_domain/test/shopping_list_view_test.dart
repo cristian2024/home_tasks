@@ -204,4 +204,85 @@ void main() {
       expect(ShoppingListView.group(<ShoppingListEntry>[], ShoppingGrouping.urgency), isEmpty);
     });
   });
+  group('filtro por defecto', () {
+    test('solo muestra lo pendiente y lo atrasado', () {
+      final List<ShoppingListEntry> entries = ShoppingListView.entries(
+        <ShoppingItem>[
+          item('Pan'),
+          item('Sal', status: ShoppingItemStatus.purchased),
+          item('Café', recurrence: Recurrence.fixed(7), lastPurchasedAt: now.subtract(const Duration(days: 1))),
+          item('Té', recurrence: Recurrence.fixed(7), lastPurchasedAt: now.subtract(const Duration(days: 30))),
+        ],
+        categories,
+        now,
+      );
+
+      expect(names(entries.where(ShoppingListFilter.defaults.matches).toList()), <String>['Pan', 'Té']);
+    });
+
+    test('isDefault solo con el filtro por defecto', () {
+      expect(ShoppingListFilter.defaults.isDefault, isTrue);
+      expect(const ShoppingListFilter().isDefault, isFalse);
+      expect(ShoppingListFilter.defaults.copyWith(urgencies: <Urgency>{Urgency.high}).isDefault, isFalse);
+    });
+
+    test('singleCategoryId solo con una categoría y sin «Sin categoría»', () {
+      expect(const ShoppingListFilter(categoryIds: <String>{'food'}).singleCategoryId, 'food');
+      expect(const ShoppingListFilter(categoryIds: <String>{'food', 'home'}).singleCategoryId, isNull);
+      expect(const ShoppingListFilter(categoryIds: <String>{'food'}, includeUncategorized: true).singleCategoryId, isNull);
+      expect(const ShoppingListFilter().singleCategoryId, isNull);
+    });
+  });
+
+  group('bought y waiting', () {
+    final List<ShoppingListEntry> entries = ShoppingListView.entries(
+      <ShoppingItem>[
+        item('Pan', status: ShoppingItemStatus.purchased, lastPurchasedAt: now.subtract(const Duration(days: 2))),
+        item('Sal', status: ShoppingItemStatus.purchased, lastPurchasedAt: now.subtract(const Duration(hours: 1))),
+        item('Ajo', status: ShoppingItemStatus.purchased),
+        item('Aceite', status: ShoppingItemStatus.purchased, lastPurchasedAt: now.subtract(const Duration(hours: 1))),
+        item('Leche'),
+        item('Bolsas', recurrence: Recurrence.fixed(30), lastPurchasedAt: now.subtract(const Duration(days: 2))),
+        item('Café', recurrence: Recurrence.fixed(7), lastPurchasedAt: now.subtract(const Duration(days: 1))),
+      ],
+      categories,
+      now,
+    );
+
+    test('bought: lo comprado, de lo más reciente a lo más antiguo; sin fecha al final', () {
+      expect(names(ShoppingListView.bought(entries)), <String>['Aceite', 'Sal', 'Pan', 'Ajo']);
+    });
+
+    test('waiting: lo que espera, por la fecha en que vuelve', () {
+      expect(names(ShoppingListView.waiting(entries)), <String>['Café', 'Bolsas']);
+    });
+  });
+
+  group('quickAddCategory', () {
+    test('usa la categoría del filtro si es una sola', () {
+      expect(
+        ShoppingListView.quickAddCategory(
+          filter: const ShoppingListFilter(categoryIds: <String>{'food'}),
+          lastUsedId: 'home',
+          categories: categories,
+        ),
+        'food',
+      );
+    });
+
+    test('si no, la última usada; sin ella o si ya no existe, sin categoría', () {
+      expect(
+        ShoppingListView.quickAddCategory(filter: ShoppingListFilter.defaults, lastUsedId: 'home', categories: categories),
+        'home',
+      );
+      expect(
+        ShoppingListView.quickAddCategory(filter: ShoppingListFilter.defaults, lastUsedId: null, categories: categories),
+        isNull,
+      );
+      expect(
+        ShoppingListView.quickAddCategory(filter: ShoppingListFilter.defaults, lastUsedId: 'gone', categories: categories),
+        isNull,
+      );
+    });
+  });
 }

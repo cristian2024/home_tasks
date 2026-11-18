@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 - 2026-11-18
+
+### Interno
+
+- Los tests descargan `libisar` de uno en uno (`initializeIsarForTests`), con un bloqueo de archivo. Antes, dos archivos de test podían descargarla a la vez y uno la cargaba a medio escribir.
+
 ## 0.1.2 - 2026-10-30
 
 ### Añadido

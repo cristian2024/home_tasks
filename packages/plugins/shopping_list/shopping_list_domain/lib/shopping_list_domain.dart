@@ -13,6 +13,7 @@ export 'src/entities/shopping_item.dart';
 export 'src/entities/shopping_purchase.dart';
 export 'src/errors/shopping_list_exception.dart';
 export 'src/list/shopping_list_view.dart';
+export 'src/preferences/shopping_list_preferences.dart';
 export 'src/repositories/shopping_list_repository.dart';
 export 'src/shopping_validator.dart';
 export 'src/sync/shopping_list_codec.dart';

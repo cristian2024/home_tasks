@@ -106,4 +106,26 @@ void main() {
       ShoppingPurchase(id: 'p1', itemId: 'i1', purchasedAt: t0),
     );
   });
+  group('ShoppingItem.returnsAt', () {
+    final DateTime bought = DateTime.utc(2026, 11, 1, 10);
+    ShoppingItem item({Recurrence? recurrence, DateTime? lastPurchasedAt}) => ShoppingItem(
+          id: 'i',
+          name: 'Café',
+          urgency: Urgency.normal,
+          status: ShoppingItemStatus.pending,
+          recurrence: recurrence,
+          lastPurchasedAt: lastPurchasedAt,
+          createdAt: bought,
+          updatedAt: bought,
+        );
+
+    test('es cuando se abre la siguiente ventana', () {
+      expect(item(recurrence: Recurrence.between(7, 10), lastPurchasedAt: bought).returnsAt, DateTime.utc(2026, 11, 8, 10));
+    });
+
+    test('sin recurrencia o sin compra, no hay', () {
+      expect(item(lastPurchasedAt: bought).returnsAt, isNull);
+      expect(item(recurrence: Recurrence.fixed(7)).returnsAt, isNull);
+    });
+  });
 }
