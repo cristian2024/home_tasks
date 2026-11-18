@@ -1,7 +1,7 @@
 name: home_utility_app
 description: Aplicación de utilidades del hogar - ensambla los plugins registrados en tiempo de compilación.
 publish_to: none
-version: 1.9.0+16
+version: 1.10.0+17
 
 environment:
   sdk: ^3.11.0
@@ -41,6 +41,7 @@ dependencies:
   share_native: ^0.1.0
   shared_preferences: ^2.5.6
   shopping_list_isar: ^0.1.2
+  shopping_list_shared_preferences: ^0.1.0
   spaces_shared_preferences: ^0.1.0
   slang: ^4.19.0
   slang_flutter: ^4.19.0

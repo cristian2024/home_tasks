@@ -22,7 +22,7 @@ App de utilidades del hogar. Es el punto de composición del monorepo: elige los
 
 ## Estructura
 
-- `lib/app_module_registrar.dart`: adaptadores elegidos y plugins registrados (`appPluginFactories`). Los del dispositivo (`deviceAdapters`: lista de espacios y accesos rápidos) se componen una vez; los de cada espacio (`appAdaptersFor(space:)`: su base Isar, compartir, hardware y sincronización, con `SyncModule` al final), cada vez que se abre.
+- `lib/app_module_registrar.dart`: adaptadores elegidos y plugins registrados (`appPluginFactories`). Los del dispositivo (`deviceAdapters`: lista de espacios y accesos rápidos) se componen una vez; los de cada espacio (`appAdaptersFor(space:)`: su base Isar, compartir, preferencias de la lista de compras, hardware y sincronización, con `SyncModule` al final), cada vez que se abre.
 - `lib/bootstrap.dart`: arranque testeable de un espacio (`bootstrapApp`).
 - `lib/spaces/`: espacios de datos. `bootstrapSpaces` elige el espacio activo (en el primer arranque, uno sobre la base de siempre, sin copiar datos) y borra las bases de espacios borrados a medias. `SpaceSwitcher` cambia de espacio: libera el entorno, abre el otro y solo entonces lo marca como activo; si falla, vuelve a abrir el anterior. `SpaceRoot` muestra la app del espacio abierto y `SpaceHouseholdTracker` anota en la lista el hogar de cada espacio.
 - `lib/plugins/plugin_controller.dart`: estado de los plugins para el inicio, el catálogo y el guard.
@@ -32,7 +32,7 @@ App de utilidades del hogar. Es el punto de composición del monorepo: elige los
 - `lib/sync/`: pantallas de la sincronización. `SyncServices` toma del locator lo que registró `SyncModule`; sin él, Configuración no muestra la sección y el resto funciona igual.
 - `assets/i18n/<paquete>/<idioma>.json`: todos los textos de los paquetes. Para cambiar un texto se edita aquí, no en el paquete.
 
-Las preferencias de la app (tema, idioma) se guardan con `shared_preferences`, no en la base de datos de los plugins.
+Las preferencias de la app (tema, idioma) se guardan con `shared_preferences`, no en la base de datos de los plugins. Las de la lista de compras (última categoría al crear, consejo del gesto) también, con `shopping_list_shared_preferences`: son del dispositivo, iguales en todos los espacios.
 
 ## Añadir un plugin
 

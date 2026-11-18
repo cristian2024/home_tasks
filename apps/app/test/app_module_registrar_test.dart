@@ -11,7 +11,10 @@ import 'package:hardware_nfc_manager/hardware_nfc_manager.dart';
 import 'package:hardware_permission_handler/hardware_permission_handler.dart';
 import 'package:home_utility_app/app_module_registrar.dart';
 import 'package:home_utility_app/spaces/space_defaults.dart';
+import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 import 'package:secret_store_secure_storage/secret_store_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shopping_list_shared_preferences/shopping_list_shared_preferences.dart';
 import 'package:spaces_shared_preferences/spaces_shared_preferences.dart';
 import 'package:storage_isar/storage_isar.dart';
 import 'package:sync_crypto_cryptography/sync_crypto_cryptography.dart';
@@ -57,6 +60,15 @@ void main() {
     expect(deviceAdapters.whereType<SharedPreferencesSpaces>(), hasLength(1));
     expect(deviceAdapters.whereType<QuickActionsShortcuts>(), hasLength(1));
     expect(appAdaptersFor().whereType<QuickActionsShortcuts>(), isEmpty, reason: 'sobreviven al cambio de espacio');
+  });
+
+  test('las preferencias de la lista de compras se guardan en el dispositivo', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final ServiceLocator locator = ServiceLocator();
+    addTearDown(locator.reset);
+    await appAdaptersFor().whereType<SharedPreferencesShoppingList>().single.register(locator);
+
+    expect(locator.get<ShoppingListPreferences>(), isA<SharedPreferencesShoppingListPreferences>());
   });
 
   test('la sincronización usa Isar, el almacén seguro, el cifrado y la WiFi, y SyncModule va al final', () {
