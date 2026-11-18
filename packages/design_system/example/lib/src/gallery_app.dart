@@ -1,6 +1,7 @@
 import 'package:core_ui/core_ui.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 /// Galería del sistema de diseño. Permite cambiar tema, idioma y escala de
 /// texto para revisar los componentes en todas las combinaciones del §14.
@@ -330,6 +331,7 @@ class _Swatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -339,10 +341,10 @@ class _Swatch extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(AppRadii.small),
-            border: Border.all(color: Theme.of(context).colorScheme.outline),
+            border: Border.all(color: theme.colorScheme.outline),
           ),
         ),
-        Text(name, style: Theme.of(context).textTheme.labelSmall),
+        Text(name, style: theme.textTheme.labelSmall),
       ],
     );
   }
@@ -357,8 +359,37 @@ class _ListsDemo extends StatefulWidget {
 }
 
 class _ListsDemoState extends State<_ListsDemo> {
+  static const List<AppChoice<String>> _categoryOptions = <AppChoice<String>>[
+    AppChoice<String>(value: 'food', label: 'Comida'),
+    AppChoice<String>(value: 'cleaning', label: 'Limpieza'),
+    AppChoice<String>(value: 'home', label: 'Hogar', icon: AppIcons.house),
+    AppChoice<String>(value: 'bath', label: 'Baño'),
+    AppChoice<String>(value: 'pets', label: 'Mascotas'),
+    AppChoice<String>(value: 'other', label: 'Otros'),
+  ];
+
+  final TextEditingController _newItem = TextEditingController();
   Set<String> _categories = <String>{'food'};
   bool _eggsBought = false;
+  bool _milkDeleted = false;
+  bool _composing = false;
+  String _destination = 'food';
+  final List<String> _added = <String>[];
+
+  @override
+  void dispose() {
+    _newItem.dispose();
+    super.dispose();
+  }
+
+  void _add(String name) {
+    final String trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
+    setState(() => _added.add(trimmed));
+    _newItem.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -366,15 +397,26 @@ class _ListsDemoState extends State<_ListsDemo> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          AppFilterChips<String>(
-            label: 'Categorías',
-            options: const <AppChoice<String>>[
-              AppChoice<String>(value: 'food', label: 'Comida'),
-              AppChoice<String>(value: 'cleaning', label: 'Limpieza'),
-              AppChoice<String>(value: 'home', label: 'Hogar', icon: AppIcons.house),
-            ],
-            selected: _categories,
-            onChanged: (Set<String> categories) => setState(() => _categories = categories),
+          AppPinnedPanel(
+            footer: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                AppButton(
+                  label: 'Restablecer',
+                  variant: AppButtonVariant.text,
+                  onPressed: _categories.isEmpty ? null : () => setState(() => _categories = <String>{}),
+                ),
+                AppButton(label: 'Listo · 3', variant: AppButtonVariant.secondary, size: AppButtonSize.small, onPressed: () {}),
+              ],
+            ),
+            child: AppFilterChips<String>(
+              label: 'Categorías',
+              options: _categoryOptions,
+              selected: _categories,
+              maxVisible: 4,
+              moreLabel: (int hidden) => '$hidden más',
+              onChanged: (Set<String> categories) => setState(() => _categories = categories),
+            ),
           ),
           AppCheckTile(
             title: 'Huevos',
@@ -390,6 +432,61 @@ class _ListsDemoState extends State<_ListsDemo> {
               AppBadge(label: 'Aplicada ahora', tone: AppBadgeTone.brand),
             ],
           ),
+          if (!_milkDeleted)
+            AppSwipeToDelete(
+              label: 'Borrar',
+              onDelete: () => setState(() => _milkDeleted = true),
+              child: AppCheckTile(
+                title: 'Leche',
+                subtitle: '2 litros · desliza a la izquierda para borrar',
+                value: false,
+                checkboxLabel: 'Marcar «Leche» como comprado',
+                onChanged: (bool _) {},
+                onTap: () {},
+                action: AppTileAction(icon: AppIcons.pencil, tooltip: 'Editar «Leche»', onPressed: () {}),
+                semanticLabel: 'Leche, 2 litros. Editar',
+                semanticActions: <CustomSemanticsAction, VoidCallback>{
+                  const CustomSemanticsAction(label: 'Borrar «Leche»'): () => setState(() => _milkDeleted = true),
+                },
+              ),
+            )
+          else
+            AppButton(
+              label: 'Recuperar «Leche»',
+              variant: AppButtonVariant.text,
+              onPressed: () => setState(() => _milkDeleted = false),
+            ),
+          for (final (int index, String name) in _added.indexed)
+            AppCheckTile(
+              title: name,
+              value: false,
+              checkboxLabel: 'Marcar «$name» como comprado',
+              onChanged: (bool _) {},
+              highlighted: index == _added.length - 1,
+            ),
+          if (_composing)
+            AppComposeBar<String>(
+              label: 'Nombre del ítem nuevo',
+              hint: 'Ej.: Leche',
+              controller: _newItem,
+              submitTooltip: 'Añadir',
+              closeTooltip: 'Cerrar el campo',
+              onSubmitted: _add,
+              onClose: () => setState(() => _composing = false),
+              destinationLabel: 'Se añadirá a',
+              destinations: _categoryOptions,
+              selectedDestination: _destination,
+              destinationSemanticLabel: 'Categoría del ítem nuevo: '
+                  '${_categoryOptions.firstWhere((AppChoice<String> option) => option.value == _destination).label}. Cambiar',
+              onDestinationChanged: (String value) => setState(() => _destination = value),
+            )
+          else
+            AppButton(
+              label: 'Añadir ítem',
+              icon: AppIcons.plus,
+              variant: AppButtonVariant.secondary,
+              onPressed: () => setState(() => _composing = true),
+            ),
         ],
       ),
     );

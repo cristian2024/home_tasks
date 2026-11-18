@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 
 Widget host(Widget child, {ThemeData? theme, double textScale = 1}) => MaterialApp(
       theme: theme ?? AppTheme.light,
-      home: MediaQuery(
-        data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
-        child: Scaffold(body: child),
+      home: Builder(
+        builder: (BuildContext context) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+          child: Scaffold(body: child),
+        ),
       ),
     );
 

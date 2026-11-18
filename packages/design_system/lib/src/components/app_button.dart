@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
+import 'app_focus_ring.dart';
 import 'app_touch_target.dart';
 
 enum AppButtonVariant {
@@ -132,9 +134,12 @@ class AppButton extends StatelessWidget {
     };
 
     return AppTouchTarget(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minWidth: expand ? double.infinity : 0),
-        child: button,
+      child: AppFocusRing(
+        borderRadius: BorderRadius.circular(AppRadii.small),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: expand ? double.infinity : 0),
+          child: button,
+        ),
       ),
     );
   }
