@@ -1,4 +1,5 @@
 import 'package:core_ui/core_ui.dart';
+import 'package:core_utils/core_utils.dart';
 import 'package:design_system/design_system.dart';
 import 'package:shopping_list_domain/shopping_list_domain.dart';
 
@@ -81,3 +82,39 @@ ShoppingExportTexts exportTexts(DateTime now) {
     footer: _t.export.footer(date: '${two(local.day)}/${two(local.month)}/${local.year}'),
   );
 }
+
+/// El día de [day] con el mes corto («12 nov»).
+String shortDate(DateTime day) {
+  final ShoppingListTranslations$shoppingList$dates$months$es months = _t.dates.months;
+  final String month = <String>[
+    months.m1,
+    months.m2,
+    months.m3,
+    months.m4,
+    months.m5,
+    months.m6,
+    months.m7,
+    months.m8,
+    months.m9,
+    months.m10,
+    months.m11,
+    months.m12,
+  ][day.month - 1];
+  return '${day.day} $month';
+}
+
+/// «Hoy», «Ayer» o el día con el mes corto. [day] y [today] son días de
+/// calendario (`CalendarDay`).
+String relativeDate(DateTime day, {required DateTime today}) => switch (CalendarDay.relativeTo(day, today: today)) {
+      RelativeDay.today => _t.dates.today,
+      RelativeDay.yesterday => _t.dates.yesterday,
+      RelativeDay.tomorrow || RelativeDay.other => shortDate(day),
+    };
+
+/// Cuándo se compró, para los lectores de pantalla («comprado hoy», «comprado
+/// el 12 nov»).
+String boughtOn(DateTime day, {required DateTime today}) => switch (CalendarDay.relativeTo(day, today: today)) {
+      RelativeDay.today => _t.bought.today,
+      RelativeDay.yesterday => _t.bought.yesterday,
+      RelativeDay.tomorrow || RelativeDay.other => _t.bought.on(date: shortDate(day)),
+    };

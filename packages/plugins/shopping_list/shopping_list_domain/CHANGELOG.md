@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2 - 2026-11-17
+
+### Añadido
+
+- `ShoppingListFilter.defaults` (pendiente y atrasado), `isDefault` y `singleCategoryId`.
+- `ShoppingListView.bought` (lo comprado, de lo más reciente a lo más antiguo), `waiting` (lo que espera, por la fecha en que vuelve) y `quickAddCategory` (la categoría de un item creado desde la lista: la del filtro si es una sola; si no, la última usada).
+- `ShoppingItem.returnsAt`: cuándo vuelve a la lista un item recurrente ya comprado.
+- Contrato `ShoppingListPreferences` (preferencias del dispositivo: última categoría usada al crear y si ya se sugirió deslizar para borrar), con `InMemoryShoppingListPreferences` y los tests de contrato `shoppingListPreferencesContract` en `testing.dart`.
+
 ## 0.2.1 - 2026-11-07
 
 ### Cambiado

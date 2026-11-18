@@ -44,7 +44,6 @@
       "categories": "Categories",
       "export": "Export",
       "filters": "Filters and grouping",
-      "filters_active": "Filters are on.",
       "more_actions": "More options",
       "clear_purchased": "Delete bought items",
       "clear_purchased_title": "Delete bought items?",
@@ -63,7 +62,34 @@
       "mark_purchased": "Mark “{name}” as bought",
       "mark_pending": "Move “{name}” back to pending",
       "purchased_snack": "“{name}” bought",
-      "undo": "Undo"
+      "undo": "Undo",
+      "close_filters": "Close filters and grouping",
+      "reset_filters": "Reset",
+      "filters_done": "Done · {n}",
+      "filters_done_label(plural)": {
+        "one": "Done, 1 item, close filters",
+        "other": "Done, {n} items, close filters"
+      },
+      "more_categories": "{n} more",
+      "matches_announcement(plural)": {
+        "zero": "No items match",
+        "one": "1 item matches",
+        "other": "{n} items match"
+      },
+      "edit": "Edit “{name}”",
+      "edit_hint": "Edit",
+      "delete_action": "Delete “{name}”",
+      "swipe_delete": "Delete",
+      "deleted_snack": "“{name}” deleted",
+      "deleted_tip_snack": "“{name}” deleted. Next time you can swipe the row left.",
+      "pending_again": "“{name}” is back to pending",
+      "all_bought_title": "All bought",
+      "all_bought_message": "When something runs out, add it to the list.",
+      "show_bought": "Show bought items",
+      "summary_bought": "Bought · {n}",
+      "summary_bought_label": "Bought, {n}",
+      "summary_waiting": "Waiting · {n}",
+      "summary_waiting_label": "Waiting, {n}"
     },
     "form": {
       "create_title": "New item",
@@ -129,6 +155,48 @@
       "too_long": "At most {max} characters.",
       "invalid_days": "Enter a number of days between 1 and 365.",
       "invalid_range": "The minimum cannot be greater than the maximum."
+    },
+    "quick_add": {
+      "label": "New item name",
+      "hint": "E.g. Milk",
+      "submit": "Add",
+      "close": "Close field",
+      "destination": "Will be added to",
+      "destination_chip": "New item category: {category}. Change",
+      "destination_changed": "Will be added to {category}",
+      "error_empty": "Enter a name to add the item.",
+      "error_too_long": "Names can be up to {max} characters. This one has {n}.",
+      "added": "Added “{name}”"
+    },
+    "bought": {
+      "title": "Bought",
+      "empty": "Nothing bought.",
+      "today": "Bought today",
+      "yesterday": "Bought yesterday",
+      "on": "Bought on {date}"
+    },
+    "waiting": {
+      "title": "Waiting",
+      "empty": "Nothing waiting.",
+      "back_on": "back on {date}"
+    },
+    "dates": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "months": {
+        "m1": "Jan",
+        "m2": "Feb",
+        "m3": "Mar",
+        "m4": "Apr",
+        "m5": "May",
+        "m6": "Jun",
+        "m7": "Jul",
+        "m8": "Aug",
+        "m9": "Sep",
+        "m10": "Oct",
+        "m11": "Nov",
+        "m12": "Dec"
+      }
     }
   }
 }

@@ -10,7 +10,7 @@ import '../common/shopping_list_l10n.dart';
 import 'shopping_item_form_cubit.dart';
 
 /// Crear o editar un item. Al guardar hace `pop` con su ID; al borrarlo,
-/// `pop` sin resultado.
+/// `pop` con el item como estaba, para que la lista ofrezca deshacerlo.
 class ShoppingItemFormScreen extends StatefulWidget {
   const ShoppingItemFormScreen({super.key});
 
@@ -77,7 +77,7 @@ class _ShoppingItemFormScreenState extends State<ShoppingItemFormScreen> {
         if (state.status == ShoppingItemFormStatus.saved) {
           context.pop(state.savedItemId);
         } else if (state.status == ShoppingItemFormStatus.deleted) {
-          context.pop();
+          context.pop(state.deletedItem);
         }
       },
       builder: (BuildContext context, ShoppingItemFormState state) {

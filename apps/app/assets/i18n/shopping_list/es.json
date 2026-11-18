@@ -40,15 +40,14 @@
       "between": "Cada {min} a {max} días"
     },
     "list": {
-      "add": "Añadir item",
+      "add": "Añadir ítem",
       "categories": "Categorías",
       "export": "Exportar",
       "filters": "Filtros y agrupación",
-      "filters_active": "Hay filtros activos.",
       "more_actions": "Más opciones",
       "clear_purchased": "Borrar comprados",
       "clear_purchased_title": "¿Borrar los comprados?",
-      "clear_purchased_message": "Se borrarán los items comprados y su historial. Los recurrentes se quedan.",
+      "clear_purchased_message": "Se borrarán los ítems comprados y su historial. Los recurrentes se quedan.",
       "filter_categories": "Categorías",
       "filter_urgency": "Urgencia",
       "filter_state": "Estado",
@@ -63,11 +62,38 @@
       "mark_purchased": "Marcar «{name}» como comprado",
       "mark_pending": "Volver «{name}» a pendiente",
       "purchased_snack": "«{name}» comprado",
-      "undo": "Deshacer"
+      "undo": "Deshacer",
+      "close_filters": "Cerrar filtros y agrupación",
+      "reset_filters": "Restablecer",
+      "filters_done": "Listo · {n}",
+      "filters_done_label(plural)": {
+        "one": "Listo, 1 ítem, cerrar filtros",
+        "other": "Listo, {n} ítems, cerrar filtros"
+      },
+      "more_categories": "{n} más",
+      "matches_announcement(plural)": {
+        "zero": "Ningún ítem coincide",
+        "one": "1 ítem coincide",
+        "other": "{n} ítems coinciden"
+      },
+      "edit": "Editar «{name}»",
+      "edit_hint": "Editar",
+      "delete_action": "Borrar «{name}»",
+      "swipe_delete": "Borrar",
+      "deleted_snack": "Se borró «{name}»",
+      "deleted_tip_snack": "Se borró «{name}». La próxima vez puedes deslizar la fila a la izquierda.",
+      "pending_again": "«{name}» vuelve a pendiente",
+      "all_bought_title": "Todo comprado",
+      "all_bought_message": "Cuando falte algo, añádelo a la lista.",
+      "show_bought": "Ver comprados",
+      "summary_bought": "Comprados · {n}",
+      "summary_bought_label": "Comprados, {n}",
+      "summary_waiting": "En espera · {n}",
+      "summary_waiting_label": "En espera, {n}"
     },
     "form": {
-      "create_title": "Nuevo item",
-      "edit_title": "Editar item",
+      "create_title": "Nuevo ítem",
+      "edit_title": "Editar ítem",
       "name": "Nombre",
       "quantity": "Cantidad",
       "quantity_hint": "Ej.: 2 docenas",
@@ -83,7 +109,7 @@
       "min_days": "Mínimo de días",
       "max_days": "Máximo de días",
       "recurrence_help": "Al comprarlo, vuelve a la lista cuando toque.",
-      "delete": "Borrar item",
+      "delete": "Borrar ítem",
       "delete_title": "¿Borrar «{name}»?",
       "delete_message": "Se borrará junto con su historial de compras."
     },
@@ -98,10 +124,10 @@
       "move_down": "Bajar «{name}»",
       "delete": "Borrar «{name}»",
       "delete_title": "¿Borrar «{name}»?",
-      "delete_unused": "Ningún item la usa.",
+      "delete_unused": "Ningún ítem la usa.",
       "delete_in_use(plural)": {
-        "one": "La usa 1 item, que conservará sus demás categorías.",
-        "other": "La usan {n} items, que conservarán sus demás categorías."
+        "one": "La usa 1 ítem, que conservará sus demás categorías.",
+        "other": "La usan {n} ítems, que conservarán sus demás categorías."
       },
       "empty": "No hay categorías. Añade la primera."
     },
@@ -123,12 +149,54 @@
       "saved": "Archivo guardado."
     },
     "errors": {
-      "item_not_found": "El item ya no existe.",
+      "item_not_found": "El ítem ya no existe.",
       "category_not_found": "La categoría ya no existe.",
       "category_name_taken": "Ya hay una categoría «{name}».",
       "too_long": "Máximo {max} caracteres.",
       "invalid_days": "Escribe un número de días entre 1 y 365.",
       "invalid_range": "El mínimo no puede ser mayor que el máximo."
+    },
+    "quick_add": {
+      "label": "Nombre del ítem nuevo",
+      "hint": "Ej.: Leche",
+      "submit": "Añadir",
+      "close": "Cerrar el campo",
+      "destination": "Se añadirá a",
+      "destination_chip": "Categoría del ítem nuevo: {category}. Cambiar",
+      "destination_changed": "Se añadirá a {category}",
+      "error_empty": "Escribe un nombre para añadir el ítem.",
+      "error_too_long": "El nombre puede tener hasta {max} caracteres. Ahora tiene {n}.",
+      "added": "Se añadió «{name}»"
+    },
+    "bought": {
+      "title": "Comprados",
+      "empty": "No hay nada comprado.",
+      "today": "Comprado hoy",
+      "yesterday": "Comprado ayer",
+      "on": "Comprado el {date}"
+    },
+    "waiting": {
+      "title": "En espera",
+      "empty": "No hay nada en espera.",
+      "back_on": "vuelve el {date}"
+    },
+    "dates": {
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "months": {
+        "m1": "ene",
+        "m2": "feb",
+        "m3": "mar",
+        "m4": "abr",
+        "m5": "may",
+        "m6": "jun",
+        "m7": "jul",
+        "m8": "ago",
+        "m9": "sept",
+        "m10": "oct",
+        "m11": "nov",
+        "m12": "dic"
+      }
     }
   }
 }

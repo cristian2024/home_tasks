@@ -61,7 +61,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Borrar «Comestibles»'));
     await tester.pumpAndSettle();
-    expect(find.text('La usa 1 item, que conservará sus demás categorías.'), findsOneWidget);
+    expect(find.text('La usa 1 ítem, que conservará sus demás categorías.'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Borrar «Comestibles»'));
     await tester.pumpAndSettle();
 
@@ -78,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Borrar «Aseo»'));
     await tester.pumpAndSettle();
-    expect(find.text('Ningún item la usa.'), findsOneWidget);
+    expect(find.text('Ningún ítem la usa.'), findsOneWidget);
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
 

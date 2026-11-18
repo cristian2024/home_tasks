@@ -70,6 +70,7 @@ class ShoppingItemFormState extends Equatable {
     this.categories = const <ShoppingCategory>[],
     this.error,
     this.savedItemId,
+    this.deletedItem,
   });
 
   final ShoppingItemFormStatus status;
@@ -89,6 +90,9 @@ class ShoppingItemFormState extends Equatable {
   final ShoppingItemFormError? error;
   final String? savedItemId;
 
+  /// El item como estaba antes de borrarlo, para ofrecer deshacerlo.
+  final ShoppingItem? deletedItem;
+
   ShoppingItemFormState copyWith({
     ShoppingItemFormStatus? status,
     String? name,
@@ -103,6 +107,7 @@ class ShoppingItemFormState extends Equatable {
     List<ShoppingCategory>? categories,
     ShoppingItemFormError? Function()? error,
     String? savedItemId,
+    ShoppingItem? deletedItem,
   }) =>
       ShoppingItemFormState(
         status: status ?? this.status,
@@ -118,6 +123,7 @@ class ShoppingItemFormState extends Equatable {
         categories: categories ?? this.categories,
         error: error == null ? this.error : error(),
         savedItemId: savedItemId ?? this.savedItemId,
+        deletedItem: deletedItem ?? this.deletedItem,
       );
 
   @override
@@ -135,6 +141,7 @@ class ShoppingItemFormState extends Equatable {
         categories,
         error,
         savedItemId,
+        deletedItem,
       ];
 }
 
@@ -259,8 +266,9 @@ class ShoppingItemFormCubit extends Cubit<ShoppingItemFormState> {
       return;
     }
     try {
+      final ShoppingItem item = await _getItem(itemId);
       await _deleteItems(<String>[itemId]);
-      emit(state.copyWith(status: ShoppingItemFormStatus.deleted));
+      emit(state.copyWith(status: ShoppingItemFormStatus.deleted, deletedItem: item));
     } on Object catch (error) {
       emit(state.copyWith(error: () => ShoppingItemFormGeneralError(error)));
     }

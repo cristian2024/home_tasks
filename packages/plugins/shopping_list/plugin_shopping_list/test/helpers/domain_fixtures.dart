@@ -26,6 +26,8 @@ class TestUseCases {
   UpdateShoppingItem get updateItem => UpdateShoppingItem(repository, clock);
   GetShoppingItem get getItem => GetShoppingItem(repository);
   DeleteShoppingItems get deleteItems => DeleteShoppingItems(repository, clock);
+  RestoreShoppingItem get restoreItem => RestoreShoppingItem(repository, ids, clock);
+  RevertShoppingItem get revertItem => RevertShoppingItem(repository, clock);
   MarkShoppingItemPurchased get markPurchased => MarkShoppingItemPurchased(repository, ids, clock, eventBus);
   UndoShoppingPurchase get undoPurchase => UndoShoppingPurchase(repository, clock);
   MarkShoppingItemPending get markPending => MarkShoppingItemPending(repository, clock);
