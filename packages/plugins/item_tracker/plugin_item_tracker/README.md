@@ -7,7 +7,7 @@ Plugin de identificación y seguimiento de objetos de la casa (ID `item_tracker`
 - **Escanear** un QR, un código de barras o una etiqueta NFC, o escribir el código a mano. Un código conocido abre el objeto; uno desconocido ofrece crear un objeto nuevo o asociarlo a uno existente.
 - **Objetos:** crear, editar (nombre, descripción, metadatos) y añadir notas al historial. Las acciones técnicas (crear, editar, mover…) quedan registradas en el historial.
 - **Identificadores:** asociar varios a un objeto y quitarlos. Un identificador quitado queda libre para otro objeto.
-- **Contenedores:** meter un objeto dentro de otro (máximo 5 niveles, configurable con `--dart-define=ITEM_TRACKER_MAX_DEPTH=n`), moverlo o sacarlo.
+- **Contenedores:** meter un objeto dentro de otro (máximo 5 niveles, configurable con `--dart-define=ITEM_TRACKER_MAX_DEPTH=n`), moverlo o sacarlo. Al mover, los destinos que no se pueden elegir dicen por qué.
 - **Borrar un objeto** desde su detalle. Si contiene otros, se elige entre pasarlos a su contenedor o borrar todo.
 - Tarjeta de inicio con el número de objetos y acceso a escanear y al listado.
 

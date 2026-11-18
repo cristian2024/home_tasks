@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.3 - 2026-11-18
+
+### Corregido
+
+- En «Mover a…», el motivo de un destino que no se puede elegir («Ya está aquí», demasiados niveles) se lee en el color secundario en lugar del desactivado, con contraste suficiente.
+
 ## 3.0.2 - 2026-11-05
 
 ### Cambiado

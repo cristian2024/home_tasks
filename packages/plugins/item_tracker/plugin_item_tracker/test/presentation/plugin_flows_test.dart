@@ -2,6 +2,7 @@ import 'package:core_hardware/core_hardware.dart';
 import 'package:core_hardware/testing.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 
@@ -431,6 +432,12 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Mover «Organizador»'), findsOneWidget);
       expect(find.text('Cajón'), findsNothing);
       expect(find.text('Ya está aquí'), findsOneWidget);
+      // El motivo de un destino desactivado conserva el color secundario.
+      final Finder reason = find.text('Ya está aquí');
+      expect(
+        tester.renderObject<RenderParagraph>(reason).text.style?.color,
+        AppThemeColors.of(tester.element(reason)).textSecondary,
+      );
 
       await tester.tap(find.text('Mueble')); // Desactivado: no hace nada.
       await tester.pumpAndSettle();
