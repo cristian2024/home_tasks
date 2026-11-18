@@ -8,7 +8,7 @@ import 'package:storage_isar/adapter.dart';
 import 'helpers/isar_fixtures.dart';
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   final Map<ShoppingListRepository, TestStorage> storages = <ShoppingListRepository, TestStorage>{};
   shoppingListRepositoryContract(
