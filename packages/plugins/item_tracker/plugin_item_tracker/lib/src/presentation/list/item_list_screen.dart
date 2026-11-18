@@ -106,6 +106,9 @@ class ItemCardList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppThemeColors colors = AppThemeColors.of(context);
+    // Explícito para que un destino desactivado siga mostrando el motivo con
+    // contraste suficiente: ListTile lo pintaría con el color desactivado.
+    final TextStyle subtitleStyle = TextStyle(color: colors.textSecondary);
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
       itemCount: items.length,
@@ -127,7 +130,9 @@ class ItemCardList extends StatelessWidget {
               enabled: onSelected == null || selectable,
               leading: const Icon(AppIcons.box),
               title: Text(item.name),
-              subtitle: subtitle.isEmpty ? null : Text(subtitle, maxLines: 3, overflow: TextOverflow.ellipsis),
+              subtitle: subtitle.isEmpty
+                  ? null
+                  : Text(subtitle, style: subtitleStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
               trailing: selectable ? Icon(AppIcons.chevronRight, size: AppSizes.iconCompact, color: colors.textTertiary) : null,
             ),
           ),
