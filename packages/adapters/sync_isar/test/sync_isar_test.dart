@@ -2,6 +2,7 @@ import 'package:core_sync/core_sync.dart';
 import 'package:core_sync/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:storage_isar/adapter.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:sync_isar/src/repositories/isar_change_log.dart';
 import 'package:sync_isar/src/repositories/isar_conflict_repository.dart';
 import 'package:sync_isar/src/repositories/isar_sync_state_repository.dart';
@@ -26,7 +27,7 @@ ChangeRecord _record(String opId, {String deviceId = 'device-a', int seq = 1}) =
     );
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   changeLogContract('Isar', create: () async => (await _open()).services.get<ChangeLog>());
   syncStateRepositoryContract('Isar', create: () async => (await _open()).services.get<SyncStateRepository>());
