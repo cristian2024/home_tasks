@@ -25,6 +25,7 @@ abstract final class AppColors {
   static const Color neutral400 = Color(0xFFA5A1B8);
   static const Color neutral450 = Color(0xFF8C889E);
   static const Color neutral500 = Color(0xFF767289);
+  static const Color neutral550 = Color(0xFF6E6A82);
   static const Color neutral600 = Color(0xFF5A566C);
   static const Color neutral700 = Color(0xFF454154);
   static const Color neutral800 = Color(0xFF2C2939);

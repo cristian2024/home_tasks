@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.2 - 2026-11-17
+
+### Añadido
+
+- `AppFocusRing`: anillo de 2 en `border.focus` para el control con el foco del teclado, por fuera (`outside`) o por dentro (`inside`). `AppFocusRing.when` lo muestra según un valor propio, para filas con otros controles dentro.
+- `AppSwipeToDelete`: fila que se borra deslizándola a la izquierda, con la zona «Borrar» de 120 sobre el fondo de peligro y sombra mientras se arrastra. No pide confirmación.
+- `AppComposeBar<T>`: barra para crear elementos seguidos sobre el teclado, con Cerrar, Enviar, error y un chip de destino que despliega sus opciones sin cerrar el teclado.
+- `AppPinnedPanel`: panel fijo bajo la barra superior que mide como mucho la mitad de la pantalla, con su propio desplazamiento y el pie siempre a la vista.
+- `AppCheckTile.action` (`AppTileAction`): botón de icono de 48 al final de la fila, con el icono de 20 en `textTertiary`.
+- `AppCheckTile.semanticLabel` y `semanticActions`: la fila se lee como un solo botón, con la casilla y la acción como destinos propios y acciones en el menú del lector de pantalla.
+- `AppCheckTile.highlighted`: fondo de marca (p. ej. recién creada).
+- `AppFilterChips.maxVisible` y `moreLabel`: muestra las primeras opciones y un chip «N más» que despliega el resto.
+- `AppIconButton.iconColor`.
+- Tokens `neutral550`, `borderBadgeDanger` y `borderBadgeWarning`.
+- Iconos `AppIcons.send` y `AppIcons.chevronUp`.
+
+### Cambiado
+
+- `textTertiary` en claro pasa a `neutral550`: llega a 4,98:1 sobre el fondo de la pantalla.
+- `AppBadge` crítica y de aviso llevan un borde de 1: en oscuro se separan del fondo; en claro el borde iguala el relleno.
+- La opción elegida de `AppChoiceSelector` lleva un borde de 2 en `borderBrand`, además del fondo: ya no depende solo del color.
+- `AppButton`, `AppIconButton`, los chips de `AppFilterChips`, las opciones de `AppChoiceSelector`, `AppCheckTile` y `AppSettingsTile` muestran el anillo de foco con el teclado o Switch Access.
+
+### Interno
+
+- El `host` de los tests hereda el tamaño de la pantalla.
+
 ## 0.3.1 - 2026-11-07
 
 ### Añadido

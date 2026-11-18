@@ -7,6 +7,7 @@ import '../tokens/app_radii.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 import '../tokens/app_theme_colors.dart';
+import 'app_focus_ring.dart';
 import 'app_touch_target.dart';
 
 /// Opción de un [AppChoiceSelector].
@@ -165,9 +166,11 @@ class AppChoiceSelector<T> extends StatelessWidget {
   }
 }
 
-/// Una opción de [AppChoiceSelector]. La elegida muestra su icono o, sin él, una
-/// marca de verificación, salvo con [showIcon] en `false`, donde solo cambia de
-/// color: se anuncia igualmente como seleccionada.
+/// Una opción de [AppChoiceSelector]. La elegida lleva un borde de 2 en
+/// `border.brand`, además del fondo, para no depender solo del color, y muestra
+/// su icono o, sin él, una marca de verificación, salvo con [showIcon] en
+/// `false`: se anuncia igualmente como seleccionada. Con el foco del teclado,
+/// el anillo va por dentro, porque el selector recorta.
 class AppChoiceSegment extends StatelessWidget {
   const AppChoiceSegment({
     super.key,
@@ -205,40 +208,51 @@ class AppChoiceSegment extends StatelessWidget {
     };
     return AppTouchTarget(
       child: Semantics(
-      button: true,
-      enabled: onTap != null,
-      selected: selected,
-      inMutuallyExclusiveGroup: true,
-      child: Material(
-        color: selected ? colors.bgBrandSubtle : Colors.transparent,
-        borderRadius: borderRadius,
-        child: InkWell(
-          onTap: onTap,
+        button: true,
+        enabled: onTap != null,
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        child: AppFocusRing(
+          position: AppFocusRingPosition.inside,
           borderRadius: borderRadius,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppSizes.touchTarget),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  if (leading != null) ...<Widget>[
-                    ExcludeSemantics(child: Icon(leading, size: AppSizes.iconSmall, color: foreground)),
-                    const SizedBox(width: AppSpacing.s150),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(color: foreground),
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              border: selected ? Border.all(color: colors.borderBrand, width: AppSizes.strokeThick) : null,
+            ),
+            child: Material(
+              color: selected ? colors.bgBrandSubtle : Colors.transparent,
+              borderRadius: borderRadius,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: borderRadius,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: AppSizes.touchTarget),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        if (leading != null) ...<Widget>[
+                          ExcludeSemantics(child: Icon(leading, size: AppSizes.iconSmall, color: foreground)),
+                          const SizedBox(width: AppSpacing.s150),
+                        ],
+                        Flexible(
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: foreground),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

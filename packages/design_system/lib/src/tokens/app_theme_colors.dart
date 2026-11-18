@@ -44,6 +44,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     required this.borderFocus,
     required this.borderDanger,
     required this.borderSuccess,
+    required this.borderBadgeDanger,
+    required this.borderBadgeWarning,
     required this.borderDisabled,
     required this.actionPrimaryDefault,
     required this.actionPrimaryHover,
@@ -79,7 +81,7 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     bgScrim: AppColors.alphaBlack40,
     textPrimary: AppColors.neutral900,
     textSecondary: AppColors.neutral600,
-    textTertiary: AppColors.neutral500,
+    textTertiary: AppColors.neutral550,
     textDisabled: AppColors.neutral400,
     textBrand: AppColors.violet700,
     textOnBrand: AppColors.neutral0,
@@ -97,6 +99,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     borderFocus: AppColors.violet600,
     borderDanger: AppColors.red600,
     borderSuccess: AppColors.green600,
+    borderBadgeDanger: AppColors.red50,
+    borderBadgeWarning: AppColors.amber100,
     borderDisabled: AppColors.neutral200,
     actionPrimaryDefault: AppColors.violet700,
     actionPrimaryHover: AppColors.violet800,
@@ -150,6 +154,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     borderFocus: AppColors.violet300,
     borderDanger: AppColors.red400,
     borderSuccess: AppColors.green400,
+    borderBadgeDanger: AppColors.red400,
+    borderBadgeWarning: AppColors.amber400,
     borderDisabled: AppColors.neutral700,
     actionPrimaryDefault: AppColors.violet400,
     actionPrimaryHover: AppColors.violet300,
@@ -211,6 +217,13 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color borderFocus;
   final Color borderDanger;
   final Color borderSuccess;
+
+  /// Borde de la etiqueta crítica (urgencia, atraso). En claro iguala el
+  /// fondo; en oscuro la separa de la pantalla.
+  final Color borderBadgeDanger;
+
+  /// Borde de la etiqueta de aviso. En claro iguala el fondo.
+  final Color borderBadgeWarning;
   final Color borderDisabled;
   final Color actionPrimaryDefault;
   final Color actionPrimaryHover;
@@ -264,6 +277,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? borderFocus,
     Color? borderDanger,
     Color? borderSuccess,
+    Color? borderBadgeDanger,
+    Color? borderBadgeWarning,
     Color? borderDisabled,
     Color? actionPrimaryDefault,
     Color? actionPrimaryHover,
@@ -316,6 +331,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
         borderFocus: borderFocus ?? this.borderFocus,
         borderDanger: borderDanger ?? this.borderDanger,
         borderSuccess: borderSuccess ?? this.borderSuccess,
+        borderBadgeDanger: borderBadgeDanger ?? this.borderBadgeDanger,
+        borderBadgeWarning: borderBadgeWarning ?? this.borderBadgeWarning,
         borderDisabled: borderDisabled ?? this.borderDisabled,
         actionPrimaryDefault: actionPrimaryDefault ?? this.actionPrimaryDefault,
         actionPrimaryHover: actionPrimaryHover ?? this.actionPrimaryHover,
@@ -374,6 +391,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       borderFocus: Color.lerp(borderFocus, other.borderFocus, t)!,
       borderDanger: Color.lerp(borderDanger, other.borderDanger, t)!,
       borderSuccess: Color.lerp(borderSuccess, other.borderSuccess, t)!,
+      borderBadgeDanger: Color.lerp(borderBadgeDanger, other.borderBadgeDanger, t)!,
+      borderBadgeWarning: Color.lerp(borderBadgeWarning, other.borderBadgeWarning, t)!,
       borderDisabled: Color.lerp(borderDisabled, other.borderDisabled, t)!,
       actionPrimaryDefault: Color.lerp(actionPrimaryDefault, other.actionPrimaryDefault, t)!,
       actionPrimaryHover: Color.lerp(actionPrimaryHover, other.actionPrimaryHover, t)!,

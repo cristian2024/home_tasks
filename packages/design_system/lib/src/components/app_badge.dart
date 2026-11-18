@@ -32,22 +32,28 @@ class AppBadge extends StatelessWidget {
   final AppBadgeTone tone;
   final IconData? icon;
 
+  static const EdgeInsets _padding = EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.s50);
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final AppThemeColors colors = AppThemeColors.of(context);
-    final (Color background, Color foreground) = switch (tone) {
-      AppBadgeTone.critical => (colors.bgDangerSubtle, colors.textDanger),
-      AppBadgeTone.warning => (colors.bgWarningSubtle, colors.textWarning),
-      AppBadgeTone.neutral => (colors.bgBadgeNeutral, colors.textSecondary),
-      AppBadgeTone.brand => (colors.bgBrandSubtle, colors.textBrand),
-      AppBadgeTone.success => (colors.bgSuccessSubtle, colors.textSuccess),
+    final (Color background, Color foreground, Color? border) = switch (tone) {
+      AppBadgeTone.critical => (colors.bgDangerSubtle, colors.textDanger, colors.borderBadgeDanger),
+      AppBadgeTone.warning => (colors.bgWarningSubtle, colors.textWarning, colors.borderBadgeWarning),
+      AppBadgeTone.neutral => (colors.bgBadgeNeutral, colors.textSecondary, null),
+      AppBadgeTone.brand => (colors.bgBrandSubtle, colors.textBrand, null),
+      AppBadgeTone.success => (colors.bgSuccessSubtle, colors.textSuccess, null),
     };
     final IconData? icon = this.icon;
     return DecoratedBox(
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppRadii.full)),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(AppRadii.full),
+        border: border == null ? null : Border.all(color: border, width: AppSizes.strokeThin),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.s50),
+        padding: _padding,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

@@ -27,6 +27,7 @@ Algunos nombres no coinciden con Figma y están documentados en cada clase: `rad
 | :--- | :--- |
 | `AppButton` | Botón `primary`, `secondary` (relleno suave), `outline`, `text`, `danger`, `dangerOutline` o `dangerText` (`AppButtonVariant`), de 36, 40 o 48 de alto (`AppButtonSize`), con icono opcional. |
 | `AppTouchTarget` | Da 48 de área táctil y semántica a un control más pequeño, sin ocupar más sitio. |
+| `AppFocusRing` | Anillo de foco para el teclado o Switch Access, por fuera de los rellenos y por dentro de las filas. Los componentes ya lo llevan; sirve para los controles propios. `AppFocusRing.when` lo muestra según un valor (p. ej. el `onFocusChange` de un `InkWell`). |
 | `AppTopBar` | Barra superior de las pantallas. Usarla en lugar de `AppBar`. |
 | `AppFooterActions` | Acciones fijas al pie de una pantalla. |
 | `AppNote` | Nota destacada con icono. |
@@ -44,9 +45,12 @@ Algunos nombres no coinciden con Figma y están documentados en cada clase: `rad
 | `AppStatusView`, `AppLoadingView` | Estados vacío, de error y de carga. El icono va en un círculo de marca. |
 | `AppShortcutTile`, `AppShortcutGrid` | Accesos rápidos en una grilla con tantas columnas como quepan (`columnsFor`). |
 | `AppSettingsSection`, `AppSettingsTile`, `AppChoiceSelector<T>` | Pantallas de configuración (`destructive` para acciones peligrosas) y elección entre pocas opciones con un control segmentado (`AppChoiceSegment`), que quita la marca y luego apila las opciones si no caben. `padding: EdgeInsets.zero` para usarlo suelto en una pantalla. |
-| `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). |
+| `AppFilterChips<T>` | Elegir varias opciones a la vez (filtros). Con `maxVisible` y `moreLabel`, muestra las primeras y un chip «N más». |
+| `AppPinnedPanel` | Panel fijo bajo la barra superior (p. ej. filtros): como mucho la mitad de la pantalla, con su propio desplazamiento y el `footer` siempre a la vista. |
 | `AppBadge` | Etiqueta corta con tono `critical`, `warning`, `neutral`, `brand` o `success`. |
-| `AppCheckTile` | Fila que se marca como hecha con su casilla, con una línea de datos y etiquetas. Hecha, el título se tacha en color secundario. |
+| `AppCheckTile` | Fila que se marca como hecha con su casilla, con una línea de datos y etiquetas. Hecha, el título se tacha en color secundario. Con `action` (`AppTileAction`) termina en un botón de icono discreto (p. ej. el lápiz); con `semanticLabel` se lee como un solo botón, y `semanticActions` añade acciones al menú del lector (p. ej. «Borrar»). `highlighted` la resalta. |
+| `AppSwipeToDelete` | Fila que se borra deslizándola a la izquierda, sin confirmación: quien la usa ofrece «Deshacer» y deja la acción de borrar también en la fila. |
+| `AppComposeBar<T>` | Barra para crear elementos seguidos sobre el teclado: Intro o Enviar crean y el foco se queda en el campo. El chip de destino despliega sus opciones sin cerrar el teclado. |
 | `AppSyncStatusCard` | Estado de una sincronización (`AppSyncTone`: `off`, `idle`, `syncing`, `error`), con detalles, mensaje de error y acción. El título se anuncia al cambiar. |
 | `AppConflictCard<T>` | Conflicto entre dispositivos con sus opciones (`AppConflictOption<T>`): marca la que ya rige (`applied`) con una fila de marca y su etiqueta, avisa de la elegida (`onSelected`) y confirma la actual (`keepLabel`, `onKeep`). |
 
@@ -68,7 +72,7 @@ final String? choice = await showAppChoiceDialog<String>(
 
 ## Accesibilidad
 
-Todo componente interactivo tiene etiqueta para lectores de pantalla (`Semantics` o `tooltip`), un área táctil mínima de 48 y admite texto ampliado sin desbordar. Los tests lo comprueban con las guías de accesibilidad de Flutter.
+Todo componente interactivo tiene etiqueta para lectores de pantalla (`Semantics` o `tooltip`), un área táctil mínima de 48, anillo de foco con el teclado y admite texto ampliado sin desbordar. Los tests lo comprueban con las guías de accesibilidad de Flutter.
 
 ## Galería
 

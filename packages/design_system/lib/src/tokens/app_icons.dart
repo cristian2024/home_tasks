@@ -24,6 +24,7 @@ abstract final class AppIcons {
   static const IconData check = IconData(0xe06c, fontFamily: _family, fontPackage: _package);
   static const IconData chevronDown = IconData(0xe06d, fontFamily: _family, fontPackage: _package);
   static const IconData chevronRight = IconData(0xe06f, fontFamily: _family, fontPackage: _package);
+  static const IconData chevronUp = IconData(0xe070, fontFamily: _family, fontPackage: _package);
   static const IconData circleAlert = IconData(0xe077, fontFamily: _family, fontPackage: _package);
   static const IconData circleCheck = IconData(0xe226, fontFamily: _family, fontPackage: _package);
   static const IconData clock = IconData(0xe087, fontFamily: _family, fontPackage: _package);
@@ -54,6 +55,7 @@ abstract final class AppIcons {
   static const IconData refreshCwOff = IconData(0xe498, fontFamily: _family, fontPackage: _package);
   static const IconData scanLine = IconData(0xe258, fontFamily: _family, fontPackage: _package);
   static const IconData search = IconData(0xe151, fontFamily: _family, fontPackage: _package);
+  static const IconData send = IconData(0xe152, fontFamily: _family, fontPackage: _package);
   static const IconData settings = IconData(0xe154, fontFamily: _family, fontPackage: _package);
   static const IconData share = IconData(0xe155, fontFamily: _family, fontPackage: _package);
   static const IconData share2 = IconData(0xe156, fontFamily: _family, fontPackage: _package);
