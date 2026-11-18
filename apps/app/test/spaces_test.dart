@@ -12,9 +12,9 @@ import 'package:home_utility_app/spaces/spaces_cubit.dart';
 import 'package:home_utility_app/sync/join_household_cubit.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 import 'package:plugin_task_list/plugin_task_list.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:sync_engine/sync_engine.dart';
 
-import 'helpers/isar_test_library.dart';
 import 'helpers/space_phone.dart';
 
 /// Espacios de datos de extremo a extremo, con Isar real y el arranque real:
