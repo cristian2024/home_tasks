@@ -109,3 +109,51 @@ class DeleteShoppingItems {
 
   Future<void> call(List<String> itemIds) => _repository.deleteItems(itemIds, deletedAt: _clock.nowUtc());
 }
+
+/// Vuelve a crear un item borrado, para «Deshacer». Lo borrado no vuelve con
+/// su ID (así un borrado gana a una edición hecha a la vez en otro
+/// dispositivo), de modo que se crea uno nuevo con los mismos datos. Las
+/// categorías que ya no existen se quitan; el historial de compras no vuelve.
+class RestoreShoppingItem {
+  const RestoreShoppingItem(this._repository, this._ids, this._clock);
+
+  final ShoppingListRepository _repository;
+  final IdGenerator _ids;
+  final Clock _clock;
+
+  Future<ShoppingItem> call(ShoppingItem deleted) async {
+    final DateTime now = _clock.nowUtc();
+    final Set<String> existing = <String>{
+      for (final ShoppingCategory category in await _repository.getCategories()) category.id,
+    };
+    final ShoppingItem restored = ShoppingItem(
+      id: _ids.newId(),
+      name: deleted.name,
+      notes: deleted.notes,
+      quantity: deleted.quantity,
+      urgency: deleted.urgency,
+      status: deleted.status,
+      categoryIds: <String>[
+        for (final String id in deleted.categoryIds)
+          if (existing.contains(id)) id,
+      ],
+      recurrence: deleted.recurrence,
+      lastPurchasedAt: deleted.lastPurchasedAt,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await _repository.saveItem(restored);
+    return restored;
+  }
+}
+
+/// Devuelve un item al estado en que estaba (p. ej. al deshacer «volver a
+/// pendiente»). Si se borró mientras tanto, no hace nada.
+class RevertShoppingItem {
+  const RevertShoppingItem(this._repository, this._clock);
+
+  final ShoppingListRepository _repository;
+  final Clock _clock;
+
+  Future<void> call(ShoppingItem previous) => _repository.saveItem(previous.copyWith(updatedAt: _clock.nowUtc()));
+}

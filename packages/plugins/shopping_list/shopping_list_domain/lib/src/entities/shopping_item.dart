@@ -66,6 +66,17 @@ class ShoppingItem extends Equatable {
 
   bool get isRecurring => recurrence != null;
 
+  /// Cuándo vuelve a la lista un item recurrente ya comprado (UTC): cuando se
+  /// abre su siguiente ventana. `null` si no se repite o nunca se compró.
+  DateTime? get returnsAt {
+    final Recurrence? recurrence = this.recurrence;
+    final DateTime? lastPurchasedAt = this.lastPurchasedAt;
+    if (recurrence == null || lastPurchasedAt == null) {
+      return null;
+    }
+    return recurrence.windowAfter(lastPurchasedAt).opensAt;
+  }
+
   /// Estado que se muestra en [now].
   ShoppingItemState stateAt(DateTime now) {
     final Recurrence? recurrence = this.recurrence;

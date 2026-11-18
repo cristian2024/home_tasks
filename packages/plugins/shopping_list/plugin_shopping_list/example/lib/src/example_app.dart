@@ -112,7 +112,7 @@ class _HomePage extends StatelessWidget {
             content: Text(
               created == 0
                   ? 'Los datos de ejemplo ya estaban cargados.'
-                  : 'Datos de ejemplo cargados: $created items.',
+                  : 'Datos de ejemplo cargados: $created ítems.',
             ),
           ),
         );

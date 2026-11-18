@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.0 - 2026-11-17
+
+### Añadido
+
+- El panel de filtros queda fijo bajo la barra y la lista se desplaza debajo. Mide como mucho la mitad de la pantalla, muestra 4 categorías y «N más», y termina en «Restablecer» y «Listo · N».
+- «Añadir ítem» abre un campo sobre el teclado: Intro crea el ítem y vacía el campo. Un chip dice en qué categoría irá (la del filtro si es una sola; si no, la última usada) y permite cambiarla sin cerrar el teclado. El ítem nuevo se resalta y la lista baja hasta él.
+- Deslizar una fila a la izquierda la borra, sin diálogo y con «Deshacer». La fila tiene también la acción «Borrar» para los lectores de pantalla. La primera vez que se borra desde editar, el aviso sugiere el gesto.
+- Lápiz al final de cada fila para editar. La fila se lee como un solo botón con su nombre, sus datos y «Editar».
+- Pantallas «Comprados» (con la fecha de compra, volver a pendiente con «Deshacer» y «Borrar comprados») y «En espera» (cuándo vuelve cada ítem y comprar antes de tiempo), a las que se llega desde las filas «Comprados · N» y «En espera · N» al final de la lista.
+- Estado «Todo comprado», distinto de la lista vacía, con «Ver comprados».
+- Anuncios para lectores de pantalla: lo que hay por comprar al abrir, cuántos ítems coinciden al filtrar, el ítem creado y el cambio de categoría del campo.
+- Casos de uso `RestoreShoppingItem` (vuelve a crear un ítem borrado, para «Deshacer») y `RevertShoppingItem`.
+- Toma `ShoppingListPreferences` del `ServiceLocator` si la app la registra; si no, la guarda en memoria.
+
+### Cambiado
+
+- **Incompatible:** la lista empieza con el filtro Pendiente + Atrasado. «En espera» y «Comprado» se ven al activarlos en el filtro o en sus pantallas. Al marcar un ítem como comprado, su fila desaparece.
+- **Incompatible:** `ShoppingListDependencies` pide `restoreItem`, `revertItem` y `preferences`.
+- **Incompatible:** el formulario, al borrar, hace `pop` con el ítem borrado en lugar de sin resultado.
+- La barra superior tiene Filtros y ⋮. El ⋮ abre una hoja con Categorías y Exportar; «Borrar comprados» pasa a la pantalla Comprados.
+- «item» pasa a «ítem» en todos los textos.
+- Depende de design_system 0.3.2 y shopping_list_domain 0.2.2.
+
+### Eliminado
+
+- La clave `shopping_list.list.filters_active` («Hay filtros activos.»).
+
 ## 0.2.3 - 2026-11-08
 
 ### Interno

@@ -22,8 +22,15 @@ void main() {
     await harness.pump(tester);
   }
 
+  /// Exportar está en el menú ⋮.
+  Future<void> openMenu(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Más opciones'));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> openSheet(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Exportar'));
+    await openMenu(tester);
+    await tester.tap(find.text('Exportar'));
     await tester.pumpAndSettle();
   }
 
@@ -94,6 +101,8 @@ void main() {
     await pumpWithItems(tester);
     await tester.tap(find.byTooltip('Filtros y agrupación'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('2 más'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilterChip, 'Sin categoría'));
     await tester.pumpAndSettle();
 
@@ -106,17 +115,16 @@ void main() {
     expect(harness.share.sharedTexts.single, contains('Pilas'));
   });
 
-  testWidgets('sin nada por comprar desactiva los botones', (WidgetTester tester) async {
+  testWidgets('sin nada por comprar no ofrece exportar', (WidgetTester tester) async {
     harness = PluginHarness();
     await harness.initialize();
     final ShoppingItem bread = await harness.deps.createItem(name: 'Pan');
     await harness.deps.markPurchased(bread.id);
     await harness.pump(tester);
-    await openSheet(tester);
+    await openMenu(tester);
 
-    expect(find.text('No hay nada por comprar para exportar.'), findsOneWidget);
-    await tester.tap(find.text('Enviar por WhatsApp'));
-    expect(harness.share.whatsAppMessages, isEmpty);
+    expect(find.text('Categorías'), findsOneWidget);
+    expect(find.text('Exportar'), findsNothing);
   });
 
   testWidgets('un error al compartir se avisa', (WidgetTester tester) async {
@@ -135,8 +143,9 @@ void main() {
 
   testWidgets('sin ShareService no se ofrece exportar', (WidgetTester tester) async {
     await pumpWithItems(tester, share: false);
+    await openMenu(tester);
 
-    expect(find.byTooltip('Exportar'), findsNothing);
+    expect(find.text('Exportar'), findsNothing);
   });
 }
 

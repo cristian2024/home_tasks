@@ -22,6 +22,8 @@ class ShoppingListEntry extends Equatable {
 }
 
 /// Qué items se muestran. Un criterio vacío no filtra.
+///
+/// La lista empieza con [defaults]: solo lo que hay que comprar ahora.
 class ShoppingListFilter extends Equatable {
   const ShoppingListFilter({
     this.categoryIds = const <String>{},
@@ -37,8 +39,21 @@ class ShoppingListFilter extends Equatable {
   /// hay [categoryIds] o esto es `true`.
   final bool includeUncategorized;
 
+  /// El filtro con el que empieza la lista: pendiente y atrasado. «En espera»
+  /// y «Comprado» solo se ven al elegirlos.
+  static const ShoppingListFilter defaults = ShoppingListFilter(
+    states: <ShoppingItemState>{ShoppingItemState.pending, ShoppingItemState.overdue},
+  );
+
   final Set<Urgency> urgencies;
   final Set<ShoppingItemState> states;
+
+  /// Si es [defaults] (p. ej. para desactivar «Restablecer»).
+  bool get isDefault => this == defaults;
+
+  /// La única categoría por la que filtra; `null` si filtra por ninguna, por
+  /// varias o también por «Sin categoría».
+  String? get singleCategoryId => categoryIds.length == 1 && !includeUncategorized ? categoryIds.first : null;
 
   bool get filtersByCategory => categoryIds.isNotEmpty || includeUncategorized;
 
@@ -159,6 +174,45 @@ abstract final class ShoppingListView {
         ];
     }
   }
+
+  /// Lo comprado (items normales; los recurrentes nunca lo están), de lo más
+  /// reciente a lo más antiguo.
+  static List<ShoppingListEntry> bought(List<ShoppingListEntry> entries) =>
+      entries.where((ShoppingListEntry entry) => entry.state == ShoppingItemState.purchased).toList()
+        ..sort((ShoppingListEntry a, ShoppingListEntry b) {
+          final int byDate = _compareDates(a.item.lastPurchasedAt, b.item.lastPurchasedAt, newestFirst: true);
+          return byDate != 0 ? byDate : compare(a, b);
+        });
+
+  /// Lo que espera a su siguiente ventana, de lo que vuelve antes a lo que
+  /// vuelve después.
+  static List<ShoppingListEntry> waiting(List<ShoppingListEntry> entries) =>
+      entries.where((ShoppingListEntry entry) => entry.state == ShoppingItemState.waiting).toList()
+        ..sort((ShoppingListEntry a, ShoppingListEntry b) {
+          final int byDate = _compareDates(a.item.returnsAt, b.item.returnsAt);
+          return byDate != 0 ? byDate : compare(a, b);
+        });
+
+  /// La categoría de un item creado desde la lista: la del filtro si filtra
+  /// por una sola; si no, [lastUsedId], la última usada al crear; `null` (sin
+  /// categoría) si no hay o ya no existe.
+  static String? quickAddCategory({
+    required ShoppingListFilter filter,
+    required String? lastUsedId,
+    required List<ShoppingCategory> categories,
+  }) {
+    final String? candidate = filter.singleCategoryId ?? lastUsedId;
+    return categories.any((ShoppingCategory category) => category.id == candidate) ? candidate : null;
+  }
+
+  /// Ordena las fechas, de la más antigua a la más reciente o, con
+  /// [newestFirst], al revés. `null` siempre va al final.
+  static int _compareDates(DateTime? a, DateTime? b, {bool newestFirst = false}) => switch ((a, b)) {
+        (null, null) => 0,
+        (null, _) => 1,
+        (_, null) => -1,
+        (final DateTime a, final DateTime b) => newestFirst ? b.compareTo(a) : a.compareTo(b),
+      };
 
   static List<ShoppingListEntry> _sorted(Iterable<ShoppingListEntry> entries) => entries.toList()..sort(compare);
 }

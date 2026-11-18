@@ -24,7 +24,7 @@ void main() {
 
     await tester.tap(find.text('Cargar datos de ejemplo'));
     await tester.pumpAndSettle();
-    expect(find.text('Datos de ejemplo cargados: 6 items.'), findsOneWidget);
+    expect(find.text('Datos de ejemplo cargados: 6 ítems.'), findsOneWidget);
     expect(find.text('6 cosas por comprar'), findsOneWidget);
     expect(find.text('2 urgentes'), findsOneWidget);
 
@@ -35,7 +35,7 @@ void main() {
     await tester.tap(find.text('Lista de compras'));
     await tester.pumpAndSettle();
     expect(find.text('Papel higiénico'), findsOneWidget);
-    expect(find.byTooltip('Exportar'), findsOneWidget);
+    expect(find.byTooltip('Más opciones'), findsOneWidget);
 
     await plugin.dispose();
   });

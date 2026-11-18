@@ -8,6 +8,7 @@ import 'package:core_utils/core_utils.dart';
 
 import 'shopping_list_domain.dart';
 
+export 'src/testing/shopping_list_preferences_contract.dart';
 export 'src/testing/shopping_list_repository_contract.dart';
 export 'src/testing/shopping_list_sync_fixtures.dart';
 

@@ -10,7 +10,9 @@ Dominio de la lista de compras, en Dart puro: entidades, reglas, errores y el co
   - `ShoppingPurchase`: el historial de compras.
 - **`ShoppingItem.stateAt(now)`**: el estado que se muestra (`overdue`, `pending`, `waiting` o `purchased`), según el estado guardado y la recurrencia (`recurrence`).
 - **`ShoppingListView`**: une cada item con su estado y sus categorías (`entries`), los ordena (`compare`: primero lo atrasado y lo urgente) y los agrupa (`group`) por categoría o por urgencia. Por categoría, cada item aparece una sola vez, bajo su primera categoría, y «Sin categoría» va al final.
-- **`ShoppingListFilter`**: por categorías, urgencias y estados.
+- **`ShoppingListFilter`**: por categorías, urgencias y estados. La lista empieza con `ShoppingListFilter.defaults` (pendiente y atrasado).
+- **`ShoppingListView.bought` y `waiting`**: lo comprado, de lo más reciente a lo más antiguo, y lo que espera, por la fecha en que vuelve (`ShoppingItem.returnsAt`). `quickAddCategory` decide la categoría de lo que se crea desde la lista.
+- **`ShoppingListPreferences`**: preferencias del dispositivo, que no se sincronizan (última categoría usada al crear y si ya se sugirió deslizar). `InMemoryShoppingListPreferences` las guarda en memoria; otra implementación debe pasar `shoppingListPreferencesContract`.
 - **`ShoppingValidator`**: límites de los campos y `normalize` para comparar nombres.
 - **Errores:** `sealed ShoppingListException` (`ShoppingItemNotFoundException`, `ShoppingCategoryNameTakenException`…).
 - **Contrato `ShoppingListRepository`**, con operaciones atómicas: borrar una categoría en uso, registrar y deshacer una compra, y crear las categorías por defecto una sola vez. Los borrados son lógicos (`deletedAt`): lo borrado no aparece y no vuelve aunque se guarde con su ID.
