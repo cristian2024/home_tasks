@@ -38,7 +38,7 @@ Sin la sincronización compuesta no se registra nada y funciona como antes.
 
 ## Tests
 
-Pasan `householdItemRepositoryContract` (con y sin sincronización) e `itemTrackerSyncContract`, contra una base real. Usan Isar real: `setUpAll(() => Isar.initializeIsarCore(download: true))` descarga `libisar` en el paquete (está en `.gitignore`).
+Pasan `householdItemRepositoryContract` (con y sin sincronización) e `itemTrackerSyncContract`, contra una base real. Usan Isar real: `setUpAll(initializeIsarForTests)` (`package:storage_isar/testing.dart`) descarga `libisar` en el paquete (está en `.gitignore`).
 
 ```sh
 flutter test --coverage
