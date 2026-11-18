@@ -4,8 +4,8 @@ import 'package:core_di/core_di.dart';
 import 'package:core_sync/core_sync.dart';
 import 'package:core_utils/core_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storage_isar/adapter.dart';
 import 'package:storage_isar/storage_isar.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:sync_isar/sync_isar.dart';
 import 'package:task_list_domain/task_list_domain.dart';
 import 'package:task_list_domain/testing.dart';
@@ -54,7 +54,7 @@ HouseholdTask _task(String id, {DateTime? updatedAt}) => HouseholdTask(
     );
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   taskListSyncContract('Isar', create: _subject);
   taskListRepositoryContract('Isar, sincronizado', create: () async => (await _open()).get<TaskListRepository>());

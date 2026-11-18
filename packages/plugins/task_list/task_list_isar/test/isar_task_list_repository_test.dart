@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:storage_isar/adapter.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:task_list_domain/task_list_domain.dart';
 import 'package:task_list_domain/testing.dart';
 import 'package:task_list_isar/src/repositories/isar_task_list_repository.dart';
@@ -8,7 +9,7 @@ import 'package:task_list_isar/task_list_isar.dart';
 import 'helpers/isar_fixtures.dart';
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   final Map<TaskListRepository, TestStorage> storages = <TaskListRepository, TestStorage>{};
   taskListRepositoryContract(
