@@ -108,12 +108,13 @@ class _AppComposeBarState<T> extends State<AppComposeBar<T>> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final TextTheme textTheme = theme.textTheme;
     final AppThemeColors colors = AppThemeColors.of(context);
     final List<BoxShadow> shadow = theme.brightness == Brightness.dark ? AppElevation.dark2 : AppElevation.light2;
     final String? errorText = widget.errorText;
     final List<AppChoice<T>> destinations = widget.destinations;
     final bool showDestination = destinations.isNotEmpty && errorText == null;
-    final TextStyle? captionStyle = theme.textTheme.bodySmall?.copyWith(color: colors.textSecondary);
+    final TextStyle? captionStyle = textTheme.bodySmall?.copyWith(color: colors.textSecondary);
     // Con el selector abierto, el campo se dibuja sin foco: solo hay uno activo.
     final Color fieldBorder = errorText != null ? colors.borderDanger : colors.borderStrong;
     final Color focusedBorder = switch ((errorText != null, _choosing)) {
@@ -140,7 +141,7 @@ class _AppComposeBarState<T> extends State<AppComposeBar<T>> {
                   children: <Widget>[
                     Expanded(
                       child: ExcludeSemantics(
-                        child: Text(label, style: theme.textTheme.labelLarge?.copyWith(color: colors.textPrimary)),
+                        child: Text(label, style: textTheme.labelLarge?.copyWith(color: colors.textPrimary)),
                       ),
                     ),
                     AppIconButton(
@@ -163,7 +164,7 @@ class _AppComposeBarState<T> extends State<AppComposeBar<T>> {
                           focusNode: _focusNode,
                           textInputAction: TextInputAction.send,
                           onSubmitted: (String _) => _submit(),
-                          style: theme.textTheme.bodyLarge?.copyWith(color: colors.textPrimary),
+                          style: textTheme.bodyLarge?.copyWith(color: colors.textPrimary),
                           decoration: InputDecoration(
                             hintText: widget.hint,
                             filled: true,
