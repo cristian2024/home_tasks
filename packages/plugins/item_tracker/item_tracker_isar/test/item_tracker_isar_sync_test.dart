@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:item_tracker_domain/item_tracker_domain.dart';
 import 'package:item_tracker_domain/testing.dart';
 import 'package:item_tracker_isar/item_tracker_isar.dart';
-import 'package:storage_isar/adapter.dart';
 import 'package:storage_isar/storage_isar.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:sync_isar/sync_isar.dart';
 
 import 'helpers/isar_fixtures.dart';
@@ -44,7 +44,7 @@ Future<ItemTrackerSyncSubject> _subject() async {
 }
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   itemTrackerSyncContract('Isar', create: _subject);
   householdItemRepositoryContract(

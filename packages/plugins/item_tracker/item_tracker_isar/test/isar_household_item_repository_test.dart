@@ -6,11 +6,12 @@ import 'package:item_tracker_isar/src/models/isar_household_item.dart';
 import 'package:item_tracker_isar/src/models/isar_physical_identifier.dart';
 import 'package:item_tracker_isar/src/repositories/isar_household_item_repository.dart';
 import 'package:storage_isar/adapter.dart';
+import 'package:storage_isar/testing.dart';
 
 import 'helpers/isar_fixtures.dart';
 
 void main() {
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   final Map<HouseholdItemRepository, TestStorage> storages = <HouseholdItemRepository, TestStorage>{};
   householdItemRepositoryContract(
