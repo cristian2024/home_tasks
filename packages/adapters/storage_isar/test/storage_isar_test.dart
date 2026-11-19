@@ -13,6 +13,7 @@ import 'package:storage_isar/src/isar_database.dart';
 import 'package:storage_isar/src/plugin_preferences/isar_plugin_preference.dart';
 import 'package:storage_isar/src/plugin_preferences/isar_plugin_preference_repository.dart';
 import 'package:storage_isar/storage_isar.dart';
+import 'package:storage_isar/testing.dart';
 
 /// Funcionalidad de prueba: anota con qué base y locator la conectan.
 class _Feature implements IsarFeature {
@@ -66,7 +67,7 @@ class _Plugin implements HomePlugin {
 void main() {
   late Directory directory;
 
-  setUpAll(() => Isar.initializeIsarCore(download: true));
+  setUpAll(initializeIsarForTests);
 
   setUp(() => directory = Directory.systemTemp.createTempSync('storage_isar_test'));
   tearDown(() => directory.deleteSync(recursive: true));
