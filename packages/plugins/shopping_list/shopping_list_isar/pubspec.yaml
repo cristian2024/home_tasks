@@ -1,6 +1,6 @@
 name: shopping_list_isar
 description: Adaptador Isar de la lista de compras - registra ShoppingListRepository sobre storage_isar.
-version: 0.1.3
+version: 0.1.4
 publish_to: none
 
 environment:
@@ -16,7 +16,7 @@ dependencies:
   flutter:
     sdk: flutter
   shopping_list_domain: ^0.2.0
-  storage_isar: ^0.2.1
+  storage_isar: ^0.2.3
   sync_isar: ^0.1.0
 
 dev_dependencies:

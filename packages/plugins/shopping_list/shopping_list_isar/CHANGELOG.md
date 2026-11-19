@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 - 2026-11-18
+
+### Interno
+
+- Los tests usan `initializeIsarForTests()` de `storage_isar` en lugar de su copia local.
+
 ## 0.1.3 - 2026-11-18
 
 ### Interno

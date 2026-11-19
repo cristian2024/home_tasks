@@ -4,6 +4,7 @@ import 'package:shopping_list_domain/testing.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
 import 'package:shopping_list_isar/src/repositories/isar_shopping_list_repository.dart';
 import 'package:storage_isar/adapter.dart';
+import 'package:storage_isar/testing.dart';
 
 import 'helpers/isar_fixtures.dart';
 
