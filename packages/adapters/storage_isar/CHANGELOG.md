@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.3 - 2026-11-18
+
+### Añadido
+
+- `initializeIsarForTests()` en `package:storage_isar/testing.dart`: prepara `libisar` para los tests con un bloqueo de archivo, así que dos archivos de test no la descargan a la vez (fallaba con «file too short» o con SIGBUS), y con un cliente HTTP real, que funciona también con `testWidgets`.
+
+### Interno
+
+- Sus tests usan `initializeIsarForTests()`.
+
 ## 0.2.2 - 2026-10-31
 
 ### Añadido

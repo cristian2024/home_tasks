@@ -38,7 +38,7 @@ Los nombres de colección y de base de datos no cambian entre versiones, para qu
 
 ## Tests
 
-Usan Isar real. `setUpAll(() => Isar.initializeIsarCore(download: true))` descarga `libisar` en el paquete (está en `.gitignore`).
+Usan Isar real. `setUpAll(initializeIsarForTests)` (`package:storage_isar/testing.dart`) descarga `libisar` en el paquete (está en `.gitignore`). Los demás adaptadores Isar lo usan también: con un bloqueo de archivo, dos archivos de test no la descargan a la vez.
 
 ```sh
 flutter test
