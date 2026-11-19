@@ -8,8 +8,8 @@ import 'package:home_utility_app/spaces/bring_data_dialog.dart';
 import 'package:home_utility_app/spaces/space_switcher.dart';
 import 'package:home_utility_app/spaces/spaces_cubit.dart';
 import 'package:home_utility_app/spaces/spaces_screen.dart';
+import 'package:storage_isar/testing.dart';
 
-import 'helpers/isar_test_library.dart';
 import 'helpers/space_phone.dart';
 
 void main() {

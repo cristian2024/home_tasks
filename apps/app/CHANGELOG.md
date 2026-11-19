@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.1+18 - 2026-11-18
+
+### Interno
+
+- Los tests con Isar real usan `initializeIsarForTests()` de `storage_isar` en lugar de la copia de `test/helpers/`.
+
 ## 1.10.0+17 - 2026-11-18
 
 ### Añadido

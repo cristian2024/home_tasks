@@ -19,13 +19,13 @@ import 'package:plugin_item_tracker/plugin_item_tracker.dart';
 import 'package:plugin_shopping_list/plugin_shopping_list.dart';
 import 'package:plugin_task_list/plugin_task_list.dart';
 import 'package:shopping_list_isar/shopping_list_isar.dart';
+import 'package:storage_isar/testing.dart';
 import 'package:task_list_isar/task_list_isar.dart';
 import 'package:storage_isar/storage_isar.dart';
 import 'package:sync_engine/sync_engine.dart';
 import 'package:sync_isar/sync_isar.dart';
 
 import 'helpers/in_memory_app_settings_repository.dart';
-import 'helpers/isar_test_library.dart';
 
 /// Hardware falso en lugar de los adaptadores nativos, que necesitan un
 /// dispositivo.
